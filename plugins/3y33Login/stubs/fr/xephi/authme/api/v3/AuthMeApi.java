@@ -1,0 +1,1 @@
+package fr.xephi.authme.api.v3; public class AuthMeApi { public static AuthMeApi getInstance(){return null;} public boolean isAuthenticated(org.bukkit.entity.Player p){return false;} public boolean isRegistered(String n){return false;} }

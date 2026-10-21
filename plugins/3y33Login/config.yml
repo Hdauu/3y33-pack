@@ -1,0 +1,23 @@
+# 3y33Login - titulos del login (se aplica al reiniciar)
+# Colores: &c, &l, &#RRGGBB
+
+# Ticks de espera al entrar antes de mostrar el titulo (20 = 1 segundo)
+delay-ticks: 10
+
+# Titulo fijo mientras el jugador no inicio sesion
+prompt:
+  title: "&c&l3y33 SMP"
+  login: "&7Iniciá sesión: &f/login contraseña"
+  register: "&7Registrate: &f/register contraseña contraseña"
+
+# Titulo al iniciar sesion (con contraseña, premium o sesion)
+welcome:
+  title: "&c&l3y33 SMP"
+  subtitle: "&7¡Bienvenido, &f%player%&7!"
+  stay-ticks: 50
+  sound: "entity.player.levelup"
+
+# Mensaje en el chat cuando entra solo (cuenta original o sesion reciente)
+auto-login-message:
+  enabled: true
+  text: "&4&l3y33 &8» &aEntraste automáticamente. ¡Bienvenido de nuevo, &f%player%&a!"

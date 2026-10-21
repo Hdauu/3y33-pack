@@ -1,0 +1,1 @@
+package org.bukkit.entity; public interface Player { String getName(); boolean isOnline(); java.util.UUID getUniqueId(); void sendMessage(String m); void sendTitle(String t, String s, int a, int b, int c); void resetTitle(); org.bukkit.Location getLocation(); void playSound(org.bukkit.Location l, String sound, float v, float p); }

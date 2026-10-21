@@ -1,0 +1,1 @@
+package org.bukkit.plugin.java; public abstract class JavaPlugin implements org.bukkit.plugin.Plugin { public org.bukkit.Server getServer(){return null;} public void saveDefaultConfig(){} public org.bukkit.configuration.file.FileConfiguration getConfig(){return null;} public void reloadConfig(){} public void onEnable(){} public void onDisable(){} }
