@@ -1,0 +1,7 @@
+name: 3y33Login
+version: 1.0.0
+main: ar.com.tresyetres.login.TresLogin
+api-version: '1.21'
+depend: [AuthMe]
+author: 3y33 SMP
+description: Titulos en pantalla para el login de AuthMe
