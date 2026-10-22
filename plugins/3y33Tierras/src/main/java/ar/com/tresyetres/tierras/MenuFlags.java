@@ -62,7 +62,7 @@ final class MenuFlags implements InventoryHolder {
                 MM.deserialize("<!italic><gradient:#8ce99a:#2f9e44><bold>" + escapar(p.getName()) + "</bold></gradient>"),
                 List.of(MM.deserialize("<!italic><gray>Qué pasa solo dentro de este terreno."),
                         MM.deserialize("<!italic><gray>Vale para todos sus chunks."))));
-        inv.setItem(SLOT_CERRAR, item(Material.BARRIER, MM.deserialize("<!italic><red><bold>Cerrar"), List.of()));
+        inv.setItem(SLOT_CERRAR, item(Material.ARROW, MM.deserialize("<!italic><red><bold>« Volver"), List.of(MM.deserialize("<!italic><gray>Volver al terreno"))));
     }
 
     static ItemStack item(Material mat, Component nombre, List<Component> lore) {

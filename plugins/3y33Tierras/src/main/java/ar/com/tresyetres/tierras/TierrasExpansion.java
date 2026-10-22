@@ -54,6 +54,8 @@ final class TierrasExpansion extends PlaceholderExpansion {
                 return String.valueOf(plugin.terrenosDe(off.getUniqueId()));
             case "terrenos_max":
                 return off instanceof Player p ? String.valueOf(plugin.maxTerrenos(p)) : "?";
+            case "chunks_por_terreno":
+                return off instanceof Player p ? String.valueOf(plugin.maxPorTerreno(p)) : "?";
             default:
                 break;
         }

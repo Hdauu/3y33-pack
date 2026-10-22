@@ -78,6 +78,7 @@ final class MenusTerrenos {
                 barra,
                 "",
                 "<gray>Terrenos: <white>" + pl.terrenosDe(id) + "<dark_gray>/<white>" + pl.maxTerrenos(p),
+                "<gray>Máximo por terreno: <white>" + pl.maxPorTerreno(p) + " chunks",
                 "<gray>Chunks comprados: <white>" + pl.comprados(id),
                 "<gray>Próximo chunk: <gold>" + pl.plata(pl.precioSiguiente(id))), null);
 
@@ -89,11 +90,11 @@ final class MenusTerrenos {
         int i = 0;
         for (ClaimProfile c : propios) {
             if (i >= SLOTS_TERRENOS.length) break;
-            m.poner(SLOTS_TERRENOS[i++], itemTerreno(c, id, activo), (pp, click) -> clickTerreno(pp, c, click));
+            m.poner(SLOTS_TERRENOS[i++], itemTerreno(c, id, activo, pl.maxPorTerreno(p)), (pp, click) -> clickTerreno(pp, c, click));
         }
         for (ClaimProfile c : ajenos) {
             if (i >= SLOTS_TERRENOS.length) break;
-            m.poner(SLOTS_TERRENOS[i++], itemTerreno(c, id, activo), (pp, click) -> clickTerreno(pp, c, click));
+            m.poner(SLOTS_TERRENOS[i++], itemTerreno(c, id, activo, -1), (pp, click) -> clickTerreno(pp, c, click));
         }
         if (i == 0) {
             m.poner(22, Menu.item(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "<gray>Todavía no tenés terrenos",
@@ -133,7 +134,7 @@ final class MenusTerrenos {
         p.openInventory(m.getInventory());
     }
 
-    private org.bukkit.inventory.ItemStack itemTerreno(ClaimProfile c, UUID id, UUID activo) {
+    private org.bukkit.inventory.ItemStack itemTerreno(ClaimProfile c, UUID id, UUID activo, int max) {
         boolean esActivo = c.getProfileId().equals(activo);
         int chunks = c.getOwnedChunks().size();
         int miembros = c.getMemberRoles().size();
@@ -145,7 +146,7 @@ final class MenusTerrenos {
         }
         List<String> lore = new ArrayList<>(List.of(
                 "<gray>Rol: " + rol(c, id),
-                "<gray>Chunks: <white>" + chunks,
+                "<gray>Chunks: <white>" + chunks + (max > 0 && max < 1_000_000 ? "<dark_gray>/<white>" + max : ""),
                 "<gray>Miembros: <white>" + miembros,
                 "<gray>Puntos: <white>" + puntos,
                 donde, ""));
@@ -207,7 +208,7 @@ final class MenusTerrenos {
         m.poner(4, Menu.brillo(Menu.item(Material.NETHER_STAR, Menu.g("#8ce99a", "#2f9e44", Menu.esc(c.getName())),
                 "<gray>Dueño: <white>" + Menu.esc(due == null ? "?" : due),
                 "<gray>Tu rol: " + rol(c, id),
-                "<gray>Chunks: <white>" + c.getOwnedChunks().size(),
+                "<gray>Chunks: <white>" + c.getOwnedChunks().size() + (c.isOwner(id) && pl.maxPorTerreno(p) < 1_000_000 ? "<dark_gray>/<white>" + pl.maxPorTerreno(p) : ""),
                 "<gray>Miembros: <white>" + c.getMemberRoles().size(),
                 "<gray>Puntos: <white>" + (c.getWarps() == null ? 0 : c.getWarps().size()),
                 "",
@@ -261,7 +262,8 @@ final class MenusTerrenos {
                     "<gray>Terrenos amigos y qué pueden", "<gray>hacer dentro del tuyo.", "", "<yellow>▸ Click para abrir"),
                     (pp, ck) -> org.ayosynk.landClaimPlugin.gui.AllyManagementGUI.open(pp, c, lcp));
         }
-        m.poner(49, Menu.item(Material.ARROW, "<red><bold>« Volver", "<gray>Volver a tus terrenos"), (pp, ck) -> abrirHub(pp));
+        m.poner(48, Menu.item(Material.ARROW, "<red><bold>« Volver", "<gray>Volver a tus terrenos"), (pp, ck) -> abrirHub(pp));
+        m.poner(50, Menu.item(Material.BARRIER, "<red><bold>Cerrar"), (pp, ck) -> pp.closeInventory());
         p.openInventory(m.getInventory());
     }
 
