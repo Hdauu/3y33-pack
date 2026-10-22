@@ -258,6 +258,16 @@ final class MenusTerrenos {
                 pp.closeInventory();
                 pp.performCommand("claim");
             });
+            m.poner(33, Menu.item(Material.OAK_HANGING_SIGN, Menu.g("#fff3bf", "#fcc419", "Mensaje de entrada"),
+                    "<gray>Lo que ven los demás debajo", "<gray>del nombre al entrar.", "",
+                    pl.saludo(c).isBlank() ? "<dark_gray>Ahora: <white>Terreno de tu nombre" : "<dark_gray>Ahora: <white>" + Menu.esc(pl.saludo(c)),
+                    "", "<yellow>▸ Click para cambiarlo"), (pp, ck) -> {
+                pp.closeInventory();
+                pl.pedirSaludo(pp, c);
+            });
+            m.poner(29, Menu.item(Material.BRUSH, Menu.g("#f783ac", "#d6336c", "Color del nombre"),
+                    "<gray>El color del título de entrada", "<gray>y de los bordes del terreno.", "", "<yellow>▸ Click para elegir"),
+                    (pp, ck) -> org.ayosynk.landClaimPlugin.gui.ChangeClaimColorGUI.open(pp, c, lcp));
             m.poner(32, Menu.item(Material.SHIELD, Menu.g("#74c0fc", "#4263eb", "Aliados"),
                     "<gray>Terrenos amigos y qué pueden", "<gray>hacer dentro del tuyo.", "", "<yellow>▸ Click para abrir"),
                     (pp, ck) -> org.ayosynk.landClaimPlugin.gui.AllyManagementGUI.open(pp, c, lcp));
