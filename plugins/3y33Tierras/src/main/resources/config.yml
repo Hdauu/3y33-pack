@@ -1,0 +1,25 @@
+# 3y33Tierras - extras para LandClaimPlugin
+prefijo: '&4&l3y33 &8» '
+
+# Compra de chunks extra con /tierra comprar
+# Cada jugador arranca con los chunks gratis de LandClaimPlugin (chunkClaimLimit o landclaim.limit.N por rango).
+# Precio del próximo chunk = base + incremento * (chunks ya comprados)
+compra:
+  habilitada: true
+  base: 500
+  incremento: 250
+  maximo-comprados: 200
+
+# Cantidad de terrenos por jugador. Se usa el permiso tierras.terrenos.N más alto que tenga.
+terrenos:
+  por-defecto: 2
+
+# Teletransporte a los puntos de los terrenos
+teletransporte:
+  espera-segundos: 3
+  cooldown-segundos: 30
+
+# Valores por defecto de los terrenos nuevos
+mobs-por-defecto:
+  monstruos: true
+  animales: true
