@@ -19,7 +19,12 @@ teletransporte:
   espera-segundos: 3
   cooldown-segundos: 30
 
-# Valores por defecto de los terrenos nuevos
-mobs-por-defecto:
+# Valores por defecto de los terrenos (true = sucede, false = no sucede). El dueño los cambia en /tierra flags
+flags-por-defecto:
   monstruos: true
+  phantoms: true
   animales: true
+  fuego: false
+  liquidos: false
+  cultivos: false
+  hojas: true
