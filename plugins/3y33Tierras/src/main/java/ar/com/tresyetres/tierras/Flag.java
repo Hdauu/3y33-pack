@@ -5,11 +5,11 @@ import org.bukkit.Material;
 /** Opciones de naturaleza de cada terreno. "activo = true" significa que la cosa SUCEDE dentro del terreno. */
 enum Flag {
     MONSTRUOS("monstruos", Material.ZOMBIE_HEAD, "#ff8787", "#e03131", "Monstruos",
-            "Zombies, esqueletos, creepers, arañas", "y demás monstruos que aparecen solos."),
+            "Zombies, esqueletos, creepers, arañas,", "slimes y los huevos de monstruos.", "Los spawners siguen funcionando."),
     PHANTOMS("phantoms", Material.PHANTOM_MEMBRANE, "#b197fc", "#7048e8", "Phantoms",
             "Los que te atacan de noche", "cuando no dormís."),
     ANIMALES("animales", Material.PORKCHOP, "#ffc9c9", "#f783ac", "Animales",
-            "Vacas, ovejas, cerdos y demás", "animales que aparecen solos."),
+            "Vacas, ovejas, cerdos y demás", "animales nuevos, también con huevos.", "La cría sigue funcionando."),
     FUEGO("fuego", Material.CAMPFIRE, "#ffa94d", "#e8590c", "Fuego",
             "Que el fuego se propague", "y queme bloques."),
     LIQUIDOS("liquidos", Material.LAVA_BUCKET, "#74c0fc", "#1971c2", "Líquidos de afuera",
