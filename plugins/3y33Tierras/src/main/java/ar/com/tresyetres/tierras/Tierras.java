@@ -646,6 +646,44 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         }
     }
 
+    // ---------------- títulos al entrar y salir de un terreno
+    private static final net.kyori.adventure.title.Title.Times TIEMPOS = net.kyori.adventure.title.Title.Times.times(
+            java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1600), java.time.Duration.ofMillis(450));
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void alEntrarTerreno(org.ayosynk.landClaimPlugin.api.event.PlayerEnterClaimEvent e) {
+        if (!getConfig().getBoolean("titulos.habilitados", true)) return;
+        ClaimProfile c = e.getProfile();
+        if (c == null || c.isEnterTitleEnabled()) return; // el dueño puso títulos propios
+        Player p = e.getPlayer();
+        UUID id = p.getUniqueId();
+        String nombre = Menu.esc(c.getName());
+        String dueno = Bukkit.getOfflinePlayer(c.getOwnerId()).getName();
+        String titulo, sub;
+        if (c.isOwner(id)) {
+            titulo = "<gradient:#8ce99a:#2f9e44><bold>" + nombre + "</bold></gradient>";
+            sub = "<gray>Tu terreno";
+        } else if (c.isMember(id)) {
+            titulo = "<gradient:#74c0fc:#4263eb><bold>" + nombre + "</bold></gradient>";
+            sub = "<gray>Sos miembro <dark_gray>· <gray>de <white>" + Menu.esc(dueno);
+        } else {
+            titulo = "<gradient:#ffd36e:#ff9a3c><bold>" + nombre + "</bold></gradient>";
+            sub = "<gray>Terreno de <white>" + Menu.esc(dueno) + (c.isPvpEnabled() ? " <dark_gray>· <red>PvP activo" : "");
+        }
+        p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(sub), TIEMPOS));
+        if (!c.isOwner(id)) p.playSound(p.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.2f);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void alSalirTerreno(org.ayosynk.landClaimPlugin.api.event.PlayerLeaveClaimEvent e) {
+        if (!getConfig().getBoolean("titulos.habilitados", true)) return;
+        if (!e.isToWilderness()) return; // si pasa a otro terreno, lo muestra el título de entrada
+        ClaimProfile c = e.getProfile();
+        if (c == null || c.isEnterTitleEnabled()) return;
+        e.getPlayer().showTitle(net.kyori.adventure.title.Title.title(net.kyori.adventure.text.Component.empty(),
+                Menu.MM.deserialize("<gray>Saliste de <white>" + Menu.esc(c.getName()) + " <dark_gray>· <green>Zona libre"), TIEMPOS));
+    }
+
     // ---------------- máximo de chunks por terreno
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void alReclamar(org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent e) {

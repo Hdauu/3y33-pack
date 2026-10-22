@@ -28,3 +28,7 @@ flags-por-defecto:
   liquidos: false
   cultivos: false
   hojas: true
+
+# Títulos al entrar y salir de un terreno (si el dueño configura títulos propios en Ajustes, se usan esos)
+titulos:
+  habilitados: true

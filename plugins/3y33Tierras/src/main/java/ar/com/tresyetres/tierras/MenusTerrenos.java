@@ -210,7 +210,7 @@ final class MenusTerrenos {
                 "<gray>Tu rol: " + rol(c, id),
                 "<gray>Chunks: <white>" + c.getOwnedChunks().size() + (c.isOwner(id) && pl.maxPorTerreno(p) < 1_000_000 ? "<dark_gray>/<white>" + pl.maxPorTerreno(p) : ""),
                 "<gray>Miembros: <white>" + c.getMemberRoles().size(),
-                "<gray>Puntos: <white>" + (c.getWarps() == null ? 0 : c.getWarps().size()),
+                "<gray>Puntos: <white>" + (c.getWarps() == null ? 0 : c.getWarps().size()) + (c.isOwner(id) ? "<dark_gray>/<white>" + limitePuntos(p) : ""),
                 "",
                 "<gray>Monstruos: " + sn(pl.flag(c, Flag.MONSTRUOS)) + " <dark_gray>· <gray>Animales: " + sn(pl.flag(c, Flag.ANIMALES)),
                 "<gray>Fuego: " + sn(pl.flag(c, Flag.FUEGO)) + " <dark_gray>· <gray>PvP: " + sn(c.isPvpEnabled()))), null);
@@ -272,6 +272,11 @@ final class MenusTerrenos {
             pp.playSound(pp.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
             pl.msg(pp, "&cNo tenés permiso para cambiar eso en este terreno.");
         };
+    }
+
+    int limitePuntos(Player p) {
+        int l = lcp().getWarpManager().getWarpLimit(p);
+        return l >= 1_000_000 ? 999 : l;
     }
 
     private static String sn(boolean b) {
