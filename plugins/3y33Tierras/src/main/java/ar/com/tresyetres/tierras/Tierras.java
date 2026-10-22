@@ -37,7 +37,8 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
 
     private LandClaimAPI api;
     private MenusTerrenos menus;
-    private final Set<UUID> esperandoNombre = new HashSet<>();
+    private final Map<UUID, java.util.function.Consumer<String>> esperandoTexto = new HashMap<>();
+    private final Set<UUID> conPack = new HashSet<>();
     private Economy economy;
 
     private File dataFile;
@@ -237,6 +238,19 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 p.performCommand("claim warp " + resto);
             }
             case "flags", "naturaleza", "opciones" -> abrirFlags(p);
+            case "saludo", "mensaje" -> {
+                ClaimProfile aca = api.getClaimAt(p.getLocation());
+                if (aca == null || !puedeAdministrar(p, aca)) {
+                    msg(p, "&cParate dentro de tu terreno para cambiar su mensaje de entrada.");
+                } else if (args.length >= 2) {
+                    String limpio = resto.replaceAll("[<>&§]", "");
+                    if (limpio.length() > 40) limpio = limpio.substring(0, 40);
+                    if (limpio.equalsIgnoreCase("borrar")) data.set("terrenos." + aca.getProfileId() + ".saludo", null);
+                    else data.set("terrenos." + aca.getProfileId() + ".saludo", limpio);
+                    guardarDatos();
+                    mostrarTitulo(p, aca);
+                } else pedirSaludo(p, aca);
+            }
             case "mobs", "monstruos" -> alternarMobs(p, true);
             case "animales" -> alternarMobs(p, false);
             case "menu", "menú" -> {
@@ -268,6 +282,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         p.sendMessage(color("&e/tierra ir <nombre> &8» &7te lleva a un punto"));
         p.sendMessage(color("&e/tierra comprar [cantidad] &8» &7comprá chunks extra"));
         p.sendMessage(color("&e/tierra flags &8» &7mobs, fuego, líquidos y más del terreno"));
+        p.sendMessage(color("&e/tierra saludo <texto> &8» &7mensaje que ven al entrar a tu terreno"));
         p.sendMessage(color("&e/tierra info &8» &7tus chunks y terrenos"));
         p.sendMessage(color("&e/tierra liberar &8» &7libera el chunk donde estás"));
         p.sendMessage(color("&8&m                                        "));
@@ -392,28 +407,56 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             msg(p, "&cYa tenés el máximo de terrenos de tu rango (&f" + maxTerrenos(p) + "&c).");
             return;
         }
-        esperandoNombre.add(p.getUniqueId());
-        p.sendTitle(color("&a&lNuevo terreno"), color("&7Escribí el nombre en el chat"), 5, 60, 10);
-        msg(p, "&7Escribí el nombre del terreno en el chat &8(&7o &fcancelar&8)&7.");
+        pedirTexto(p, "Nuevo terreno", "el nombre del terreno", nombre -> {
+            if (!nombre.matches("[A-Za-z0-9ÁÉÍÓÚáéíóúÑñ ]{3,32}")) {
+                msg(p, "&cEl nombre tiene que tener entre 3 y 32 letras o números.");
+                return;
+            }
+            p.performCommand("claim create " + nombre);
+        });
+    }
+
+    void pedirTexto(Player p, String titulo, String que, java.util.function.Consumer<String> alRecibir) {
+        esperandoTexto.put(p.getUniqueId(), alRecibir);
+        p.sendTitle(color("&a&l" + titulo), color("&7Escribí " + que + " en el chat"), 5, 60, 10);
+        msg(p, "&7Escribí " + que + " en el chat &8(&7o &fcancelar&8)&7.");
+    }
+
+    String saludo(ClaimProfile c) {
+        return data.getString("terrenos." + c.getProfileId() + ".saludo", "");
+    }
+
+    void pedirSaludo(Player p, ClaimProfile c) {
+        pedirTexto(p, "Mensaje de entrada", "el mensaje que ven al entrar (o &fborrar&7)", txt -> {
+            if (txt.equalsIgnoreCase("borrar")) {
+                data.set("terrenos." + c.getProfileId() + ".saludo", null);
+                guardarDatos();
+                msg(p, "&7Mensaje de entrada borrado.");
+                return;
+            }
+            String limpio = txt.replaceAll("[<>&§]", "");
+            if (limpio.length() > 40) limpio = limpio.substring(0, 40);
+            data.set("terrenos." + c.getProfileId() + ".saludo", limpio);
+            guardarDatos();
+            msg(p, "&aListo. Al entrar a &e" + c.getName() + " &ase va a ver: &f" + limpio);
+            mostrarTitulo(p, c);
+        });
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     @SuppressWarnings("deprecation")
     public void alEscribir(org.bukkit.event.player.AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        if (!esperandoNombre.remove(p.getUniqueId())) return;
+        var accion = esperandoTexto.remove(p.getUniqueId());
+        if (accion == null) return;
         e.setCancelled(true);
-        String nombre = e.getMessage().trim();
+        String texto = e.getMessage().trim();
         Bukkit.getScheduler().runTask(this, () -> {
-            if (nombre.equalsIgnoreCase("cancelar")) {
+            if (texto.equalsIgnoreCase("cancelar")) {
                 msg(p, "&7Cancelado.");
                 return;
             }
-            if (!nombre.matches("[A-Za-z0-9ÁÉÍÓÚáéíóúÑñ ]{3,32}")) {
-                msg(p, "&cEl nombre tiene que tener entre 3 y 32 letras o números.");
-                return;
-            }
-            p.performCommand("claim create " + nombre);
+            accion.accept(texto);
         });
     }
 
@@ -476,7 +519,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("tierra")) return List.of();
         if (args.length == 1) {
-            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "flags", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
+            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "flags", "saludo", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
             String a = args[0].toLowerCase(Locale.ROOT);
             return subs.stream().filter(x -> x.startsWith(a)).toList();
         }
@@ -651,27 +694,59 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1600), java.time.Duration.ofMillis(450));
 
     @EventHandler(priority = EventPriority.MONITOR)
+    public void alEstadoPack(org.bukkit.event.player.PlayerResourcePackStatusEvent e) {
+        switch (e.getStatus()) {
+            case SUCCESSFULLY_LOADED -> conPack.add(e.getPlayer().getUniqueId());
+            case DECLINED, FAILED_DOWNLOAD, FAILED_RELOAD, INVALID_URL, DISCARDED -> conPack.remove(e.getPlayer().getUniqueId());
+            default -> { }
+        }
+    }
+
+    /** Color principal del terreno: el que eligió el dueño o uno según la relación. */
+    private String colorTerreno(ClaimProfile c, UUID id) {
+        String col = c.getClaimColor();
+        if (col != null && col.matches("#[0-9a-fA-F]{6}")) return col;
+        if (c.isOwner(id)) return "#51cf66";
+        if (c.isMember(id)) return "#4dabf7";
+        return "#ffd43b";
+    }
+
+    private static String aclarar(String hex, double t) {
+        int r = Integer.parseInt(hex.substring(1, 3), 16), g = Integer.parseInt(hex.substring(3, 5), 16), b = Integer.parseInt(hex.substring(5, 7), 16);
+        r = (int) Math.round(r + (255 - r) * t);
+        g = (int) Math.round(g + (255 - g) * t);
+        b = (int) Math.round(b + (255 - b) * t);
+        return String.format("#%02x%02x%02x", r, g, b);
+    }
+
+    void mostrarTitulo(Player p, ClaimProfile c) {
+        UUID id = p.getUniqueId();
+        boolean fuente = conPack.contains(id);
+        String nombre = Menu.esc(c.getName());
+        String dueno = Bukkit.getOfflinePlayer(c.getOwnerId()).getName();
+        String col = colorTerreno(c, id);
+        String claro = aclarar(col, 0.45);
+        String fTit = fuente ? (c.getName().length() <= 14 ? "<font:3y33:titulo>" : "<font:3y33:texto>") : "<bold>";
+        String fSub = fuente ? "<font:3y33:texto>" : "";
+        String saludo = saludo(c);
+        String sub;
+        if (!saludo.isBlank()) sub = Menu.esc(saludo);
+        else if (c.isOwner(id)) sub = "Tu terreno";
+        else sub = "Terreno de " + Menu.esc(dueno == null ? "?" : dueno);
+        if (!c.isOwner(id) && c.isPvpEnabled()) sub += " <red>· PvP";
+        String titulo = fTit + "<gradient:" + claro + ":" + col + ">" + nombre + "</gradient>";
+        String subtitulo = fSub + "<color:" + aclarar(col, 0.7) + ">" + sub;
+        p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(subtitulo), TIEMPOS));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
     public void alEntrarTerreno(org.ayosynk.landClaimPlugin.api.event.PlayerEnterClaimEvent e) {
         if (!getConfig().getBoolean("titulos.habilitados", true)) return;
         ClaimProfile c = e.getProfile();
-        if (c == null || c.isEnterTitleEnabled()) return; // el dueño puso títulos propios
-        Player p = e.getPlayer();
-        UUID id = p.getUniqueId();
-        String nombre = Menu.esc(c.getName());
-        String dueno = Bukkit.getOfflinePlayer(c.getOwnerId()).getName();
-        String titulo, sub;
-        if (c.isOwner(id)) {
-            titulo = "<gradient:#8ce99a:#2f9e44><bold>" + nombre + "</bold></gradient>";
-            sub = "<gray>Tu terreno";
-        } else if (c.isMember(id)) {
-            titulo = "<gradient:#74c0fc:#4263eb><bold>" + nombre + "</bold></gradient>";
-            sub = "<gray>Sos miembro <dark_gray>· <gray>de <white>" + Menu.esc(dueno);
-        } else {
-            titulo = "<gradient:#ffd36e:#ff9a3c><bold>" + nombre + "</bold></gradient>";
-            sub = "<gray>Terreno de <white>" + Menu.esc(dueno) + (c.isPvpEnabled() ? " <dark_gray>· <red>PvP activo" : "");
-        }
-        p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(sub), TIEMPOS));
-        if (!c.isOwner(id)) p.playSound(p.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.2f);
+        if (c == null || c.isEnterTitleEnabled()) return; // el dueño puso títulos propios en Ajustes
+        mostrarTitulo(e.getPlayer(), c);
+        if (!c.isOwner(e.getPlayer().getUniqueId()))
+            e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.2f);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -680,8 +755,9 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (!e.isToWilderness()) return; // si pasa a otro terreno, lo muestra el título de entrada
         ClaimProfile c = e.getProfile();
         if (c == null || c.isEnterTitleEnabled()) return;
+        boolean fuente = conPack.contains(e.getPlayer().getUniqueId());
         e.getPlayer().showTitle(net.kyori.adventure.title.Title.title(net.kyori.adventure.text.Component.empty(),
-                Menu.MM.deserialize("<gray>Saliste de <white>" + Menu.esc(c.getName()) + " <dark_gray>· <green>Zona libre"), TIEMPOS));
+                Menu.MM.deserialize((fuente ? "<font:3y33:texto>" : "") + "<gray>Zona libre"), TIEMPOS));
     }
 
     // ---------------- máximo de chunks por terreno
@@ -827,6 +903,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public void alSalir(PlayerQuitEvent e) {
         cancelarEspera(e.getPlayer().getUniqueId());
         compraPendiente.remove(e.getPlayer().getUniqueId());
-        esperandoNombre.remove(e.getPlayer().getUniqueId());
+        esperandoTexto.remove(e.getPlayer().getUniqueId());
+        conPack.remove(e.getPlayer().getUniqueId());
     }
 }
