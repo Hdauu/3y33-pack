@@ -690,8 +690,12 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     }
 
     // ---------------- títulos al entrar y salir de un terreno
-    private static final net.kyori.adventure.title.Title.Times TIEMPOS = net.kyori.adventure.title.Title.Times.times(
-            java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1600), java.time.Duration.ofMillis(450));
+    private net.kyori.adventure.title.Title.Times tiempos() {
+        return net.kyori.adventure.title.Title.Times.times(
+                java.time.Duration.ofMillis(getConfig().getLong("titulos.aparecer-ms", 400)),
+                java.time.Duration.ofMillis(getConfig().getLong("titulos.duracion-ms", 3500)),
+                java.time.Duration.ofMillis(getConfig().getLong("titulos.desaparecer-ms", 900)));
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void alEstadoPack(org.bukkit.event.player.PlayerResourcePackStatusEvent e) {
@@ -736,7 +740,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (!c.isOwner(id) && c.isPvpEnabled()) sub += " <red>· PvP";
         String titulo = fTit + "<gradient:" + claro + ":" + col + ">" + nombre + "</gradient>";
         String subtitulo = fSub + "<color:" + aclarar(col, 0.7) + ">" + sub;
-        p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(subtitulo), TIEMPOS));
+        p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(subtitulo), tiempos()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -757,7 +761,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (c == null || c.isEnterTitleEnabled()) return;
         boolean fuente = conPack.contains(e.getPlayer().getUniqueId());
         e.getPlayer().showTitle(net.kyori.adventure.title.Title.title(net.kyori.adventure.text.Component.empty(),
-                Menu.MM.deserialize((fuente ? "<font:3y33:texto>" : "") + "<gray>Zona libre"), TIEMPOS));
+                Menu.MM.deserialize((fuente ? "<font:3y33:texto>" : "") + "<gray>Zona libre"), tiempos()));
     }
 
     // ---------------- máximo de chunks por terreno
