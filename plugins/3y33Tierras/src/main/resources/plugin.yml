@@ -1,0 +1,29 @@
+name: 3y33Tierras
+version: 1.0.0
+main: ar.com.tresyetres.tierras.Tierras
+api-version: '1.21'
+author: 3y33 SMP
+description: Extras de terrenos para LandClaimPlugin (compra de chunks, mobs, cooldown de teletransportes)
+depend: [LandClaimPlugin]
+softdepend: [Vault, PlaceholderAPI]
+
+commands:
+  tierra:
+    description: Reclamá y administrá tus terrenos
+    usage: /tierra [comprar|info|crear|punto|ir|mobs|animales|menu|ayuda]
+    permission: tierras.usar
+  tierras:
+    description: Lista de tus terrenos
+    aliases: [terrenos]
+    permission: tierras.usar
+  tierrasadmin:
+    description: Administración de 3y33Tierras
+    permission: tierras.admin
+
+permissions:
+  tierras.usar:
+    default: true
+  tierras.admin:
+    default: op
+  tierras.bypass.cooldown:
+    default: op
