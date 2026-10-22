@@ -176,6 +176,13 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         return max;
     }
 
+    /** Máximo de chunks por terreno: el cupo total repartido en partes iguales entre los terrenos permitidos. */
+    int maxPorTerreno(Player p) {
+        int limite = api.getClaimLimit(p);
+        if (limite >= 1_000_000) return limite;
+        return Math.max(1, limite / Math.max(1, maxTerrenos(p)));
+    }
+
     int terrenosDe(UUID id) {
         return api.getClaimsByOwner(id).size();
     }
@@ -273,7 +280,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         p.sendMessage(color("&8&m                                        "));
         p.sendMessage(color("&4&l3y33 &8» &fTus terrenos"));
         p.sendMessage(color("&7Chunks: &a" + usados + "&8/&a" + limite + " &8(&7te quedan &f" + Math.max(0, limite - usados) + "&8)"));
-        p.sendMessage(color("&7Terrenos: &a" + terrenosDe(id) + "&8/&a" + maxTerrenos(p)));
+        p.sendMessage(color("&7Terrenos: &a" + terrenosDe(id) + "&8/&a" + maxTerrenos(p) + " &8(&7hasta &f" + maxPorTerreno(p) + " &7chunks cada uno&8)"));
         p.sendMessage(color("&7Chunks comprados: &f" + comprados(id) + " &8· &7el próximo cuesta &6" + plata(precioSiguiente(id))));
         ClaimProfile aca = api.getClaimAt(p.getLocation());
         if (aca != null) {
@@ -639,6 +646,48 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         }
     }
 
+    // ---------------- máximo de chunks por terreno
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alReclamar(org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent e) {
+        ClaimProfile perfil = e.getProfile();
+        if (perfil == null) return;
+        Player dueno = Bukkit.getPlayer(perfil.getOwnerId());
+        if (dueno == null || dueno.hasPermission("landclaim.admin")) return;
+        int max = maxPorTerreno(dueno);
+        if (perfil.getOwnedChunks().size() >= max) {
+            e.setCancelled(true);
+            Player quien = e.getCreatorId() == null ? dueno : Bukkit.getPlayer(e.getCreatorId());
+            if (quien != null) {
+                msg(quien, "&c" + perfil.getName() + " ya tiene el máximo de &f" + max + " chunks&c.");
+                quien.sendMessage(color("&7Tu cupo de &f" + api.getClaimLimit(dueno) + " &7chunks se reparte entre tus &f"
+                        + maxTerrenos(dueno) + " &7terrenos. Comprá más con &f/tierra comprar&7."));
+            }
+        }
+    }
+
+    // ---------------- redirigir los menús principales de LandClaimPlugin a los nuestros
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void alAbrirMenu(org.bukkit.event.inventory.InventoryOpenEvent e) {
+        if (!(e.getPlayer() instanceof Player p)) return;
+        Object holder = e.getInventory().getHolder();
+        if (holder == null || !holder.getClass().getName().startsWith("org.ayosynk")) return;
+        String titulo = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(e.getView().title());
+        if (titulo.startsWith("Menú » ")) {
+            e.setCancelled(true);
+            String nombre = titulo.substring("Menú » ".length());
+            ClaimProfile perfil = api.getClaimByName(nombre);
+            if (perfil == null) perfil = api.getClaimAt(p.getLocation());
+            final ClaimProfile fp = perfil;
+            Bukkit.getScheduler().runTask(this, () -> {
+                if (fp != null) menus.abrirPanel(p, fp);
+                else menus.abrirHub(p);
+            });
+        } else if (titulo.equals("Lista de terrenos")) {
+            e.setCancelled(true);
+            Bukkit.getScheduler().runTask(this, () -> menus.abrirHub(p));
+        }
+    }
+
     // ---------------- menú de naturaleza
     @EventHandler(priority = EventPriority.HIGHEST)
     public void alClickMenu(org.bukkit.event.inventory.InventoryClickEvent e) {
@@ -648,7 +697,11 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (e.getClickedInventory() != e.getInventory()) return;
         int slot = e.getRawSlot();
         if (slot == MenuFlags.SLOT_CERRAR) {
-            Bukkit.getScheduler().runTask(this, (Runnable) p::closeInventory);
+            ClaimProfile perfil = api.getClaimById(menu.perfil);
+            Bukkit.getScheduler().runTask(this, () -> {
+                if (perfil != null) menus.abrirPanel(p, perfil);
+                else p.closeInventory();
+            });
             return;
         }
         Flag[] flags = Flag.values();
