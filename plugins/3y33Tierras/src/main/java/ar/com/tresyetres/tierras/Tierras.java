@@ -64,6 +64,8 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (economy == null) getLogger().warning("No se encontró economía de Vault: /tierra comprar no va a funcionar.");
 
         getServer().getPluginManager().registerEvents(this, this);
+        // Cada 3 segundos saca los monstruos naturales que entraron caminando a terrenos con monstruos apagados
+        getServer().getScheduler().runTaskTimer(this, this::limpiarMonstruos, 60L, 60L);
         Objects.requireNonNull(getCommand("tierra")).setExecutor(this);
         Objects.requireNonNull(getCommand("tierra")).setTabCompleter(this);
         Objects.requireNonNull(getCommand("tierras")).setExecutor(this);
@@ -190,7 +192,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             msg(sender, "&cSolo jugadores.");
             return true;
         }
-        if (nombre.equals("tierras")) {
+        if (nombre.equals("tierras") && args.length == 0) {
             p.performCommand("claim profiles");
             return true;
         }
@@ -232,7 +234,10 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             case "borrar", "liberar" -> p.performCommand("unclaim");
             case "mapa" -> p.performCommand("claim map");
             case "ayuda", "help" -> ayuda(p);
-            default -> p.performCommand("claim " + String.join(" ", args));
+            default -> {
+                if (SUBS_LCP.contains(sub)) p.performCommand("claim " + String.join(" ", args));
+                else ayuda(p);
+            }
         }
         return true;
     }
@@ -411,10 +416,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void alAparecer(CreatureSpawnEvent e) {
         CreatureSpawnEvent.SpawnReason r = e.getSpawnReason();
-        boolean natural = r == CreatureSpawnEvent.SpawnReason.NATURAL || r == CreatureSpawnEvent.SpawnReason.REINFORCEMENTS
-                || r == CreatureSpawnEvent.SpawnReason.PATROL || r == CreatureSpawnEvent.SpawnReason.JOCKEY
-                || r == CreatureSpawnEvent.SpawnReason.MOUNT || r == CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
-        if (!natural) return;
+        if (!NATURALES.contains(r) && !HUEVOS.contains(r)) return;
         Flag f;
         if (e.getEntity() instanceof org.bukkit.entity.Phantom) f = Flag.PHANTOMS;
         else if (e.getEntity() instanceof org.bukkit.entity.Enemy) f = Flag.MONSTRUOS;
@@ -512,6 +514,31 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (origen.getWorld() != e.getTo().getWorld() || origen.distanceSquared(e.getTo()) > 0.25) {
             cancelarEspera(id);
             e.getPlayer().sendTitle("", color("&cTeletransporte cancelado"), 0, 25, 10);
+        }
+    }
+
+    static final Set<CreatureSpawnEvent.SpawnReason> NATURALES = EnumSet.of(
+            CreatureSpawnEvent.SpawnReason.NATURAL, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS,
+            CreatureSpawnEvent.SpawnReason.PATROL, CreatureSpawnEvent.SpawnReason.JOCKEY,
+            CreatureSpawnEvent.SpawnReason.MOUNT, CreatureSpawnEvent.SpawnReason.CHUNK_GEN,
+            CreatureSpawnEvent.SpawnReason.VILLAGE_INVASION, CreatureSpawnEvent.SpawnReason.RAID);
+    static final Set<CreatureSpawnEvent.SpawnReason> HUEVOS = EnumSet.of(
+            CreatureSpawnEvent.SpawnReason.SPAWNER_EGG, CreatureSpawnEvent.SpawnReason.DISPENSE_EGG);
+    static final Set<String> SUBS_LCP = Set.of("radius", "profiles", "create", "auto", "map", "minimap", "menu", "info",
+            "visible", "toggle", "visualization", "notify", "chatnotify", "rename", "color", "unstuck", "abandon", "pvp",
+            "member", "trust", "ally", "accept", "deny", "setwarp", "delwarp", "warp", "warps", "publicwarps", "ban",
+            "unban", "banlist", "leave", "admin", "reload");
+
+    private void limpiarMonstruos() {
+        for (org.bukkit.World w : getServer().getWorlds()) {
+            for (org.bukkit.entity.LivingEntity le : w.getLivingEntities()) {
+                if (!(le instanceof org.bukkit.entity.Enemy) || le.customName() != null || !le.getRemoveWhenFarAway()) continue;
+                if (!NATURALES.contains(le.getEntitySpawnReason())) continue;
+                ClaimProfile perfil = api.getClaimAt(le.getLocation());
+                if (perfil == null) continue;
+                Flag f = le instanceof org.bukkit.entity.Phantom ? Flag.PHANTOMS : Flag.MONSTRUOS;
+                if (!flag(perfil, f)) le.remove();
+            }
         }
     }
 
