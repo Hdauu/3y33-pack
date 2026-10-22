@@ -36,6 +36,8 @@ import java.util.*;
 public final class Tierras extends JavaPlugin implements Listener, TabCompleter {
 
     private LandClaimAPI api;
+    private MenusTerrenos menus;
+    private final Set<UUID> esperandoNombre = new HashSet<>();
     private Economy economy;
 
     private File dataFile;
@@ -54,6 +56,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public void onEnable() {
         saveDefaultConfig();
         api = LandClaimAPI.getInstance();
+        menus = new MenusTerrenos(this);
         dataFile = new File(getDataFolder(), "terrenos.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
 
@@ -193,7 +196,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             return true;
         }
         if (nombre.equals("tierras") && args.length == 0) {
-            p.performCommand("claim profiles");
+            menus.abrirHub(p);
             return true;
         }
         if (args.length == 0) {
@@ -229,8 +232,13 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             case "flags", "naturaleza", "opciones" -> abrirFlags(p);
             case "mobs", "monstruos" -> alternarMobs(p, true);
             case "animales" -> alternarMobs(p, false);
-            case "menu", "menú" -> p.performCommand("claim menu");
-            case "lista", "terrenos" -> p.performCommand("claim profiles");
+            case "menu", "menú" -> {
+                ClaimProfile aca = api.getClaimAt(p.getLocation());
+                if (aca != null && (aca.isOwner(p.getUniqueId()) || aca.isMember(p.getUniqueId()))) menus.abrirPanel(p, aca);
+                else menus.abrirHub(p);
+            }
+            case "lista", "terrenos" -> menus.abrirHub(p);
+            case "comprarmenu", "tienda" -> menus.abrirCompra(p);
             case "borrar", "liberar" -> p.performCommand("unclaim");
             case "mapa" -> p.performCommand("claim map");
             case "ayuda", "help" -> ayuda(p);
@@ -246,7 +254,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         p.sendMessage(color("&8&m                                        "));
         p.sendMessage(color("&4&l3y33 &8» &fTerrenos"));
         p.sendMessage(color("&e/tierra &8» &7reclama el chunk donde estás"));
-        p.sendMessage(color("&e/tierras &8» &7tus terrenos (elegí en cuál sumar chunks)"));
+        p.sendMessage(color("&e/tierras &8» &7menú principal: tus terrenos, chunks y opciones"));
         p.sendMessage(color("&e/tierra menu &8» &7miembros, permisos y ajustes"));
         p.sendMessage(color("&e/tierra crear <nombre> &8» &7nuevo terreno (ej. una granja)"));
         p.sendMessage(color("&e/tierra punto <nombre> &8» &7guarda un punto de teletransporte"));
@@ -336,6 +344,87 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                     + " &7chunks. El próximo cuesta &6" + plata(precioSiguiente(id)) + "&7.");
             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.4f);
         }));
+    }
+
+    double saldo(Player p) {
+        return economy == null ? 0 : economy.getBalance(p);
+    }
+
+    /** Compra desde el menú (el click ya es la confirmación). */
+    void comprarDirecto(Player p, int cantidad) {
+        if (!getConfig().getBoolean("compra.habilitada", true) || economy == null) {
+            msg(p, "&cLa compra de chunks no está disponible.");
+            return;
+        }
+        UUID id = p.getUniqueId();
+        int max = getConfig().getInt("compra.maximo-comprados", 200);
+        if (comprados(id) + cantidad > max) {
+            msg(p, "&cLlegaste al máximo de chunks comprados (&f" + max + "&c).");
+            return;
+        }
+        double total = precioDe(id, cantidad);
+        if (economy.getBalance(p) < total) {
+            msg(p, "&cNo te alcanza: te faltan &6" + plata(total - economy.getBalance(p)) + "&c.");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
+            return;
+        }
+        EconomyResponse r = economy.withdrawPlayer(p, total);
+        if (!r.transactionSuccess()) {
+            msg(p, "&cNo se pudo cobrar: " + r.errorMessage);
+            return;
+        }
+        data.set("jugadores." + id + ".comprados", comprados(id) + cantidad);
+        guardarDatos();
+        api.addBonusBlocks(id, cantidad);
+        msg(p, "&a¡Compraste " + cantidad + (cantidad == 1 ? " chunk" : " chunks") + " por &6" + plata(total) + "&a!");
+        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.4f);
+    }
+
+    void pedirNombre(Player p) {
+        if (terrenosDe(p.getUniqueId()) >= maxTerrenos(p)) {
+            msg(p, "&cYa tenés el máximo de terrenos de tu rango (&f" + maxTerrenos(p) + "&c).");
+            return;
+        }
+        esperandoNombre.add(p.getUniqueId());
+        p.sendTitle(color("&a&lNuevo terreno"), color("&7Escribí el nombre en el chat"), 5, 60, 10);
+        msg(p, "&7Escribí el nombre del terreno en el chat &8(&7o &fcancelar&8)&7.");
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    @SuppressWarnings("deprecation")
+    public void alEscribir(org.bukkit.event.player.AsyncPlayerChatEvent e) {
+        Player p = e.getPlayer();
+        if (!esperandoNombre.remove(p.getUniqueId())) return;
+        e.setCancelled(true);
+        String nombre = e.getMessage().trim();
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (nombre.equalsIgnoreCase("cancelar")) {
+                msg(p, "&7Cancelado.");
+                return;
+            }
+            if (!nombre.matches("[A-Za-z0-9ÁÉÍÓÚáéíóúÑñ ]{3,32}")) {
+                msg(p, "&cEl nombre tiene que tener entre 3 y 32 letras o números.");
+                return;
+            }
+            p.performCommand("claim create " + nombre);
+        });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void alClickMenuGenerico(org.bukkit.event.inventory.InventoryClickEvent e) {
+        if (!(e.getInventory().getHolder() instanceof Menu menu)) return;
+        e.setCancelled(true);
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        if (e.getClickedInventory() != e.getInventory()) return;
+        var accion = menu.acciones.get(e.getRawSlot());
+        if (accion == null) return;
+        p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.4f, 1.3f);
+        Bukkit.getScheduler().runTask(this, () -> accion.accept(p, e.getClick()));
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void alArrastrarMenuGenerico(org.bukkit.event.inventory.InventoryDragEvent e) {
+        if (e.getInventory().getHolder() instanceof Menu) e.setCancelled(true);
     }
 
     private void alternarMobs(Player p, boolean monstruos) {
@@ -435,9 +524,17 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         Location destino = e.getTo();
         if (destino == null || !esPunto(destino)) return;
         if (p.hasPermission("tierras.bypass.cooldown")) return;
-
         e.setCancelled(true);
+        iniciarTp(p, destino);
+    }
+
+    /** Teletransporte con cooldown y espera sin moverse. */
+    void iniciarTp(Player p, Location destino) {
         UUID id = p.getUniqueId();
+        if (p.hasPermission("tierras.bypass.cooldown")) {
+            ejecutarTp(p, destino.clone());
+            return;
+        }
         long ahora = System.currentTimeMillis();
         long hasta = cooldowns.getOrDefault(id, 0L);
         if (ahora < hasta) {
@@ -639,5 +736,6 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public void alSalir(PlayerQuitEvent e) {
         cancelarEspera(e.getPlayer().getUniqueId());
         compraPendiente.remove(e.getPlayer().getUniqueId());
+        esperandoNombre.remove(e.getPlayer().getUniqueId());
     }
 }
