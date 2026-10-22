@@ -1,5 +1,5 @@
 name: 3y33Tierras
-version: 1.0.0
+version: 1.1.0
 main: ar.com.tresyetres.tierras.Tierras
 api-version: '1.21'
 author: 3y33 SMP
@@ -10,7 +10,7 @@ softdepend: [Vault, PlaceholderAPI]
 commands:
   tierra:
     description: Reclamá y administrá tus terrenos
-    usage: /tierra [comprar|info|crear|punto|ir|mobs|animales|menu|ayuda]
+    usage: /tierra [comprar|info|crear|punto|ir|flags|menu|ayuda]
     permission: tierras.usar
   tierras:
     description: Lista de tus terrenos

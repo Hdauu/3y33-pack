@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Animals;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -109,12 +108,35 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         }
     }
 
+    boolean flag(ClaimProfile p, Flag f) {
+        return data.getBoolean("terrenos." + p.getProfileId() + "." + f.clave, getConfig().getBoolean("flags-por-defecto." + f.clave));
+    }
+
+    void setFlag(ClaimProfile p, Flag f, boolean v) {
+        data.set("terrenos." + p.getProfileId() + "." + f.clave, v);
+        guardarDatos();
+    }
+
     boolean monstruos(ClaimProfile p) {
-        return data.getBoolean("terrenos." + p.getProfileId() + ".monstruos", getConfig().getBoolean("mobs-por-defecto.monstruos", true));
+        return flag(p, Flag.MONSTRUOS);
     }
 
     boolean animales(ClaimProfile p) {
-        return data.getBoolean("terrenos." + p.getProfileId() + ".animales", getConfig().getBoolean("mobs-por-defecto.animales", true));
+        return flag(p, Flag.ANIMALES);
+    }
+
+    void abrirFlags(Player p) {
+        ClaimProfile perfil = api.getClaimAt(p.getLocation());
+        if (perfil == null) {
+            msg(p, "&cParate dentro de tu terreno para ver sus opciones.");
+            return;
+        }
+        if (!puedeAdministrar(p, perfil)) {
+            msg(p, "&cNo podés cambiar las opciones de este terreno.");
+            return;
+        }
+        p.openInventory(new MenuFlags(this, perfil).getInventory());
+        p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
     }
 
     int comprados(UUID id) {
@@ -202,6 +224,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 }
                 p.performCommand("claim warp " + resto);
             }
+            case "flags", "naturaleza", "opciones" -> abrirFlags(p);
             case "mobs", "monstruos" -> alternarMobs(p, true);
             case "animales" -> alternarMobs(p, false);
             case "menu", "menú" -> p.performCommand("claim menu");
@@ -224,7 +247,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         p.sendMessage(color("&e/tierra punto <nombre> &8» &7guarda un punto de teletransporte"));
         p.sendMessage(color("&e/tierra ir <nombre> &8» &7te lleva a un punto"));
         p.sendMessage(color("&e/tierra comprar [cantidad] &8» &7comprá chunks extra"));
-        p.sendMessage(color("&e/tierra mobs &8/ &eanimales &8» &7apaga o prende los mobs"));
+        p.sendMessage(color("&e/tierra flags &8» &7mobs, fuego, líquidos y más del terreno"));
         p.sendMessage(color("&e/tierra info &8» &7tus chunks y terrenos"));
         p.sendMessage(color("&e/tierra liberar &8» &7libera el chunk donde estás"));
         p.sendMessage(color("&8&m                                        "));
@@ -320,10 +343,9 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             msg(p, "&cNo podés cambiar esto en este terreno.");
             return;
         }
-        String clave = "terrenos." + perfil.getProfileId() + (monstruos ? ".monstruos" : ".animales");
-        boolean nuevo = !(monstruos ? monstruos(perfil) : animales(perfil));
-        data.set(clave, nuevo);
-        guardarDatos();
+        Flag f = monstruos ? Flag.MONSTRUOS : Flag.ANIMALES;
+        boolean nuevo = !flag(perfil, f);
+        setFlag(perfil, f, nuevo);
         msg(p, "&7" + (monstruos ? "Monstruos" : "Animales") + " en &e" + perfil.getName() + "&7: "
                 + (nuevo ? "&aaparecen" : "&cno aparecen más") + "&7.");
     }
@@ -353,7 +375,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("tierra")) return List.of();
         if (args.length == 1) {
-            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
+            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "flags", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
             String a = args[0].toLowerCase(Locale.ROOT);
             return subs.stream().filter(x -> x.startsWith(a)).toList();
         }
@@ -393,13 +415,13 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 || r == CreatureSpawnEvent.SpawnReason.PATROL || r == CreatureSpawnEvent.SpawnReason.JOCKEY
                 || r == CreatureSpawnEvent.SpawnReason.MOUNT || r == CreatureSpawnEvent.SpawnReason.CHUNK_GEN;
         if (!natural) return;
-        boolean esMonstruo = e.getEntity() instanceof Monster;
-        boolean esAnimal = e.getEntity() instanceof Animals;
-        if (!esMonstruo && !esAnimal) return;
+        Flag f;
+        if (e.getEntity() instanceof org.bukkit.entity.Phantom) f = Flag.PHANTOMS;
+        else if (e.getEntity() instanceof org.bukkit.entity.Enemy) f = Flag.MONSTRUOS;
+        else if (e.getEntity() instanceof Animals) f = Flag.ANIMALES;
+        else return;
         ClaimProfile perfil = api.getClaimAt(e.getLocation());
-        if (perfil == null) return;
-        if (esMonstruo && !monstruos(perfil)) e.setCancelled(true);
-        else if (esAnimal && !animales(perfil)) e.setCancelled(true);
+        if (perfil != null && !flag(perfil, f)) e.setCancelled(true);
     }
 
     // Espera y cooldown al ir a los puntos de los terrenos
@@ -491,6 +513,99 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             cancelarEspera(id);
             e.getPlayer().sendTitle("", color("&cTeletransporte cancelado"), 0, 25, 10);
         }
+    }
+
+    // ---------------- menú de naturaleza
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void alClickMenu(org.bukkit.event.inventory.InventoryClickEvent e) {
+        if (!(e.getInventory().getHolder() instanceof MenuFlags menu)) return;
+        e.setCancelled(true);
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        if (e.getClickedInventory() != e.getInventory()) return;
+        int slot = e.getRawSlot();
+        if (slot == MenuFlags.SLOT_CERRAR) {
+            Bukkit.getScheduler().runTask(this, (Runnable) p::closeInventory);
+            return;
+        }
+        Flag[] flags = Flag.values();
+        for (int i = 0; i < flags.length && i < MenuFlags.SLOTS.length; i++) {
+            if (MenuFlags.SLOTS[i] != slot) continue;
+            ClaimProfile perfil = api.getClaimById(menu.perfil);
+            if (perfil == null || !puedeAdministrar(p, perfil)) {
+                Bukkit.getScheduler().runTask(this, (Runnable) p::closeInventory);
+                return;
+            }
+            boolean nuevo = !flag(perfil, flags[i]);
+            setFlag(perfil, flags[i], nuevo);
+            menu.dibujar(this, perfil);
+            p.playSound(p.getLocation(), nuevo ? Sound.BLOCK_NOTE_BLOCK_PLING : Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, nuevo ? 1.6f : 0.8f);
+            return;
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void alArrastrarMenu(org.bukkit.event.inventory.InventoryDragEvent e) {
+        if (e.getInventory().getHolder() instanceof MenuFlags) e.setCancelled(true);
+    }
+
+    private ClaimProfile perfilEn(org.bukkit.block.Block b) {
+        return api.getClaimAt(b.getLocation());
+    }
+
+    // ---------------- fuego
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alPropagar(org.bukkit.event.block.BlockSpreadEvent e) {
+        if (e.getSource().getType() != org.bukkit.Material.FIRE && e.getSource().getType() != org.bukkit.Material.SOUL_FIRE) return;
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.FUEGO)) e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alQuemar(org.bukkit.event.block.BlockBurnEvent e) {
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.FUEGO)) e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alEncender(org.bukkit.event.block.BlockIgniteEvent e) {
+        var c = e.getCause();
+        if (c != org.bukkit.event.block.BlockIgniteEvent.IgniteCause.SPREAD && c != org.bukkit.event.block.BlockIgniteEvent.IgniteCause.LAVA
+                && c != org.bukkit.event.block.BlockIgniteEvent.IgniteCause.LIGHTNING) return;
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.FUEGO)) e.setCancelled(true);
+    }
+
+    // ---------------- líquidos que entran desde afuera
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alFluir(org.bukkit.event.block.BlockFromToEvent e) {
+        org.bukkit.block.Block de = e.getBlock(), a = e.getToBlock();
+        if ((de.getX() >> 4) == (a.getX() >> 4) && (de.getZ() >> 4) == (a.getZ() >> 4)) return;
+        ClaimProfile destino = perfilEn(a);
+        if (destino == null || flag(destino, Flag.LIQUIDOS)) return;
+        ClaimProfile origen = perfilEn(de);
+        if (origen == null || !origen.getProfileId().equals(destino.getProfileId())) e.setCancelled(true);
+    }
+
+    // ---------------- cultivos pisados por mobs
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alPisar(org.bukkit.event.entity.EntityInteractEvent e) {
+        if (e.getBlock().getType() != org.bukkit.Material.FARMLAND) return;
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.CULTIVOS)) e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alCambiarBloque(org.bukkit.event.entity.EntityChangeBlockEvent e) {
+        if (e.getEntity() instanceof Player || e.getBlock().getType() != org.bukkit.Material.FARMLAND) return;
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.CULTIVOS)) e.setCancelled(true);
+    }
+
+    // ---------------- hojas
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void alCaerHojas(org.bukkit.event.block.LeavesDecayEvent e) {
+        ClaimProfile p = perfilEn(e.getBlock());
+        if (p != null && !flag(p, Flag.HOJAS)) e.setCancelled(true);
     }
 
     @EventHandler
