@@ -32,6 +32,8 @@ flags-por-defecto:
 # Títulos al entrar y salir de un terreno (si el dueño configura títulos propios en Ajustes, se usan esos)
 titulos:
   habilitados: true
+  # aviso al salir de un terreno
+  mostrar-salida: false
   # en milisegundos (1000 = 1 segundo)
   aparecer-ms: 400
   duracion-ms: 3500
