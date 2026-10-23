@@ -38,3 +38,14 @@ titulos:
   aparecer-ms: 400
   duracion-ms: 3500
   desaparecer-ms: 900
+
+# Stickers exclusivos: nombre -> rango mínimo (permiso tierras.stickers.<rango>). Los que no están acá son para todos.
+stickers-por-rango:
+  fuego: sheriff
+  rayo: sheriff
+  calavera: sheriff
+  diamante: supreme
+  gema: supreme
+  escudo: supreme
+  corona: global
+  trofeo: global

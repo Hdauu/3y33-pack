@@ -433,7 +433,25 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             msg(p, "&cMáximo 4 stickers por mensaje.");
             return null;
         }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(":([a-z]+):").matcher(limpio);
+        while (m.find()) {
+            if (Stickers.TODOS.containsKey(m.group(1)) && !puedeSticker(p, m.group(1))) {
+                msg(p, "&cEl sticker &f:" + m.group(1) + ": &ces para " + rangoSticker(m.group(1)) + "&c.");
+                return null;
+            }
+        }
         return limpio;
+    }
+
+    /** Rango mínimo para usar un sticker ("" = todos). */
+    String rangoSticker(String nombre) {
+        String r = getConfig().getString("stickers-por-rango." + nombre, "");
+        return r == null || r.isBlank() ? "" : r.substring(0, 1).toUpperCase() + r.substring(1) + " o más";
+    }
+
+    boolean puedeSticker(Player p, String nombre) {
+        String r = getConfig().getString("stickers-por-rango." + nombre, "");
+        return r == null || r.isBlank() || p.hasPermission("tierras.stickers." + r) || p.hasPermission("tierras.admin");
     }
 
     String icono(ClaimProfile c) {
@@ -456,10 +474,12 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         net.kyori.adventure.text.Component linea = net.kyori.adventure.text.Component.empty();
         int i = 0;
         for (Stickers.Sticker st : Stickers.TODOS.values()) {
-            String mm = Stickers.dibujar(st, pack, false) + " <gray>:" + st.nombre() + ":   ";
+            boolean puede = puedeSticker(p, st.nombre());
+            String mm = Stickers.dibujar(st, pack, false) + (puede ? " <gray>:" : " <dark_gray>:") + st.nombre() + ":   ";
             linea = linea.append(Menu.MM.deserialize(mm)
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/tierra saludo :" + st.nombre() + ": "))
-                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(Menu.MM.deserialize("<yellow>Click para escribirlo"))));
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(Menu.MM.deserialize(puede ? "<yellow>Click para escribirlo"
+                            : "<red>Solo para " + rangoSticker(st.nombre())))));
             if (++i % 4 == 0) {
                 p.sendMessage(linea);
                 linea = net.kyori.adventure.text.Component.empty();
