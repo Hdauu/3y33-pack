@@ -48,32 +48,19 @@ reglas:
       <click:open_url:'https://ds.3y33.com.ar'><dark_red><underlined>ds.3y33.com.ar</underlined></dark_red></click>
 
 # ---------------------------------------------------------------- anuncios
+# Una línea, sin sonido. <prefijo> = el prefijo de arriba, <mensaje> = el anuncio.
 anuncios:
   habilitados: true
-  # minutos entre anuncio y anuncio
-  intervalo-minutos: 6
-  # true = en orden, false = al azar
-  en-orden: false
-  sonido: true
+  intervalo-minutos: 15
+  en-orden: true
+  sonido: false
+  formato: '<prefijo><mensaje>'
   lista:
-    - |-
-      <#E03131><bold>Menú</bold></#E03131>
-      <white>Todo lo del server está en <#FF6B6B><click:run_command:'/menu'><hover:show_text:'<gray>Click para abrir'><underlined>/menu</underlined></hover></click></#FF6B6B>.
-    - |-
-      <#E03131><bold>Discord</bold></#E03131>
-      <white>Sumate a nuestro Discord en <#FF6B6B><click:open_url:'https://ds.3y33.com.ar'><hover:show_text:'<gray>Click para abrir'><underlined>https://ds.3y33.com.ar</underlined></hover></click></#FF6B6B>!
-    - |-
-      <#E03131><bold>Misiones</bold></#E03131>
-      <white>Completá <#FF6B6B><click:run_command:'/misiones'><underlined>/misiones</underlined></click></#FF6B6B> para ganar plata y subir de nivel.
-    - |-
-      <#E03131><bold>Terrenos</bold></#E03131>
-      <white>Protegé tus cosas con <#FF6B6B><click:run_command:'/terrenos'><underlined>/terrenos</underlined></click></#FF6B6B>. Tenés chunks gratis para empezar.
-    - |-
-      <#E03131><bold>Rangos</bold></#E03131>
-      <white>Subí de nivel y desbloqueá <#FFAA00><bold>Sheriff</bold></#FFAA00>, <#55FFFF><bold>Supreme</bold></#55FFFF> y <#FFD24D><bold>Global</bold></#FFD24D>. Mirá <#FF6B6B><click:run_command:'/nivel'><underlined>/nivel</underlined></click></#FF6B6B>.
-    - |-
-      <#E03131><bold>Reglas</bold></#E03131>
-      <white>¿Viste a alguien rompiendo las <#FF6B6B><click:run_command:'/reglas'><underlined>/reglas</underlined></click></#FF6B6B>? Usá <#FF6B6B>/report</#FF6B6B>.
+    - "<gray>Todo lo del server está en <#FF6B6B><click:run_command:'/menu'><hover:show_text:'<gray>Click para abrir'>/menu</hover></click></#FF6B6B>."
+    - "<gray>Protegé lo tuyo con <#FF6B6B><click:run_command:'/terrenos'><hover:show_text:'<gray>Click para abrir'>/terrenos</hover></click></#FF6B6B>: tenés chunks gratis."
+    - "<gray>Completá <#FF6B6B><click:run_command:'/misiones'><hover:show_text:'<gray>Click para abrir'>/misiones</hover></click></#FF6B6B> y subí de nivel para ganar rangos."
+    - "<gray>Sumate al Discord: <#FF6B6B><click:open_url:'https://ds.3y33.com.ar'><hover:show_text:'<gray>Click para abrir'>ds.3y33.com.ar</hover></click></#FF6B6B>"
+    - "<gray>¿Viste a alguien rompiendo las <#FF6B6B><click:run_command:'/reglas'>reglas</click></#FF6B6B>? Usá <#FF6B6B>/report</#FF6B6B>."
 
 # ---------------------------------------------------------------- reportes
 reportes:
