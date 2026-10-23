@@ -809,6 +809,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     @EventHandler(priority = EventPriority.MONITOR)
     public void alSalirTerreno(org.ayosynk.landClaimPlugin.api.event.PlayerLeaveClaimEvent e) {
         if (!getConfig().getBoolean("titulos.habilitados", true)) return;
+        if (!getConfig().getBoolean("titulos.mostrar-salida", false)) return;
         if (!e.isToWilderness()) return; // si pasa a otro terreno, lo muestra el título de entrada
         ClaimProfile c = e.getProfile();
         if (c == null || c.isEnterTitleEnabled()) return;
