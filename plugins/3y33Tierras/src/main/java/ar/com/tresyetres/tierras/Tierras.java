@@ -573,6 +573,25 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     }
 
     private boolean comandoAdmin(CommandSender s, String[] args) {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("zonas")) {
+            Map<String, String> encontrados = new TreeMap<>();
+            for (Map<?, ?> z : getConfig().getMapList("zonas-sin-terrenos")) {
+                org.bukkit.World w = Bukkit.getWorld(String.valueOf(z.get("mundo")));
+                if (w == null) continue;
+                int m = num(z.get("margen"));
+                int minX = Math.min(num(z.get("x1")), num(z.get("x2"))) - m, maxX = Math.max(num(z.get("x1")), num(z.get("x2"))) + m;
+                int minZ = Math.min(num(z.get("z1")), num(z.get("z2"))) - m, maxZ = Math.max(num(z.get("z1")), num(z.get("z2"))) + m;
+                for (int cx = minX >> 4; cx <= maxX >> 4; cx++)
+                    for (int cz = minZ >> 4; cz <= maxZ >> 4; cz++) {
+                        ClaimProfile c = api.getClaimAt(new Location(w, (cx << 4) + 8, 64, (cz << 4) + 8));
+                        if (c != null) encontrados.merge(c.getName() + " (" + Bukkit.getOfflinePlayer(c.getOwnerId()).getName() + ")",
+                                "chunk " + cx + "," + cz, (a, b) -> a);
+                    }
+            }
+            if (encontrados.isEmpty()) msg(s, "&aNo hay terrenos dentro de las zonas prohibidas.");
+            else encontrados.forEach((k, v) -> msg(s, "&cTerreno en zona prohibida: &f" + k + " &7(" + v + ")"));
+            return true;
+        }
         if (args.length >= 1 && args[0].equalsIgnoreCase("recargar")) {
             reloadConfig();
             msg(s, "&aConfiguración recargada.");
@@ -885,9 +904,35 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 Menu.MM.deserialize((fuente ? "<font:3y33:texto>" : "") + "<gray>Zona libre"), tiempos()));
     }
 
+    // ---------------- zonas donde no se pueden crear terrenos (spawn)
+    private boolean enZonaProhibida(String mundo, int cx, int cz) {
+        for (Map<?, ?> z : getConfig().getMapList("zonas-sin-terrenos")) {
+            if (!String.valueOf(z.get("mundo")).equals(mundo)) continue;
+            int margen = z.get("margen") instanceof Number n ? n.intValue() : 0;
+            int x1 = num(z.get("x1")), z1 = num(z.get("z1")), x2 = num(z.get("x2")), z2 = num(z.get("z2"));
+            int minX = Math.min(x1, x2) - margen, maxX = Math.max(x1, x2) + margen;
+            int minZ = Math.min(z1, z2) - margen, maxZ = Math.max(z1, z2) + margen;
+            int bx1 = cx << 4, bz1 = cz << 4, bx2 = bx1 + 15, bz2 = bz1 + 15;
+            if (bx2 >= minX && bx1 <= maxX && bz2 >= minZ && bz1 <= maxZ) return true;
+        }
+        return false;
+    }
+
+    private static int num(Object o) {
+        return o instanceof Number n ? n.intValue() : 0;
+    }
+
     // ---------------- máximo de chunks por terreno
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void alReclamar(org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent e) {
+        if (enZonaProhibida(e.getChunk().world(), e.getChunkX(), e.getChunkZ())) {
+            Player quien = e.getCreatorId() == null ? null : Bukkit.getPlayer(e.getCreatorId());
+            if (quien == null || !quien.hasPermission("landclaim.admin")) {
+                e.setCancelled(true);
+                if (quien != null) msg(quien, "&cAcá no se pueden crear terrenos: está muy cerca del spawn.");
+                return;
+            }
+        }
         ClaimProfile perfil = e.getProfile();
         if (perfil == null) return;
         Player dueno = Bukkit.getPlayer(perfil.getOwnerId());
