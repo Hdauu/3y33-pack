@@ -58,6 +58,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         saveDefaultConfig();
         api = LandClaimAPI.getInstance();
         menus = new MenusTerrenos(this);
+        Stickers.cargar(this);
         dataFile = new File(getDataFolder(), "terrenos.yml");
         data = YamlConfiguration.loadConfiguration(dataFile);
 
@@ -238,13 +239,14 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 p.performCommand("claim warp " + resto);
             }
             case "flags", "naturaleza", "opciones" -> abrirFlags(p);
+            case "stickers", "sticker", "emojis" -> listarStickers(p);
             case "saludo", "mensaje" -> {
                 ClaimProfile aca = api.getClaimAt(p.getLocation());
                 if (aca == null || !puedeAdministrar(p, aca)) {
                     msg(p, "&cParate dentro de tu terreno para cambiar su mensaje de entrada.");
                 } else if (args.length >= 2) {
-                    String limpio = resto.replaceAll("[<>&§]", "");
-                    if (limpio.length() > 40) limpio = limpio.substring(0, 40);
+                    String limpio = limpiarSaludo(p, resto);
+                    if (limpio == null) return true;
                     if (limpio.equalsIgnoreCase("borrar")) data.set("terrenos." + aca.getProfileId() + ".saludo", null);
                     else data.set("terrenos." + aca.getProfileId() + ".saludo", limpio);
                     guardarDatos();
@@ -283,6 +285,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         p.sendMessage(color("&e/tierra comprar [cantidad] &8» &7comprá chunks extra"));
         p.sendMessage(color("&e/tierra flags &8» &7mobs, fuego, líquidos y más del terreno"));
         p.sendMessage(color("&e/tierra saludo <texto> &8» &7mensaje que ven al entrar a tu terreno"));
+        p.sendMessage(color("&e/tierra stickers &8» &7íconos para usar en tu mensaje"));
         p.sendMessage(color("&e/tierra info &8» &7tus chunks y terrenos"));
         p.sendMessage(color("&e/tierra liberar &8» &7libera el chunk donde estás"));
         p.sendMessage(color("&8&m                                        "));
@@ -422,6 +425,51 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         msg(p, "&7Escribí " + que + " en el chat &8(&7o &fcancelar&8)&7.");
     }
 
+    /** Limpia el mensaje de un jugador: sin etiquetas ni colores, hasta 60 caracteres y 4 stickers. */
+    String limpiarSaludo(Player p, String txt) {
+        String limpio = txt.replaceAll("[<>&§\\\\]", "").trim();
+        if (limpio.length() > 60) limpio = limpio.substring(0, 60);
+        if (Stickers.contar(limpio) > 4) {
+            msg(p, "&cMáximo 4 stickers por mensaje.");
+            return null;
+        }
+        return limpio;
+    }
+
+    String icono(ClaimProfile c) {
+        return data.getString("terrenos." + c.getProfileId() + ".icono", "");
+    }
+
+    void setIcono(ClaimProfile c, String nombre) {
+        data.set("terrenos." + c.getProfileId() + ".icono", nombre == null || nombre.isEmpty() ? null : nombre);
+        guardarDatos();
+    }
+
+    boolean tienePack(Player p) {
+        return conPack.contains(p.getUniqueId());
+    }
+
+    void listarStickers(Player p) {
+        boolean pack = tienePack(p);
+        p.sendMessage(color("&8&m                                        "));
+        p.sendMessage(color("&4&l3y33 &8» &fStickers &7(click para usarlo en tu mensaje)"));
+        net.kyori.adventure.text.Component linea = net.kyori.adventure.text.Component.empty();
+        int i = 0;
+        for (Stickers.Sticker st : Stickers.TODOS.values()) {
+            String mm = Stickers.dibujar(st, pack, false) + " <gray>:" + st.nombre() + ":   ";
+            linea = linea.append(Menu.MM.deserialize(mm)
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/tierra saludo :" + st.nombre() + ": "))
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(Menu.MM.deserialize("<yellow>Click para escribirlo"))));
+            if (++i % 4 == 0) {
+                p.sendMessage(linea);
+                linea = net.kyori.adventure.text.Component.empty();
+            }
+        }
+        if (i % 4 != 0) p.sendMessage(linea);
+        p.sendMessage(color("&7Ejemplo: &f/tierra saludo :corona: Bienvenidos :corona:"));
+        p.sendMessage(color("&8&m                                        "));
+    }
+
     String saludo(ClaimProfile c) {
         return data.getString("terrenos." + c.getProfileId() + ".saludo", "");
     }
@@ -434,8 +482,8 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
                 msg(p, "&7Mensaje de entrada borrado.");
                 return;
             }
-            String limpio = txt.replaceAll("[<>&§]", "");
-            if (limpio.length() > 40) limpio = limpio.substring(0, 40);
+            String limpio = limpiarSaludo(p, txt);
+            if (limpio == null) return;
             data.set("terrenos." + c.getProfileId() + ".saludo", limpio);
             guardarDatos();
             msg(p, "&aListo. Al entrar a &e" + c.getName() + " &ase va a ver: &f" + limpio);
@@ -519,7 +567,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("tierra")) return List.of();
         if (args.length == 1) {
-            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "flags", "saludo", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
+            List<String> subs = List.of("comprar", "info", "crear", "punto", "ir", "flags", "saludo", "stickers", "mobs", "animales", "menu", "liberar", "mapa", "ayuda");
             String a = args[0].toLowerCase(Locale.ROOT);
             return subs.stream().filter(x -> x.startsWith(a)).toList();
         }
@@ -734,10 +782,15 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         String fSub = fuente ? "<font:3y33:texto>" : "";
         String saludo = saludo(c);
         String sub;
-        if (!saludo.isBlank()) sub = Menu.esc(saludo);
+        if (!saludo.isBlank()) sub = Stickers.procesar(saludo, fuente, false);
         else if (c.isOwner(id)) sub = "Tu terreno";
         else sub = "Terreno de " + Menu.esc(dueno == null ? "?" : dueno);
         if (!c.isOwner(id) && c.isPvpEnabled()) sub += " <red>· PvP";
+        Stickers.Sticker ic = Stickers.TODOS.get(icono(c));
+        if (ic != null) {
+            String d = Stickers.dibujar(ic, fuente, false);
+            sub = d + " " + sub + " " + d;
+        }
         String titulo = fTit + "<gradient:" + claro + ":" + col + ">" + nombre + "</gradient>";
         String subtitulo = fSub + "<color:" + aclarar(col, 0.7) + ">" + sub;
         p.showTitle(net.kyori.adventure.title.Title.title(Menu.MM.deserialize(titulo), Menu.MM.deserialize(subtitulo), tiempos()));

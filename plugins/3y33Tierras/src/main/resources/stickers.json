@@ -1,0 +1,82 @@
+{
+ "corazon": {
+  "char": "",
+  "fallback": "❤"
+ },
+ "estrella": {
+  "char": "",
+  "fallback": "★"
+ },
+ "espada": {
+  "char": "",
+  "fallback": "⚔"
+ },
+ "pico": {
+  "char": "",
+  "fallback": "⛏"
+ },
+ "fuego": {
+  "char": "",
+  "fallback": "✹"
+ },
+ "corona": {
+  "char": "",
+  "fallback": "♛"
+ },
+ "casa": {
+  "char": "",
+  "fallback": "⌂"
+ },
+ "flor": {
+  "char": "",
+  "fallback": "✿"
+ },
+ "calavera": {
+  "char": "",
+  "fallback": "☠"
+ },
+ "diamante": {
+  "char": "",
+  "fallback": "◆"
+ },
+ "nota": {
+  "char": "",
+  "fallback": "♪"
+ },
+ "hoja": {
+  "char": "",
+  "fallback": "☘"
+ },
+ "pez": {
+  "char": "",
+  "fallback": "≈"
+ },
+ "luna": {
+  "char": "",
+  "fallback": "☾"
+ },
+ "sol": {
+  "char": "",
+  "fallback": "☀"
+ },
+ "rayo": {
+  "char": "",
+  "fallback": "⚡"
+ },
+ "trofeo": {
+  "char": "",
+  "fallback": "♜"
+ },
+ "escudo": {
+  "char": "",
+  "fallback": "⛨"
+ },
+ "gema": {
+  "char": "",
+  "fallback": "◇"
+ },
+ "manzana": {
+  "char": "",
+  "fallback": "●"
+ }
+}

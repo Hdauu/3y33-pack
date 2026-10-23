@@ -260,11 +260,17 @@ final class MenusTerrenos {
             });
             m.poner(33, Menu.item(Material.OAK_HANGING_SIGN, Menu.g("#fff3bf", "#fcc419", "Mensaje de entrada"),
                     "<gray>Lo que ven los demás debajo", "<gray>del nombre al entrar.", "",
-                    pl.saludo(c).isBlank() ? "<dark_gray>Ahora: <white>Terreno de tu nombre" : "<dark_gray>Ahora: <white>" + Menu.esc(pl.saludo(c)),
+                    pl.saludo(c).isBlank() ? "<dark_gray>Ahora: <white>Terreno de tu nombre" : "<dark_gray>Ahora: <white>" + Stickers.procesar(pl.saludo(c), pl.tienePack(p), false),
+                    "<dark_gray>Stickers: <white>/tierra stickers",
                     "", "<yellow>▸ Click para cambiarlo"), (pp, ck) -> {
                 pp.closeInventory();
                 pl.pedirSaludo(pp, c);
             });
+            Stickers.Sticker ic = Stickers.TODOS.get(pl.icono(c));
+            m.poner(28, Menu.item(ic == null ? Material.ITEM_FRAME : ic.icono(), Menu.g("#e0aaff", "#9d4edd", "Ícono"),
+                    "<gray>Un sticker a los costados", "<gray>de tu mensaje de entrada.", "",
+                    "<dark_gray>Ahora: <white>" + (ic == null ? "ninguno" : ":" + ic.nombre() + ":"),
+                    "", "<yellow>▸ Click para elegir"), (pp, ck) -> abrirIconos(pp, c));
             m.poner(29, Menu.item(Material.BRUSH, Menu.g("#f783ac", "#d6336c", "Color del nombre"),
                     "<gray>El color del título de entrada", "<gray>y de los bordes del terreno.", "", "<yellow>▸ Click para elegir"),
                     (pp, ck) -> org.ayosynk.landClaimPlugin.gui.ChangeClaimColorGUI.open(pp, c, lcp));
@@ -291,6 +297,37 @@ final class MenusTerrenos {
 
     private static String sn(boolean b) {
         return b ? "<green>Sí" : "<red>No";
+    }
+
+    // ------------------------------------------------------------------ elegir ícono
+
+    void abrirIconos(Player p, ClaimProfile c) {
+        Menu m = new Menu(6, "<dark_gray>Ícono » " + Menu.esc(c.getName()));
+        m.fondo();
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+        String actual = pl.icono(c);
+        int i = 0;
+        for (Stickers.Sticker st : Stickers.TODOS.values()) {
+            if (i >= slots.length) break;
+            boolean es = st.nombre().equals(actual);
+            var it = Menu.item(st.icono(), Menu.g("#e0aaff", "#9d4edd", ":" + st.nombre() + ":"),
+                    "<gray>Se ve así: " + Stickers.dibujar(st, pl.tienePack(p), false),
+                    "", es ? "<green>✔ Elegido" : "<yellow>▸ Click para elegir");
+            m.poner(slots[i++], es ? Menu.brillo(it) : it, (pp, ck) -> {
+                pl.setIcono(c, st.nombre());
+                pl.mostrarTitulo(pp, c);
+                abrirPanel(pp, c);
+            });
+        }
+        m.poner(4, Menu.item(Material.BOOK, Menu.g("#e0aaff", "#9d4edd", "Stickers"),
+                "<gray>El ícono va a los dos costados", "<gray>del mensaje de entrada.", "",
+                "<gray>También podés escribirlos en el", "<gray>mensaje, ej. <white>:corazon:"), null);
+        m.poner(47, Menu.item(Material.BARRIER, "<red><bold>Sin ícono", "<gray>Saca el ícono del título"), (pp, ck) -> {
+            pl.setIcono(c, null);
+            abrirPanel(pp, c);
+        });
+        m.poner(49, Menu.item(Material.ARROW, "<red><bold>« Volver", "<gray>Volver al terreno"), (pp, ck) -> abrirPanel(pp, c));
+        p.openInventory(m.getInventory());
     }
 
     // ------------------------------------------------------------------ compra de chunks
