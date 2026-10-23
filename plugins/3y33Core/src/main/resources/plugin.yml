@@ -1,0 +1,26 @@
+name: 3y33Core
+version: 1.0.0
+main: ar.com.tresyetres.core.Core
+api-version: '1.21'
+author: 3y33 SMP
+description: Reglas, anuncios, reportes y comandos de 3y33 SMP
+
+commands:
+  reglas:
+    description: Reglas del servidor
+    aliases: [rules, normas]
+  report:
+    description: Reportá a un jugador
+    aliases: [reportar, reporte]
+  reportes:
+    description: Ver los últimos reportes
+    permission: tresyetres.staff
+  3y33core:
+    description: Administración de 3y33Core
+    permission: tresyetres.admin
+
+permissions:
+  tresyetres.staff:
+    default: op
+  tresyetres.admin:
+    default: op
