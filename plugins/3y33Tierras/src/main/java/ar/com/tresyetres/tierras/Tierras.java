@@ -75,6 +75,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         Objects.requireNonNull(getCommand("tierra")).setTabCompleter(this);
         Objects.requireNonNull(getCommand("tierras")).setExecutor(this);
         Objects.requireNonNull(getCommand("tierrasadmin")).setExecutor(this);
+        Objects.requireNonNull(getCommand("discord")).setExecutor(this);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new TierrasExpansion(this).register();
@@ -200,6 +201,15 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         String nombre = cmd.getName().toLowerCase(Locale.ROOT);
         if (nombre.equals("tierrasadmin")) return comandoAdmin(sender, args);
+        if (nombre.equals("discord")) {
+            String url = getConfig().getString("discord", "https://ds.3y33.com.ar");
+            sender.sendMessage(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(
+                    "<#E03131><bold>Discord</bold></#E03131>\n<white>Sumate a nuestro Discord en </white>"
+                    + "<click:open_url:'" + url + "'><hover:show_text:'<gray>Click para abrir el Discord'><#FF6B6B><underlined>" + url
+                    + "</underlined></#FF6B6B></hover></click><white>!</white>"));
+            if (sender instanceof Player pl) pl.playSound(pl.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
+            return true;
+        }
         if (!(sender instanceof Player p)) {
             msg(sender, "&cSolo jugadores.");
             return true;
