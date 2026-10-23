@@ -98,12 +98,11 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         } else {
             elegido = lista.get(random.nextInt(lista.size()));
         }
-        Component c = txt(elegido);
-        boolean sonido = getConfig().getBoolean("anuncios.sonido", true);
+        Component c = txt(getConfig().getString("anuncios.formato", "<prefijo><mensaje>")
+                .replace("<prefijo>", getConfig().getString("prefijo", "")).replace("<mensaje>", elegido));
+        boolean sonido = getConfig().getBoolean("anuncios.sonido", false);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(Component.empty());
             p.sendMessage(c);
-            p.sendMessage(Component.empty());
             if (sonido) p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.4f, 1.6f);
         }
     }
