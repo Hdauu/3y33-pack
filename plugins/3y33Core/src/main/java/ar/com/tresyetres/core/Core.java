@@ -35,6 +35,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     private File archivoReportes;
     private YamlConfiguration reportes;
     private Reglas reglasObligatorias;
+    private Rtp rtp;
 
     @Override
     public void onEnable() {
@@ -44,7 +45,9 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(this, this);
         reglasObligatorias = new Reglas(this);
         getServer().getPluginManager().registerEvents(reglasObligatorias, this);
-        for (String c : List.of("reglas", "report", "reportes", "3y33core")) {
+        rtp = new Rtp(this);
+        getServer().getPluginManager().registerEvents(rtp, this);
+        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
         }
@@ -111,6 +114,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         switch (cmd.getName().toLowerCase(Locale.ROOT)) {
             case "reglas" -> reglas(sender);
+            case "rtp" -> {
+                if (sender instanceof Player jp) rtp.usar(jp);
+                else msg(sender, "<red>Solo jugadores.");
+            }
             case "report" -> report(sender, args);
             case "reportes" -> verReportes(sender);
             case "3y33core" -> {
