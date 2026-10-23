@@ -52,3 +52,12 @@ stickers-por-rango:
 
 # Link que muestra /discord
 discord: 'https://ds.3y33.com.ar'
+
+# Zonas donde nadie puede crear terrenos (el spawn). margen = bloques extra alrededor.
+zonas-sin-terrenos:
+  - mundo: 3y33SMP
+    x1: -157
+    z1: -180
+    x2: 108
+    z2: 27
+    margen: 48
