@@ -619,6 +619,43 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         }
     }
 
+    // /tp X Z (sin altura): lleva a la superficie en esas coordenadas
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void alTpSinAltura(PlayerCommandPreprocessEvent e) {
+        String[] partes = e.getMessage().trim().split("\\s+");
+        if (partes.length != 3) return;
+        String base = partes[0].toLowerCase(Locale.ROOT);
+        if (base.contains(":")) base = "/" + base.substring(base.indexOf(':') + 1);
+        if (!(base.equals("/tp") || base.equals("/teleport"))) return;
+        Player p = e.getPlayer();
+        Double x = coord(partes[1], p.getLocation().getX());
+        Double z = coord(partes[2], p.getLocation().getZ());
+        if (x == null || z == null) return;
+        org.bukkit.World w = p.getWorld();
+        int bx = (int) Math.floor(x), bz = (int) Math.floor(z);
+        int y;
+        if (w.getEnvironment() == org.bukkit.World.Environment.NETHER) {
+            y = -1;
+            for (int yy = 32; yy < 120; yy++) {
+                if (w.getBlockAt(bx, yy - 1, bz).getType().isSolid()
+                        && w.getBlockAt(bx, yy, bz).isPassable() && w.getBlockAt(bx, yy + 1, bz).isPassable()) { y = yy; break; }
+            }
+            if (y < 0) { e.setCancelled(true); msg(p, "&cNo hay un lugar seguro en esas coordenadas."); return; }
+        } else {
+            y = w.getHighestBlockYAt(bx, bz) + 1;
+        }
+        double fx = partes[1].contains(".") || partes[1].startsWith("~") ? x : bx + 0.5;
+        double fz = partes[2].contains(".") || partes[2].startsWith("~") ? z : bz + 0.5;
+        e.setMessage("/minecraft:tp " + fx + " " + y + " " + fz);
+    }
+
+    private static Double coord(String s, double actual) {
+        try {
+            if (s.startsWith("~")) return actual + (s.length() > 1 ? Double.parseDouble(s.substring(1)) : 0);
+            return Double.parseDouble(s);
+        } catch (NumberFormatException ex) { return null; }
+    }
+
     // Monstruos y animales por terreno
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void alAparecer(CreatureSpawnEvent e) {
