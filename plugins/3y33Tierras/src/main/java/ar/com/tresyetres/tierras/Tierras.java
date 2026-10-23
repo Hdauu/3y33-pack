@@ -536,7 +536,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (e.getClickedInventory() != e.getInventory()) return;
         var accion = menu.acciones.get(e.getRawSlot());
         if (accion == null) return;
-        p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.4f, 1.3f);
+        p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
         Bukkit.getScheduler().runTask(this, () -> accion.accept(p, e.getClick()));
     }
 
