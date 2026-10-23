@@ -104,3 +104,12 @@ cooldowns:
   ac: 60
   amsg: 60
   report: 0
+
+# ---------------------------------------------------------------- reglas en pantalla (FancyDialogs)
+# Los jugadores nuevos no pueden moverse ni hablar hasta aceptar. Subí "version" cuando cambien las reglas
+# y se las vuelve a pedir a todos una vez. En Bedrock se muestra el libro de arriba.
+reglas-dialogo:
+  habilitado: true
+  version: 1
+  dialogo: reglas_inicio
+  mensaje-rechazo: "<#E03131><bold>3y33 SMP</bold></#E03131>\n\n<white>Para jugar acá tenés que aceptar las reglas.\n<gray>Cuando quieras, volvé y aceptalas."

@@ -34,6 +34,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     private int siguienteAnuncio = 0;
     private File archivoReportes;
     private YamlConfiguration reportes;
+    private Reglas reglasObligatorias;
 
     @Override
     public void onEnable() {
@@ -41,6 +42,8 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         archivoReportes = new File(getDataFolder(), "reportes.yml");
         reportes = YamlConfiguration.loadConfiguration(archivoReportes);
         getServer().getPluginManager().registerEvents(this, this);
+        reglasObligatorias = new Reglas(this);
+        getServer().getPluginManager().registerEvents(reglasObligatorias, this);
         for (String c : List.of("reglas", "report", "reportes", "3y33core")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
@@ -55,6 +58,14 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
 
     private Component txt(String s) {
         return mm.deserialize(s);
+    }
+
+    Component mm(String s) {
+        return mm.deserialize(s);
+    }
+
+    void aviso(CommandSender s, String m) {
+        msg(s, m);
     }
 
     private void msg(CommandSender s, String m) {
@@ -109,6 +120,11 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     msg(sender, "<green>Configuración recargada.");
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("anuncio")) {
                     anunciar();
+                } else if (args.length > 1 && (args[0].equalsIgnoreCase("aceptar") || args[0].equalsIgnoreCase("rechazar"))) {
+                    Player objetivo = Bukkit.getPlayerExact(args[1]);
+                    if (objetivo == null) { msg(sender, "<red>Ese jugador no está conectado."); return true; }
+                    if (args[0].equalsIgnoreCase("aceptar")) reglasObligatorias.aceptar(objetivo);
+                    else reglasObligatorias.rechazar(objetivo);
                 } else {
                     msg(sender, "<gray>/3y33core reload <dark_gray>·</dark_gray> /3y33core anuncio");
                 }
@@ -118,6 +134,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     }
 
     private void reglas(CommandSender sender) {
+        if (sender instanceof Player jp && reglasObligatorias.abrir(jp)) return;
         List<Component> paginas = new ArrayList<>();
         for (String p : getConfig().getStringList("reglas.paginas")) paginas.add(txt(p));
         if (sender instanceof Player p) {
@@ -225,7 +242,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                 return r;
             }
         }
-        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio");
+        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar");
         return List.of();
     }
 
