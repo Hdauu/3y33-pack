@@ -63,7 +63,7 @@ final class MenusTerrenos {
 
     void abrirHub(Player p) {
         UUID id = p.getUniqueId();
-        Menu m = new Menu(6, "<dark_gray>Mis terrenos");
+        Menu m = new Menu(6, "<dark_gray>Menú » Terrenos");
         m.fondo();
 
         int usados = pl.api().getTotalChunksByOwner(id);
@@ -74,13 +74,13 @@ final class MenusTerrenos {
         String barra = "<green>" + "|".repeat(llenas) + "<dark_gray>" + "|".repeat(barras - llenas);
 
         m.poner(4, Menu.cabeza(p, Menu.g("#8ce99a", "#2f9e44", "Tus terrenos"),
-                "<gray>Chunks: <white>" + usados + "<dark_gray>/<white>" + limite + " <dark_gray>(<green>" + libres + " libres<dark_gray>)",
+                "<dark_gray>» <gray>Chunks: <white>" + usados + "<dark_gray>/<white>" + limite + " <dark_gray>(<green>" + libres + " libres<dark_gray>)",
                 barra,
                 "",
-                "<gray>Terrenos: <white>" + pl.terrenosDe(id) + "<dark_gray>/<white>" + pl.maxTerrenos(p),
-                "<gray>Máximo por terreno: <white>" + pl.maxPorTerreno(p) + " chunks",
-                "<gray>Chunks comprados: <white>" + pl.comprados(id),
-                "<gray>Próximo chunk: <gold>" + pl.plata(pl.precioSiguiente(id))), null);
+                "<dark_gray>» <gray>Terrenos: <white>" + pl.terrenosDe(id) + "<dark_gray>/<white>" + pl.maxTerrenos(p),
+                "<dark_gray>» <gray>Máximo por terreno: <white>" + pl.maxPorTerreno(p) + " chunks",
+                "<dark_gray>» <gray>Chunks comprados: <white>" + pl.comprados(id),
+                "<dark_gray>» <gray>Próximo chunk: <gold>" + pl.plata(pl.precioSiguiente(id))), null);
 
         List<ClaimProfile> propios = new ArrayList<>(pl.api().getClaimsByOwner(id));
         List<ClaimProfile> ajenos = new ArrayList<>(pl.api().getClaimsByMember(id));
@@ -101,33 +101,34 @@ final class MenusTerrenos {
                     "<dark_gray>Parate donde quieras construir", "<dark_gray>y apretá <white>Reclamar este chunk<dark_gray>."), null);
         }
 
-        m.poner(46, Menu.item(Material.GOLDEN_SHOVEL, Menu.g("#ffe066", "#f08c00", "Reclamar este chunk"),
+        m.poner(38, Menu.item(Material.GOLDEN_SHOVEL, Menu.g("#ffe066", "#f08c00", "Reclamar este chunk"),
                 "<gray>Suma el chunk donde estás parado", "<gray>a tu terreno activo.", "",
                 libres > 0 ? "<green>Te quedan " + libres + " chunks libres" : "<red>No te quedan chunks libres",
-                "", "<yellow>▸ Click para reclamar"), (pp, c) -> {
+                "", "<yellow>▸ <white>Click para reclamar"), (pp, c) -> {
             pp.closeInventory();
             pp.performCommand("claim");
         });
-        m.poner(47, Menu.item(Material.LIME_DYE, Menu.g("#8ce99a", "#2f9e44", "Crear terreno"),
+        m.poner(39, Menu.item(Material.LIME_DYE, Menu.g("#8ce99a", "#2f9e44", "Crear terreno"),
                 "<gray>Un terreno nuevo y separado,", "<gray>ideal para granjas.", "",
                 "<gray>Tenés <white>" + pl.terrenosDe(id) + "<dark_gray>/<white>" + pl.maxTerrenos(p),
-                "", "<yellow>▸ Click y escribí el nombre"), (pp, c) -> {
+                "", "<yellow>▸ <white>Click y escribí el nombre"), (pp, c) -> {
             pp.closeInventory();
             pl.pedirNombre(pp);
         });
-        m.poner(49, Menu.item(Material.EMERALD, Menu.g("#69db7c", "#2b8a3e", "Comprar chunks"),
-                "<gray>Agrandá tus terrenos.", "", "<gray>Próximo chunk: <gold>" + pl.plata(pl.precioSiguiente(id)),
-                "", "<yellow>▸ Click para ver precios"), (pp, c) -> abrirCompra(pp));
-        m.poner(51, Menu.item(Material.FILLED_MAP, Menu.g("#5ee7df", "#3a9bdc", "Mapa"),
-                "<gray>Un mapa en tu mano con", "<gray>los terrenos de alrededor.", "", "<yellow>▸ Click para recibirlo"), (pp, c) -> {
+        m.poner(40, Menu.item(Material.EMERALD, Menu.g("#69db7c", "#2b8a3e", "Comprar chunks"),
+                "<gray>Agrandá tus terrenos.", "", "<dark_gray>» <gray>Próximo chunk: <gold>" + pl.plata(pl.precioSiguiente(id)),
+                "", "<yellow>▸ <white>Click para ver precios"), (pp, c) -> abrirCompra(pp));
+        m.poner(41, Menu.item(Material.FILLED_MAP, Menu.g("#5ee7df", "#3a9bdc", "Mapa"),
+                "<gray>Un mapa en tu mano con", "<gray>los terrenos de alrededor.", "", "<yellow>▸ <white>Click para recibirlo"), (pp, c) -> {
             pp.closeInventory();
             pp.performCommand("claim map");
         });
-        m.poner(52, Menu.item(Material.ENDER_EYE, Menu.g("#e0aaff", "#9d4edd", "Puntos públicos"),
-                "<gray>Lugares que otros jugadores", "<gray>abrieron para todos.", "", "<yellow>▸ Click para ver"), (pp, c) -> pp.performCommand("claim publicwarps"));
-        m.poner(53, Menu.item(Material.BARRIER, "<red><bold>Cerrar"), (pp, c) -> pp.closeInventory());
-        m.poner(45, Menu.item(Material.BOOK, Menu.g("#ced4da", "#868e96", "Ayuda"),
-                "<gray>Todos los comandos.", "", "<yellow>▸ Click para ver"), (pp, c) -> {
+        m.poner(42, Menu.item(Material.ENDER_EYE, Menu.g("#e0aaff", "#9d4edd", "Puntos públicos"),
+                "<gray>Lugares que otros jugadores", "<gray>abrieron para todos.", "", "<yellow>▸ <white>Click para ver"), (pp, c) -> pp.performCommand("claim publicwarps"));
+        m.poner(48, Menu.item(Material.ARROW, "<red><bold>« Volver", "<gray>Volver al menú"), (pp, c) -> pp.performCommand("menu"));
+        m.poner(50, Menu.item(Material.BARRIER, "<red><bold>Cerrar"), (pp, c) -> pp.closeInventory());
+        m.poner(49, Menu.item(Material.BOOK, Menu.g("#ced4da", "#868e96", "Ayuda"),
+                "<gray>Todos los comandos.", "", "<yellow>▸ <white>Click para ver"), (pp, c) -> {
             pp.closeInventory();
             pp.performCommand("tierra ayuda");
         });
@@ -145,14 +146,14 @@ final class MenusTerrenos {
             donde = "<dark_gray>" + mundo(cp.world()) + " · X " + (cp.x() * 16 + 8) + " Z " + (cp.z() * 16 + 8);
         }
         List<String> lore = new ArrayList<>(List.of(
-                "<gray>Rol: " + rol(c, id),
-                "<gray>Chunks: <white>" + chunks + (max > 0 && max < 1_000_000 ? "<dark_gray>/<white>" + max : ""),
-                "<gray>Miembros: <white>" + miembros,
-                "<gray>Puntos: <white>" + puntos,
+                "<dark_gray>» <gray>Rol: " + rol(c, id),
+                "<dark_gray>» <gray>Chunks: <white>" + chunks + (max > 0 && max < 1_000_000 ? "<dark_gray>/<white>" + max : ""),
+                "<dark_gray>» <gray>Miembros: <white>" + miembros,
+                "<dark_gray>» <gray>Puntos: <white>" + puntos,
                 donde, ""));
         if (esActivo) lore.add("<green>✔ Terreno activo <dark_gray>(acá suman los chunks)");
-        lore.add("<yellow>▸ Click izquierdo: <white>abrir");
-        lore.add("<yellow>▸ Click derecho: <white>ir al terreno");
+        lore.add("<yellow>▸ <white>Click izquierdo: <white>abrir");
+        lore.add("<yellow>▸ <white>Click derecho: <white>ir al terreno");
         org.bukkit.inventory.ItemStack it = Menu.item(esActivo ? Material.MOSS_BLOCK : Material.GRASS_BLOCK,
                 Menu.g("#8ce99a", "#2f9e44", Menu.esc(c.getName())), lore.toArray(new String[0]));
         return esActivo ? Menu.brillo(it) : it;
@@ -166,7 +167,6 @@ final class MenusTerrenos {
     }
 
     private void clickTerreno(Player p, ClaimProfile c, ClickType click) {
-        sonido(p);
         if (click.isRightClick()) {
             p.closeInventory();
             irAlTerreno(p, c);
@@ -206,38 +206,38 @@ final class MenusTerrenos {
 
         String due = Bukkit.getOfflinePlayer(c.getOwnerId()).getName();
         m.poner(4, Menu.brillo(Menu.item(Material.NETHER_STAR, Menu.g("#8ce99a", "#2f9e44", Menu.esc(c.getName())),
-                "<gray>Dueño: <white>" + Menu.esc(due == null ? "?" : due),
-                "<gray>Tu rol: " + rol(c, id),
-                "<gray>Chunks: <white>" + c.getOwnedChunks().size() + (c.isOwner(id) && pl.maxPorTerreno(p) < 1_000_000 ? "<dark_gray>/<white>" + pl.maxPorTerreno(p) : ""),
-                "<gray>Miembros: <white>" + c.getMemberRoles().size(),
-                "<gray>Puntos: <white>" + (c.getWarps() == null ? 0 : c.getWarps().size()) + (c.isOwner(id) ? "<dark_gray>/<white>" + limitePuntos(p) : ""),
+                "<dark_gray>» <gray>Dueño: <white>" + Menu.esc(due == null ? "?" : due),
+                "<dark_gray>» <gray>Tu rol: " + rol(c, id),
+                "<dark_gray>» <gray>Chunks: <white>" + c.getOwnedChunks().size() + (c.isOwner(id) && pl.maxPorTerreno(p) < 1_000_000 ? "<dark_gray>/<white>" + pl.maxPorTerreno(p) : ""),
+                "<dark_gray>» <gray>Miembros: <white>" + c.getMemberRoles().size(),
+                "<dark_gray>» <gray>Puntos: <white>" + (c.getWarps() == null ? 0 : c.getWarps().size()) + (c.isOwner(id) ? "<dark_gray>/<white>" + limitePuntos(p) : ""),
                 "",
-                "<gray>Monstruos: " + sn(pl.flag(c, Flag.MONSTRUOS)) + " <dark_gray>· <gray>Animales: " + sn(pl.flag(c, Flag.ANIMALES)),
-                "<gray>Fuego: " + sn(pl.flag(c, Flag.FUEGO)) + " <dark_gray>· <gray>PvP: " + sn(c.isPvpEnabled()))), null);
+                "<dark_gray>» <gray>Monstruos: " + sn(pl.flag(c, Flag.MONSTRUOS)) + " <dark_gray>· <gray>Animales: " + sn(pl.flag(c, Flag.ANIMALES)),
+                "<dark_gray>» <gray>Fuego: " + sn(pl.flag(c, Flag.FUEGO)) + " <dark_gray>· <gray>PvP: " + sn(c.isPvpEnabled()))), null);
 
         LandClaimPlugin lcp = lcp();
         m.poner(19, Menu.item(Material.ENDER_PEARL, Menu.g("#e0aaff", "#9d4edd", "Ir al terreno"),
-                "<gray>Te lleva al punto <white>inicio<gray>,", "<gray>al primero que tenga o al centro.", "", "<yellow>▸ Click para ir"), (pp, ck) -> {
+                "<gray>Te lleva al punto <white>inicio<gray>,", "<gray>al primero que tenga o al centro.", "", "<yellow>▸ <white>Click para ir"), (pp, ck) -> {
             pp.closeInventory();
             irAlTerreno(pp, c);
         });
         m.poner(20, Menu.item(Material.ENDER_EYE, Menu.g("#e0aaff", "#9d4edd", "Puntos"),
-                "<gray>Teletransportes guardados", "<gray>dentro de este terreno.", "", "<dark_gray>Crear: <white>/tierra punto [nombre]", "", "<yellow>▸ Click para ver"),
+                "<gray>Teletransportes guardados", "<gray>dentro de este terreno.", "", "<dark_gray>Crear: <white>/tierra punto [nombre]", "", "<yellow>▸ <white>Click para ver"),
                 (pp, ck) -> org.ayosynk.landClaimPlugin.gui.WarpManagementGUI.open(pp, c, lcp));
         m.poner(21, Menu.item(Material.PLAYER_HEAD, Menu.g("#8ce99a", "#2f9e44", "Miembros"),
-                "<gray>Invitá amigos y elegí", "<gray>el rol de cada uno.", "", "<yellow>▸ Click para abrir"),
+                "<gray>Invitá amigos y elegí", "<gray>el rol de cada uno.", "", "<yellow>▸ <white>Click para abrir"),
                 gestiona(p, c, "MANAGE_MEMBERS") ? (pp, ck) -> org.ayosynk.landClaimPlugin.gui.MemberManagementGUI.open(pp, c, lcp) : sinPermiso());
         m.poner(22, Menu.item(Material.OAK_SAPLING, Menu.g("#b2f2bb", "#2b8a3e", "Naturaleza"),
-                "<gray>Monstruos, phantoms, animales,", "<gray>fuego, líquidos, cultivos y hojas.", "", "<yellow>▸ Click para abrir"),
+                "<gray>Monstruos, phantoms, animales,", "<gray>fuego, líquidos, cultivos y hojas.", "", "<yellow>▸ <white>Click para abrir"),
                 gestiona(p, c, "MANAGE_SETTINGS") ? (pp, ck) -> pp.openInventory(new MenuFlags(pl, c).getInventory()) : sinPermiso());
         m.poner(23, Menu.item(Material.OAK_DOOR, Menu.g("#ced4da", "#868e96", "Visitas"),
-                "<gray>Qué puede hacer la gente", "<gray>que no es de tu terreno.", "", "<yellow>▸ Click para abrir"),
+                "<gray>Qué puede hacer la gente", "<gray>que no es de tu terreno.", "", "<yellow>▸ <white>Click para abrir"),
                 gestiona(p, c, "MANAGE_SETTINGS") ? (pp, ck) -> org.ayosynk.landClaimPlugin.gui.VisitorSettingsGUI.open(pp, c, lcp) : sinPermiso());
         m.poner(24, Menu.item(Material.TRIPWIRE_HOOK, Menu.g("#ffe066", "#fab005", "Confianza"),
-                "<gray>Permisos para un jugador", "<gray>puntual sin hacerlo miembro.", "", "<yellow>▸ Click para abrir"),
+                "<gray>Permisos para un jugador", "<gray>puntual sin hacerlo miembro.", "", "<yellow>▸ <white>Click para abrir"),
                 gestiona(p, c, "MANAGE_MEMBERS") ? (pp, ck) -> org.ayosynk.landClaimPlugin.gui.TrustManagementGUI.open(pp, c, lcp) : sinPermiso());
         m.poner(25, Menu.item(Material.COMPARATOR, Menu.g("#ffd36e", "#ff9a3c", "Ajustes"),
-                "<gray>Nombre, color, roles, PvP", "<gray>y títulos de entrada.", "", "<yellow>▸ Click para abrir"),
+                "<gray>Nombre, color, roles, PvP", "<gray>y títulos de entrada.", "", "<yellow>▸ <white>Click para abrir"),
                 gestiona(p, c, "MANAGE_SETTINGS") ? (pp, ck) -> org.ayosynk.landClaimPlugin.gui.ClaimSettingsGUI.open(pp, c, lcp) : sinPermiso());
 
         boolean esActivo = c.getProfileId().equals(activo(p));
@@ -246,14 +246,14 @@ final class MenusTerrenos {
                     ? Menu.brillo(Menu.item(Material.MOSS_BLOCK, Menu.g("#8ce99a", "#2f9e44", "Terreno activo"),
                     "<gray>Los chunks que reclames", "<gray>se suman a este terreno."))
                     : Menu.item(Material.GRASS_BLOCK, Menu.g("#ffe066", "#f08c00", "Usar este terreno"),
-                    "<gray>Hacé que los chunks que", "<gray>reclames se sumen acá.", "", "<yellow>▸ Click para elegir"),
+                    "<gray>Hacé que los chunks que", "<gray>reclames se sumen acá.", "", "<yellow>▸ <white>Click para elegir"),
                     esActivo ? null : (pp, ck) -> {
                         hacerActivo(pp, c);
                         pl.msg(pp, "&aAhora los chunks se suman a &e" + c.getName() + "&a.");
                         abrirPanel(pp, c);
                     });
             m.poner(31, Menu.item(Material.GOLDEN_SHOVEL, Menu.g("#ffe066", "#f08c00", "Reclamar acá"),
-                    "<gray>Suma a este terreno el chunk", "<gray>donde estás parado.", "", "<yellow>▸ Click para reclamar"), (pp, ck) -> {
+                    "<gray>Suma a este terreno el chunk", "<gray>donde estás parado.", "", "<yellow>▸ <white>Click para reclamar"), (pp, ck) -> {
                 hacerActivo(pp, c);
                 pp.closeInventory();
                 pp.performCommand("claim");
@@ -262,7 +262,7 @@ final class MenusTerrenos {
                     "<gray>Lo que ven los demás debajo", "<gray>del nombre al entrar.", "",
                     pl.saludo(c).isBlank() ? "<dark_gray>Ahora: <white>Terreno de tu nombre" : "<dark_gray>Ahora: <white>" + Stickers.procesar(pl.saludo(c), pl.tienePack(p), false),
                     "<dark_gray>Stickers: <white>/tierra stickers",
-                    "", "<yellow>▸ Click para cambiarlo"), (pp, ck) -> {
+                    "", "<yellow>▸ <white>Click para cambiarlo"), (pp, ck) -> {
                 pp.closeInventory();
                 pl.pedirSaludo(pp, c);
             });
@@ -270,12 +270,12 @@ final class MenusTerrenos {
             m.poner(28, Menu.item(ic == null ? Material.ITEM_FRAME : ic.icono(), Menu.g("#e0aaff", "#9d4edd", "Ícono"),
                     "<gray>Un sticker a los costados", "<gray>de tu mensaje de entrada.", "",
                     "<dark_gray>Ahora: <white>" + (ic == null ? "ninguno" : ":" + ic.nombre() + ":"),
-                    "", "<yellow>▸ Click para elegir"), (pp, ck) -> abrirIconos(pp, c));
+                    "", "<yellow>▸ <white>Click para elegir"), (pp, ck) -> abrirIconos(pp, c));
             m.poner(29, Menu.item(Material.BRUSH, Menu.g("#f783ac", "#d6336c", "Color del nombre"),
-                    "<gray>El color del título de entrada", "<gray>y de los bordes del terreno.", "", "<yellow>▸ Click para elegir"),
+                    "<gray>El color del título de entrada", "<gray>y de los bordes del terreno.", "", "<yellow>▸ <white>Click para elegir"),
                     (pp, ck) -> org.ayosynk.landClaimPlugin.gui.ChangeClaimColorGUI.open(pp, c, lcp));
             m.poner(32, Menu.item(Material.SHIELD, Menu.g("#74c0fc", "#4263eb", "Aliados"),
-                    "<gray>Terrenos amigos y qué pueden", "<gray>hacer dentro del tuyo.", "", "<yellow>▸ Click para abrir"),
+                    "<gray>Terrenos amigos y qué pueden", "<gray>hacer dentro del tuyo.", "", "<yellow>▸ <white>Click para abrir"),
                     (pp, ck) -> org.ayosynk.landClaimPlugin.gui.AllyManagementGUI.open(pp, c, lcp));
         }
         m.poner(48, Menu.item(Material.ARROW, "<red><bold>« Volver", "<gray>Volver a tus terrenos"), (pp, ck) -> abrirHub(pp));
@@ -312,8 +312,8 @@ final class MenusTerrenos {
             boolean es = st.nombre().equals(actual);
             boolean puede = pl.puedeSticker(p, st.nombre());
             var it = Menu.item(puede ? st.icono() : Material.GRAY_DYE, Menu.g("#e0aaff", "#9d4edd", ":" + st.nombre() + ":"),
-                    "<gray>Se ve así: " + Stickers.dibujar(st, pl.tienePack(p), false),
-                    "", es ? "<green>✔ Elegido" : puede ? "<yellow>▸ Click para elegir" : "<red>Solo para " + pl.rangoSticker(st.nombre()));
+                    "<dark_gray>» <gray>Se ve así: " + Stickers.dibujar(st, pl.tienePack(p), false),
+                    "", es ? "<green>✔ Elegido" : puede ? "<yellow>▸ <white>Click para elegir" : "<red>Solo para " + pl.rangoSticker(st.nombre()));
             m.poner(slots[i++], es ? Menu.brillo(it) : it, (pp, ck) -> {
                 if (!pl.puedeSticker(pp, st.nombre())) {
                     pl.msg(pp, "&cEse ícono es para " + pl.rangoSticker(st.nombre()) + "&c.");
@@ -344,9 +344,9 @@ final class MenusTerrenos {
         int usados = pl.api().getTotalChunksByOwner(id);
         int limite = pl.api().getClaimLimit(p);
         m.poner(4, Menu.cabeza(p, Menu.g("#69db7c", "#2b8a3e", "Tus chunks"),
-                "<gray>Usados: <white>" + usados + "<dark_gray>/<white>" + limite,
-                "<gray>Comprados: <white>" + pl.comprados(id),
-                "<gray>Tu plata: <gold>" + pl.plata(pl.saldo(p)),
+                "<dark_gray>» <gray>Usados: <white>" + usados + "<dark_gray>/<white>" + limite,
+                "<dark_gray>» <gray>Comprados: <white>" + pl.comprados(id),
+                "<dark_gray>» <gray>Tu plata: <gold>" + pl.plata(pl.saldo(p)),
                 "", "<dark_gray>Cada chunk cuesta un poco más", "<dark_gray>que el anterior."), null);
         int[][] opciones = {{11, 1}, {13, 5}, {15, 10}};
         Material[] mats = {Material.EMERALD, Material.EMERALD_BLOCK, Material.DIAMOND_BLOCK};
@@ -355,9 +355,9 @@ final class MenusTerrenos {
             double precio = pl.precioDe(id, cant);
             boolean alcanza = pl.saldo(p) >= precio;
             m.poner(slot, Menu.item(mats[k], Menu.g("#69db7c", "#2b8a3e", "+" + cant + (cant == 1 ? " chunk" : " chunks")),
-                    "<gray>Precio: <gold>" + pl.plata(precio),
+                    "<dark_gray>» <gray>Precio: <gold>" + pl.plata(precio),
                     "",
-                    alcanza ? "<yellow>▸ Click para comprar" : "<red>No te alcanza la plata"), (pp, ck) -> {
+                    alcanza ? "<yellow>▸ <white>Click para comprar" : "<red>No te alcanza la plata"), (pp, ck) -> {
                 pl.comprarDirecto(pp, cant);
                 abrirCompra(pp);
             });
