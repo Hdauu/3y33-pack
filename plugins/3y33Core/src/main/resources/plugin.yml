@@ -1,5 +1,5 @@
 name: 3y33Core
-version: 1.1.0
+version: 1.2.0
 main: ar.com.tresyetres.core.Core
 api-version: '1.21'
 softdepend: [AuthMe, floodgate, FancyDialogs]
@@ -13,6 +13,9 @@ commands:
   report:
     description: Reportá a un jugador
     aliases: [reportar, reporte]
+  rtp:
+    description: Viajá a un lugar al azar del mundo
+    aliases: [wild, explorar]
   reportes:
     description: Ver los últimos reportes
     permission: tresyetres.staff

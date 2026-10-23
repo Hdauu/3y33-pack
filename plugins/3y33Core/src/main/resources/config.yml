@@ -113,3 +113,19 @@ reglas-dialogo:
   version: 1
   dialogo: reglas_inicio
   mensaje-rechazo: "<#E03131><bold>3y33 SMP</bold></#E03131>\n\n<white>Para jugar acá tenés que aceptar las reglas.\n<gray>Cuando quieras, volvé y aceptalas."
+
+# ---------------------------------------------------------------- /rtp (solo en el mundo normal)
+rtp:
+  mundo: 3y33SMP
+  centro-x: 0
+  centro-z: 0
+  radio-minimo: 500
+  radio-maximo: 9500
+  espera-segundos: 3
+  intentos: 20
+  # segundos entre usos, por rango (el staff no espera)
+  cooldown:
+    default: 600
+    sheriff: 420
+    supreme: 300
+    global: 180
