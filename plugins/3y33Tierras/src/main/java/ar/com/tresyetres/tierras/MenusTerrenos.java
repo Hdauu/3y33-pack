@@ -310,10 +310,15 @@ final class MenusTerrenos {
         for (Stickers.Sticker st : Stickers.TODOS.values()) {
             if (i >= slots.length) break;
             boolean es = st.nombre().equals(actual);
-            var it = Menu.item(st.icono(), Menu.g("#e0aaff", "#9d4edd", ":" + st.nombre() + ":"),
+            boolean puede = pl.puedeSticker(p, st.nombre());
+            var it = Menu.item(puede ? st.icono() : Material.GRAY_DYE, Menu.g("#e0aaff", "#9d4edd", ":" + st.nombre() + ":"),
                     "<gray>Se ve así: " + Stickers.dibujar(st, pl.tienePack(p), false),
-                    "", es ? "<green>✔ Elegido" : "<yellow>▸ Click para elegir");
+                    "", es ? "<green>✔ Elegido" : puede ? "<yellow>▸ Click para elegir" : "<red>Solo para " + pl.rangoSticker(st.nombre()));
             m.poner(slots[i++], es ? Menu.brillo(it) : it, (pp, ck) -> {
+                if (!pl.puedeSticker(pp, st.nombre())) {
+                    pl.msg(pp, "&cEse ícono es para " + pl.rangoSticker(st.nombre()) + "&c.");
+                    return;
+                }
                 pl.setIcono(c, st.nombre());
                 pl.mostrarTitulo(pp, c);
                 abrirPanel(pp, c);
