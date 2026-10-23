@@ -1,0 +1,106 @@
+# 3y33Core - configuración
+# Los textos usan MiniMessage: <red>, <#FF6B6B>, <bold>, <gradient:#E03131:#FF6B6B>texto</gradient>, <click:...>, etc.
+prefijo: '<dark_red><bold>3y33</bold></dark_red> <dark_gray>»</dark_gray> '
+
+# ---------------------------------------------------------------- reglas
+# /reglas abre un libro. Cada elemento de la lista es una página.
+reglas:
+  titulo: 'Reglas de 3y33 SMP'
+  paginas:
+    - |-
+      <dark_red><bold>   REGLAS</bold></dark_red>
+      <dark_gray>   3y33 SMP</dark_gray>
+
+      <black>Para que todos la pasemos bien, respetá estas reglas.
+
+      <dark_gray>Si alguien rompe una, usá</dark_gray> <dark_red>/report</dark_red><dark_gray>.
+
+      <gray><italic>Pasá de página ▸
+    - |-
+      <dark_red><bold>1. Respeto</bold></dark_red>
+      <black>Nada de insultos, discriminación, acoso ni amenazas.
+
+      <dark_red><bold>2. Chat</bold></dark_red>
+      <black>No spam, flood, mayúsculas de más ni publicidad de otros servers.
+    - |-
+      <dark_red><bold>3. Juego limpio</bold></dark_red>
+      <black>Prohibidos los hacks, x-ray, auto-clickers y bugs/dupes. Si encontrás uno, avisá al staff.
+
+      <dark_red><bold>4. Construcciones</bold></dark_red>
+      <black>No rompas ni robes en terrenos ajenos. Protegé lo tuyo con <dark_red>/terrenos</dark_red>.
+    - |-
+      <dark_red><bold>5. Convivencia</bold></dark_red>
+      <black>No construyas pegado a otros sin permiso ni dejes estructuras flotando o feas cerca del spawn.
+
+      <dark_red><bold>6. Lag</bold></dark_red>
+      <black>Nada de granjas gigantes o máquinas de redstone que laguean el server.
+    - |-
+      <dark_red><bold>7. Cuentas</bold></dark_red>
+      <black>Una cuenta por persona. Nunca compartas tu contraseña.
+
+      <dark_red><bold>8. Staff</bold></dark_red>
+      <black>Las decisiones del staff se respetan. Si no estás de acuerdo, hablalo en Discord.
+    - |-
+      <dark_red><bold>Sanciones</bold></dark_red>
+      <black>Según la gravedad: aviso, mute, kick, ban temporal o ban permanente.
+
+      <dark_gray>¿Dudas? Usá</dark_gray> <dark_red>/helpop</dark_red> <dark_gray>o entrá a</dark_gray>
+      <click:open_url:'https://ds.3y33.com.ar'><dark_red><underlined>ds.3y33.com.ar</underlined></dark_red></click>
+
+# ---------------------------------------------------------------- anuncios
+anuncios:
+  habilitados: true
+  # minutos entre anuncio y anuncio
+  intervalo-minutos: 6
+  # true = en orden, false = al azar
+  en-orden: false
+  sonido: true
+  lista:
+    - |-
+      <#E03131><bold>Menú</bold></#E03131>
+      <white>Todo lo del server está en <#FF6B6B><click:run_command:'/menu'><hover:show_text:'<gray>Click para abrir'><underlined>/menu</underlined></hover></click></#FF6B6B>.
+    - |-
+      <#E03131><bold>Discord</bold></#E03131>
+      <white>Sumate a nuestro Discord en <#FF6B6B><click:open_url:'https://ds.3y33.com.ar'><hover:show_text:'<gray>Click para abrir'><underlined>https://ds.3y33.com.ar</underlined></hover></click></#FF6B6B>!
+    - |-
+      <#E03131><bold>Misiones</bold></#E03131>
+      <white>Completá <#FF6B6B><click:run_command:'/misiones'><underlined>/misiones</underlined></click></#FF6B6B> para ganar plata y subir de nivel.
+    - |-
+      <#E03131><bold>Terrenos</bold></#E03131>
+      <white>Protegé tus cosas con <#FF6B6B><click:run_command:'/terrenos'><underlined>/terrenos</underlined></click></#FF6B6B>. Tenés chunks gratis para empezar.
+    - |-
+      <#E03131><bold>Rangos</bold></#E03131>
+      <white>Subí de nivel y desbloqueá <#FFAA00><bold>Sheriff</bold></#FFAA00>, <#55FFFF><bold>Supreme</bold></#55FFFF> y <#FFD24D><bold>Global</bold></#FFD24D>. Mirá <#FF6B6B><click:run_command:'/nivel'><underlined>/nivel</underlined></click></#FF6B6B>.
+    - |-
+      <#E03131><bold>Reglas</bold></#E03131>
+      <white>¿Viste a alguien rompiendo las <#FF6B6B><click:run_command:'/reglas'><underlined>/reglas</underlined></click></#FF6B6B>? Usá <#FF6B6B>/report</#FF6B6B>.
+
+# ---------------------------------------------------------------- reportes
+reportes:
+  cooldown-segundos: 60
+  motivos-rapidos: [hacks, insultos, spam, robo, grief, otro]
+
+# ---------------------------------------------------------------- comandos
+# Comandos bloqueados y ocultos para quien no tenga tresyetres.staff
+comandos-bloqueados:
+  - help
+  - '?'
+  - pl
+  - plugins
+  - ver
+  - version
+  - about
+  - icanhasbukkit
+  - me
+  - tm
+  - trigger
+mensaje-bloqueado: '<gray>Ese comando no existe. Usá <#FF6B6B><click:run_command:''/menu''><underlined>/menu</underlined></click></#FF6B6B> para ver todo lo del server.'
+# Ocultar del tab los comandos con prefijo (essentials:home, minecraft:tp...) a los jugadores
+ocultar-prefijos: true
+
+# Cooldown para comandos (segundos). Staff no tiene cooldown.
+cooldowns:
+  helpop: 60
+  ac: 60
+  amsg: 60
+  report: 0
