@@ -36,6 +36,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     private YamlConfiguration reportes;
     private Reglas reglasObligatorias;
     private Rtp rtp;
+    private Editor editor;
 
     @Override
     public void onEnable() {
@@ -47,7 +48,9 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(reglasObligatorias, this);
         rtp = new Rtp(this);
         getServer().getPluginManager().registerEvents(rtp, this);
-        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp")) {
+        editor = new Editor(this);
+        getServer().getPluginManager().registerEvents(editor, this);
+        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
         }
@@ -115,6 +118,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
             case "reglas" -> reglas(sender);
             case "rtp" -> {
                 if (sender instanceof Player jp) rtp.usar(jp);
+                else msg(sender, "<red>Solo jugadores.");
+            }
+            case "editor" -> {
+                if (sender instanceof Player jp) editor.comando(jp, args);
                 else msg(sender, "<red>Solo jugadores.");
             }
             case "report" -> report(sender, args);
@@ -247,6 +254,11 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     if (m.startsWith(args[1].toLowerCase(Locale.ROOT))) r.add(m);
                 return r;
             }
+        }
+        if (n.equals("editor") && args.length == 1 && sender.hasPermission(STAFF)) {
+            List<String> r = new ArrayList<>();
+            for (String s : editor.nombres()) if (s.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) r.add(s);
+            return r;
         }
         if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar");
         return List.of();
