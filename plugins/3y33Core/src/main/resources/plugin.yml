@@ -1,5 +1,5 @@
 name: 3y33Core
-version: 1.2.1
+version: 1.3.0
 main: ar.com.tresyetres.core.Core
 api-version: '1.21'
 softdepend: [AuthMe, floodgate, FancyDialogs]
@@ -16,6 +16,10 @@ commands:
   rtp:
     description: Viajá a un lugar al azar del mundo
     aliases: [wild, explorar]
+  editor:
+    description: Editor de hologramas y NPCs con botones
+    permission: tresyetres.staff
+    aliases: [editar, mover]
   reportes:
     description: Ver los últimos reportes
     permission: tresyetres.staff
