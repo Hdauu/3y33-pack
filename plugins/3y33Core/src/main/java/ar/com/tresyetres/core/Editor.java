@@ -277,42 +277,60 @@ final class Editor implements Listener {
         Entrada e = buscar(sel);
         if (e == null) { core.aviso(p, "<red>Ese holograma o NPC ya no existe."); return; }
         Inventory inv = Bukkit.createInventory(new Panel(sel), 45,
-                core.mm("<dark_gray>Editor » <#E03131>" + sel.nombre));
+                core.mm(MARCA + " <dark_gray>»</dark_gray> <white>" + sel.nombre));
         pintar(inv, p, e);
         p.openInventory(inv);
         p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
     }
 
+    private static String deg(String a, String b, String t) {
+        return "<gradient:" + a + ":" + b + "><bold>" + t + "</bold></gradient>";
+    }
+
+    private static final String MARCA = deg("#E03131", "#FF8787", "Editor");
+
+    private void relleno(Inventory inv) {
+        ItemStack fondo = boton(Material.BLACK_STAINED_GLASS_PANE, " ");
+        for (int i = 0; i < inv.getSize(); i++) inv.setItem(i, fondo);
+    }
+
     private void pintar(Inventory inv, Player p, Entrada e) {
-        ItemStack relleno = boton(Material.GRAY_STAINED_GLASS_PANE, " ");
-        for (int i = 0; i < inv.getSize(); i++) inv.setItem(i, relleno);
+        relleno(inv);
         double s = pasoDe(p);
+        String paso = num(s);
         String t = e.tipo == Tipo.NPC ? "NPC" : "Holograma";
-        inv.setItem(0, boton(Material.PAPER, "<#FF6B6B><bold>" + e.nombre + "</bold>",
+        inv.setItem(0, boton(e.tipo == Tipo.NPC ? Material.VILLAGER_SPAWN_EGG : Material.NAME_TAG,
+                deg("#E03131", "#FF8787", e.nombre),
                 "<gray>Tipo: <white>" + t,
                 "<gray>Mundo: <white>" + e.lugar.getWorld().getName(),
-                "<gray>X: <white>" + num(e.lugar.getX()) + " <gray>Y: <white>" + num(e.lugar.getY()) + " <gray>Z: <white>" + num(e.lugar.getZ())));
-        inv.setItem(2, boton(Material.ARROW, "<white><bold>Norte", "<gray>Mueve " + num(s) + " hacia el norte (-Z)"));
-        inv.setItem(10, boton(Material.ARROW, "<white><bold>Oeste", "<gray>Mueve " + num(s) + " hacia el oeste (-X)"));
-        inv.setItem(12, boton(Material.ARROW, "<white><bold>Este", "<gray>Mueve " + num(s) + " hacia el este (+X)"));
-        inv.setItem(20, boton(Material.ARROW, "<white><bold>Sur", "<gray>Mueve " + num(s) + " hacia el sur (+Z)"));
-        inv.setItem(11, boton(Material.CLOCK, "<#FF6B6B><bold>Paso: " + num(s) + " bloques",
-                "<gray>Clic para cambiar", "<dark_gray>0.1 · 0.5 · 1"));
-        inv.setItem(13, boton(Material.SPECTRAL_ARROW, "<green><bold>Arriba", "<gray>Sube " + num(s)));
-        inv.setItem(22, boton(Material.SPECTRAL_ARROW, "<red><bold>Abajo", "<gray>Baja " + num(s)));
-        inv.setItem(6, boton(Material.ARROW, "<white><bold>Adelante", "<gray>Hacia donde mirás"));
-        inv.setItem(14, boton(Material.ARROW, "<white><bold>Izquierda", "<gray>A tu izquierda"));
-        inv.setItem(16, boton(Material.ARROW, "<white><bold>Derecha", "<gray>A tu derecha"));
-        inv.setItem(24, boton(Material.ARROW, "<white><bold>Atrás", "<gray>Hacia vos"));
-        inv.setItem(15, boton(Material.ENDER_PEARL, "<#FF6B6B><bold>Traer acá", "<gray>Lo pone donde estás parado"));
-        inv.setItem(36, boton(Material.BOOK, "<white><bold>Lista", "<gray>Holograma o NPC más cercanos"));
+                " ",
+                "<#FF6B6B>X <white>" + num(e.lugar.getX()) + "  <#FF6B6B>Y <white>" + num(e.lugar.getY()) + "  <#FF6B6B>Z <white>" + num(e.lugar.getZ())));
+        // direcciones fijas: rojo = este/oeste, azul = norte/sur, verde = arriba/abajo
+        String azul1 = "#1C7ED6", azul2 = "#74C0FC", rojo1 = "#E03131", rojo2 = "#FF8787", verde1 = "#2F9E44", verde2 = "#8CE99A";
+        inv.setItem(2, boton(Material.BLUE_CONCRETE, deg(azul1, azul2, "Norte"), "<gray>Mueve <white>" + paso + "</white> bloques al norte", "<dark_gray>Eje Z, hacia atrás en el mapa"));
+        inv.setItem(20, boton(Material.BLUE_CONCRETE, deg(azul1, azul2, "Sur"), "<gray>Mueve <white>" + paso + "</white> bloques al sur", "<dark_gray>Eje Z, hacia adelante en el mapa"));
+        inv.setItem(10, boton(Material.RED_CONCRETE, deg(rojo1, rojo2, "Oeste"), "<gray>Mueve <white>" + paso + "</white> bloques al oeste", "<dark_gray>Eje X negativo"));
+        inv.setItem(12, boton(Material.RED_CONCRETE, deg(rojo1, rojo2, "Este"), "<gray>Mueve <white>" + paso + "</white> bloques al este", "<dark_gray>Eje X positivo"));
+        inv.setItem(13, boton(Material.LIME_CONCRETE, deg(verde1, verde2, "Arriba"), "<gray>Sube <white>" + paso + "</white> bloques"));
+        inv.setItem(22, boton(Material.GREEN_CONCRETE, deg(verde1, verde2, "Abajo"), "<gray>Baja <white>" + paso + "</white> bloques"));
+        inv.setItem(11, boton(Material.CLOCK, deg("#E03131", "#FF8787", "Paso: " + paso),
+                "<gray>Cuánto se mueve en cada clic", " ", "<dark_gray>Clic para cambiar", "<dark_gray>0.1  ·  0.5  ·  1"));
+        // direcciones según hacia dónde mirás: amarillo
+        String am1 = "#F08C00", am2 = "#FFE066";
+        inv.setItem(6, boton(Material.YELLOW_CONCRETE, deg(am1, am2, "Adelante"), "<gray>Hacia donde estás mirando"));
+        inv.setItem(24, boton(Material.YELLOW_CONCRETE, deg(am1, am2, "Atrás"), "<gray>Hacia vos"));
+        inv.setItem(14, boton(Material.ORANGE_CONCRETE, deg(am1, am2, "Izquierda"), "<gray>A tu izquierda"));
+        inv.setItem(16, boton(Material.ORANGE_CONCRETE, deg(am1, am2, "Derecha"), "<gray>A tu derecha"));
+        inv.setItem(15, boton(Material.ENDER_PEARL, deg("#9C36B5", "#E599F7", "Traer acá"), "<gray>Lo pone donde estás parado"));
+        inv.setItem(36, boton(Material.BOOK, deg("#1971C2", "#74C0FC", "Lista"), "<gray>Todos los hologramas y NPCs", "<gray>cercanos"));
         Long pedido = borrando.get(p.getUniqueId());
         if (pedido != null && System.currentTimeMillis() - pedido < 5000) {
-            inv.setItem(40, boton(Material.TNT, "<dark_red><bold>¿Seguro? Clic para BORRAR", "<red>Se borra para siempre.", "<gray>Si no querés, esperá unos segundos."));
+            inv.setItem(40, boton(Material.TNT, deg("#C92A2A", "#FF6B6B", "¿Seguro? Clic para BORRAR"), "<red>Se borra para siempre.", "<gray>Si no querés, esperá unos segundos."));
         } else {
-            inv.setItem(40, boton(Material.LAVA_BUCKET, "<red><bold>Borrar", "<gray>Elimina este " + (e.tipo == Tipo.NPC ? "NPC" : "holograma"), "<dark_gray>Pide confirmación"));
+            inv.setItem(40, boton(Material.LAVA_BUCKET, deg("#C92A2A", "#FF6B6B", "Borrar"),
+                    "<gray>Elimina este " + (e.tipo == Tipo.NPC ? "NPC" : "holograma"), "<dark_gray>Pide confirmación"));
         }
-        inv.setItem(44, boton(Material.BARRIER, "<red><bold>Cerrar"));
+        inv.setItem(44, boton(Material.BARRIER, deg("#868E96", "#CED4DA", "Cerrar")));
     }
 
     private void abrirLista(Player p) {
@@ -325,16 +343,17 @@ final class Editor implements Listener {
             abrirPlantillas(p);
             return;
         }
-        Inventory inv = Bukkit.createInventory(new Lista(todas), 54, core.mm("<dark_gray>Editor » <#E03131>Cercanos"));
+        Inventory inv = Bukkit.createInventory(new Lista(todas), 54, core.mm(MARCA + " <dark_gray>»</dark_gray> <white>Cercanos"));
+        relleno(inv);
         for (int i = 0; i < todas.size(); i++) {
             Entrada e = todas.get(i);
             inv.setItem(i, boton(e.tipo == Tipo.NPC ? Material.PLAYER_HEAD : Material.NAME_TAG,
-                    "<white><bold>" + e.nombre,
+                    deg("#E03131", "#FF8787", e.nombre),
                     "<gray>" + (e.tipo == Tipo.NPC ? "NPC" : "Holograma") + " · a <white>" + (int) e.lugar.distance(p.getLocation()) + "</white> bloques",
                     "<dark_gray>Clic para editar"));
         }
-        inv.setItem(49, boton(Material.NETHER_STAR, "<#FF6B6B><bold>Crear holograma nuevo", "<gray>Elegí una plantilla de 3y33", "<gray>y se crea donde estás parado."));
-        inv.setItem(53, boton(Material.BARRIER, "<red><bold>Cerrar"));
+        inv.setItem(49, boton(Material.NETHER_STAR, deg("#E03131", "#FF8787", "Crear holograma nuevo"), "<gray>Elegí una plantilla de 3y33", "<gray>y se crea donde estás parado."));
+        inv.setItem(53, boton(Material.BARRIER, deg("#868E96", "#CED4DA", "Cerrar")));
         p.openInventory(inv);
     }
 
@@ -348,12 +367,11 @@ final class Editor implements Listener {
             {"discord", "BLUE_DYE", "<gradient:#4263EB:#91A7FF><bold>Discord</bold></gradient>"}};
 
     private void abrirPlantillas(Player p) {
-        Inventory inv = Bukkit.createInventory(new Crear(), 27, core.mm("<dark_gray>Editor » <#E03131>Crear holograma"));
-        ItemStack relleno = boton(Material.GRAY_STAINED_GLASS_PANE, " ");
-        for (int i = 0; i < 27; i++) inv.setItem(i, relleno);
+        Inventory inv = Bukkit.createInventory(new Crear(), 27, core.mm(MARCA + " <dark_gray>»</dark_gray> <white>Crear holograma"));
+        relleno(inv);
         for (int i = 0; i < PLANT.length; i++)
             inv.setItem(10 + i, boton(Material.valueOf(PLANT[i][1]), PLANT[i][2], "<gray>Clic para crearlo acá", "<dark_gray>Después lo acomodás con el editor"));
-        inv.setItem(22, boton(Material.BARRIER, "<red><bold>Cerrar"));
+        inv.setItem(22, boton(Material.BARRIER, deg("#868E96", "#CED4DA", "Cerrar")));
         p.openInventory(inv);
     }
 
