@@ -50,6 +50,10 @@ final class Editor implements Listener {
         @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 9); }
     }
 
+    private record Crear() implements InventoryHolder {
+        @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 9); }
+    }
+
     private static final double[] PASOS = {0.1, 0.5, 1.0};
 
     private final Core core;
@@ -160,6 +164,7 @@ final class Editor implements Listener {
             darItem(p);
             Sel s = seleccion.get(p.getUniqueId());
             if (s != null && buscar(s) != null) abrirPanel(p, s);
+            else abrirLista(p);
             return true;
         }
         if (args[0].equalsIgnoreCase("lista")) { abrirLista(p); return true; }
@@ -315,7 +320,11 @@ final class Editor implements Listener {
         for (Entrada e : leer()) if (e.lugar.getWorld().equals(p.getWorld())) todas.add(e);
         todas.sort(Comparator.comparingDouble(e -> e.lugar.distanceSquared(p.getLocation())));
         if (todas.size() > 45) todas = new ArrayList<>(todas.subList(0, 45));
-        if (todas.isEmpty()) { core.aviso(p, "<gray>No hay hologramas ni NPCs en este mundo todavía."); return; }
+        if (todas.isEmpty()) {
+            core.aviso(p, "<gray>No hay hologramas ni NPCs en este mundo todavía. Elegí una plantilla para crear el primero.");
+            abrirPlantillas(p);
+            return;
+        }
         Inventory inv = Bukkit.createInventory(new Lista(todas), 54, core.mm("<dark_gray>Editor » <#E03131>Cercanos"));
         for (int i = 0; i < todas.size(); i++) {
             Entrada e = todas.get(i);
@@ -324,26 +333,63 @@ final class Editor implements Listener {
                     "<gray>" + (e.tipo == Tipo.NPC ? "NPC" : "Holograma") + " · a <white>" + (int) e.lugar.distance(p.getLocation()) + "</white> bloques",
                     "<dark_gray>Clic para editar"));
         }
+        inv.setItem(49, boton(Material.NETHER_STAR, "<#FF6B6B><bold>Crear holograma nuevo", "<gray>Elegí una plantilla de 3y33", "<gray>y se crea donde estás parado."));
         inv.setItem(53, boton(Material.BARRIER, "<red><bold>Cerrar"));
+        p.openInventory(inv);
+    }
+
+    private static final String[][] PLANT = {
+            {"bienvenida", "NETHER_STAR", "<gradient:#E03131:#FF8787><bold>Bienvenida</bold></gradient>"},
+            {"terrenos", "LIME_DYE", "<gradient:#2F9E44:#8CE99A><bold>Terrenos</bold></gradient>"},
+            {"misiones", "YELLOW_DYE", "<gradient:#F08C00:#FFE066><bold>Misiones</bold></gradient>"},
+            {"niveles", "PURPLE_DYE", "<gradient:#9C36B5:#E599F7><bold>Niveles</bold></gradient>"},
+            {"reglas", "LIGHT_BLUE_DYE", "<gradient:#1971C2:#74C0FC><bold>Reglas</bold></gradient>"},
+            {"explorar", "ORANGE_DYE", "<gradient:#E8590C:#FFC078><bold>Explorar</bold></gradient>"},
+            {"discord", "BLUE_DYE", "<gradient:#4263EB:#91A7FF><bold>Discord</bold></gradient>"}};
+
+    private void abrirPlantillas(Player p) {
+        Inventory inv = Bukkit.createInventory(new Crear(), 27, core.mm("<dark_gray>Editor » <#E03131>Crear holograma"));
+        ItemStack relleno = boton(Material.GRAY_STAINED_GLASS_PANE, " ");
+        for (int i = 0; i < 27; i++) inv.setItem(i, relleno);
+        for (int i = 0; i < PLANT.length; i++)
+            inv.setItem(10 + i, boton(Material.valueOf(PLANT[i][1]), PLANT[i][2], "<gray>Clic para crearlo acá", "<dark_gray>Después lo acomodás con el editor"));
+        inv.setItem(22, boton(Material.BARRIER, "<red><bold>Cerrar"));
         p.openInventory(inv);
     }
 
     @EventHandler
     public void alArrastrar(InventoryDragEvent e) {
         InventoryHolder h = e.getView().getTopInventory().getHolder();
-        if (h instanceof Panel || h instanceof Lista) e.setCancelled(true);
+        if (h instanceof Panel || h instanceof Lista || h instanceof Crear) e.setCancelled(true);
     }
 
     @EventHandler
     public void alClickear(InventoryClickEvent e) {
         InventoryHolder h = e.getView().getTopInventory().getHolder();
-        if (!(h instanceof Panel) && !(h instanceof Lista)) return;
+        if (!(h instanceof Panel) && !(h instanceof Lista) && !(h instanceof Crear)) return;
         e.setCancelled(true);
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (e.getClickedInventory() == null || e.getClickedInventory() != e.getView().getTopInventory()) return;
         int slot = e.getRawSlot();
+        if (h instanceof Crear) {
+            if (slot == 22) { p.closeInventory(); return; }
+            int i = slot - 10;
+            if (i >= 0 && i < PLANT.length) {
+                p.closeInventory();
+                String id = PLANT[i][0];
+                Bukkit.getScheduler().runTask(core, () -> {
+                    String creado = Plantillas.crear(core, p, id, null);
+                    if (creado != null) {
+                        core.aviso(p, "<gray>Holograma <white>" + creado + "</white> creado. Acomodalo con el panel.");
+                        Bukkit.getScheduler().runTaskLater(core, () -> comando(p, new String[]{creado}), 3L);
+                    }
+                });
+            }
+            return;
+        }
         if (h instanceof Lista l) {
             if (slot == 53) { p.closeInventory(); return; }
+            if (slot == 49) { Bukkit.getScheduler().runTask(core, () -> abrirPlantillas(p)); return; }
             if (slot >= 0 && slot < l.items.size()) {
                 Entrada en = l.items.get(slot);
                 Sel s = new Sel(en.tipo, en.nombre);
