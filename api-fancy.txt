@@ -1,100 +1,124 @@
-=== fh
-de/oliver/fancyholograms/api/FancyHologramsPlugin.class
-de/oliver/fancyholograms/api/HologramConfiguration.class
-de/oliver/fancyholograms/api/HologramManager.class
-de/oliver/fancyholograms/api/HologramStorage.class
-de/oliver/fancyholograms/api/data/BlockHologramData.class
-de/oliver/fancyholograms/api/data/DisplayHologramData.class
-de/oliver/fancyholograms/api/data/HologramData.class
-de/oliver/fancyholograms/api/data/ItemHologramData.class
-de/oliver/fancyholograms/api/data/TextHologramData.class
-de/oliver/fancyholograms/api/events/HologramCreateEvent.class
-de/oliver/fancyholograms/api/events/HologramDeleteEvent.class
-de/oliver/fancyholograms/api/events/HologramEvent.class
-de/oliver/fancyholograms/api/events/HologramHideEvent.class
-de/oliver/fancyholograms/api/events/HologramShowEvent.class
-de/oliver/fancyholograms/api/events/HologramUpdateEvent.class
-de/oliver/fancyholograms/api/events/HologramsLoadedEvent.class
-de/oliver/fancyholograms/api/events/HologramsUnloadedEvent.class
-de/oliver/fancyholograms/api/hologram/Hologram.class
-de/oliver/fancyholograms/api/hologram/HologramType.class
-=== fn
-de/oliver/fancynpcs/tests/api/NpcTestEnv.class
-de/oliver/fancynpcs/api/FancyNpcsConfig.class
-de/oliver/fancynpcs/api/FancyNpcsPlugin.class
-de/oliver/fancynpcs/api/Npc.class
-de/oliver/fancynpcs/api/NpcAttribute.class
-de/oliver/fancynpcs/api/NpcData.class
-de/oliver/fancynpcs/api/NpcManager.class
-de/oliver/fancynpcs/api/actions/NpcAction.class
-de/oliver/fancynpcs/api/data/property/NpcVisibility.class
-de/oliver/fancynpcs/api/events/NpcCreateEvent.class
-de/oliver/fancynpcs/api/events/NpcInteractEvent.class
-de/oliver/fancynpcs/api/events/NpcModifyEvent.class
-de/oliver/fancynpcs/api/events/NpcPreInteractEvent.class
-de/oliver/fancynpcs/api/events/NpcRemoveEvent.class
-de/oliver/fancynpcs/api/events/NpcSpawnEvent.class
-de/oliver/fancynpcs/api/events/NpcStartLookingEvent.class
-de/oliver/fancynpcs/api/events/NpcStopLookingEvent.class
-de/oliver/fancynpcs/api/events/NpcsLoadedEvent.class
-de/oliver/fancynpcs/api/utils/NpcEquipmentSlot.class
-##### de/oliver/fancyholograms/api/HologramManager
+##### de.oliver.fancyholograms.api.FancyHologramsPlugin
+Compiled from "FancyHologramsPlugin.java"
+public interface de.oliver.fancyholograms.api.FancyHologramsPlugin {
+  public static de.oliver.fancyholograms.api.FancyHologramsPlugin get();
+  public static boolean isEnabled();
+  public abstract org.bukkit.plugin.java.JavaPlugin getPlugin();
+  public abstract de.oliver.fancyanalytics.logger.ExtendedFancyLogger getFancyLogger();
+  public abstract de.oliver.fancyholograms.api.HologramManager getHologramManager();
+  public abstract de.oliver.fancyholograms.api.HologramConfiguration getHologramConfiguration();
+  public abstract void setHologramConfiguration(de.oliver.fancyholograms.api.HologramConfiguration, boolean);
+  public abstract de.oliver.fancyholograms.api.HologramStorage getHologramStorage();
+  public abstract java.util.concurrent.ScheduledExecutorService getHologramThread();
+  public abstract void setHologramStorage(de.oliver.fancyholograms.api.HologramStorage, boolean);
+}
+##### de.oliver.fancyholograms.api.HologramManager
 Compiled from "HologramManager.java"
 public interface de.oliver.fancyholograms.api.HologramManager {
   public abstract java.util.Optional<de.oliver.fancyholograms.api.hologram.Hologram> getHologram(java.lang.String);
+  public abstract java.util.Collection<de.oliver.fancyholograms.api.hologram.Hologram> getPersistentHolograms();
   public abstract java.util.Collection<de.oliver.fancyholograms.api.hologram.Hologram> getHolograms();
+  public abstract void addHologram(de.oliver.fancyholograms.api.hologram.Hologram);
+  public abstract void removeHologram(de.oliver.fancyholograms.api.hologram.Hologram);
   public abstract de.oliver.fancyholograms.api.hologram.Hologram create(de.oliver.fancyholograms.api.data.HologramData);
-##### de/oliver/fancyholograms/api/data/DisplayHologramData
-  public de.oliver.fancyholograms.api.data.DisplayHologramData(java.lang.String, de.oliver.fancyholograms.api.hologram.HologramType, org.bukkit.Location);
-##### de/oliver/fancyholograms/api/data/HologramData
-  public de.oliver.fancyholograms.api.data.HologramData(java.lang.String, de.oliver.fancyholograms.api.hologram.HologramType, org.bukkit.Location);
-  public java.lang.String getName();
-  public org.bukkit.Location getLocation();
-  public de.oliver.fancyholograms.api.data.HologramData setLocation(org.bukkit.Location);
-##### de/oliver/fancyholograms/api/hologram/Hologram
+  public abstract void loadHolograms();
+  public abstract boolean isLoaded();
+  public abstract void saveHolograms();
+  public abstract void reloadHolograms();
+}
+##### de.oliver.fancyholograms.api.HologramStorage
+Compiled from "HologramStorage.java"
+public interface de.oliver.fancyholograms.api.HologramStorage {
+  public abstract void saveBatch(java.util.Collection<de.oliver.fancyholograms.api.hologram.Hologram>, boolean);
+  public abstract void save(de.oliver.fancyholograms.api.hologram.Hologram);
+  public abstract void delete(de.oliver.fancyholograms.api.hologram.Hologram);
+  public abstract java.util.Collection<de.oliver.fancyholograms.api.hologram.Hologram> loadAll();
+  public abstract java.util.Collection<de.oliver.fancyholograms.api.hologram.Hologram> loadAll(java.lang.String);
+}
+##### de.oliver.fancyholograms.api.hologram.Hologram
+Compiled from "Hologram.java"
+public abstract class de.oliver.fancyholograms.api.hologram.Hologram {
+  public static final int LINE_WIDTH;
+  public static final org.bukkit.Color TRANSPARENT;
   public java.lang.String getName();
   public final de.oliver.fancyholograms.api.data.HologramData getData();
+  public abstract int getEntityId();
+  public abstract org.bukkit.entity.Display getDisplayEntity();
   public final void createHologram();
+  public final void deleteHologram();
+  public final void showHologram(java.util.Collection<? extends org.bukkit.entity.Player>);
+  public final void showHologram(org.bukkit.entity.Player);
+  public final void forceShowHologram(org.bukkit.entity.Player);
+  public final void hideHologram(java.util.Collection<? extends org.bukkit.entity.Player>);
+  public final void hideHologram(org.bukkit.entity.Player);
+  public final void forceHideHologram(org.bukkit.entity.Player);
   public final void updateHologram();
+  public final void queueUpdate();
   public final void forceUpdate();
   public void refreshForViewers();
   public void refreshForViewersInWorld();
   public final void refreshHologram(org.bukkit.entity.Player);
   public final void refreshHologram(java.util.Collection<? extends org.bukkit.entity.Player>);
+  public final java.util.Set<java.util.UUID> getViewers();
+  public final boolean isViewer(org.bukkit.entity.Player);
+  public final boolean isViewer(java.util.UUID);
+  public boolean meetsVisibilityConditions(org.bukkit.entity.Player);
+  public boolean isWithinVisibilityDistance(org.bukkit.entity.Player);
   public void updateShownStateFor(org.bukkit.entity.Player);
   public void forceUpdateShownStateFor(org.bukkit.entity.Player);
-##### de/oliver/fancynpcs/api/FancyNpcsPlugin
-Compiled from "FancyNpcsPlugin.java"
-public interface de.oliver.fancynpcs.api.FancyNpcsPlugin {
-  public static de.oliver.fancynpcs.api.FancyNpcsPlugin get();
-  public abstract org.bukkit.plugin.java.JavaPlugin getPlugin();
-  public abstract java.util.concurrent.ScheduledExecutorService getNpcThread();
-  public abstract java.util.function.Function<de.oliver.fancynpcs.api.NpcData, de.oliver.fancynpcs.api.Npc> getNpcAdapter();
-  public abstract de.oliver.fancynpcs.api.NpcManager getNpcManager();
-  public abstract de.oliver.fancynpcs.api.AttributeManager getAttributeManager();
-  public abstract de.oliver.fancynpcs.api.actions.ActionManager getActionManager();
-  public abstract de.oliver.fancynpcs.api.skins.SkinManager getSkinManager();
-##### de/oliver/fancynpcs/api/Npc
-  public abstract void create();
-  public abstract void spawn(org.bukkit.entity.Player);
-  public void spawnForAll();
-  public abstract void lookAt(org.bukkit.entity.Player, org.bukkit.Location);
-  public abstract void update(org.bukkit.entity.Player, boolean);
-  public void update(org.bukkit.entity.Player);
-  public void updateForAll(boolean);
-  public void updateForAll();
-  public de.oliver.fancynpcs.api.NpcData getData();
-##### de/oliver/fancynpcs/api/NpcData
-  public de.oliver.fancynpcs.api.NpcData(java.lang.String, java.lang.String, java.util.UUID, java.lang.String, de.oliver.fancynpcs.api.skins.SkinData, org.bukkit.Location, boolean, boolean, boolean, boolean, net.kyori.adventure.text.format.NamedTextColor, org.bukkit.entity.EntityType, java.util.Map<de.oliver.fancynpcs.api.utils.NpcEquipmentSlot, org.bukkit.inventory.ItemStack>, boolean, int, java.util.function.Consumer<org.bukkit.entity.Player>, java.util.Map<de.oliver.fancynpcs.api.actions.ActionTrigger, java.util.List<de.oliver.fancynpcs.api.actions.NpcAction$NpcActionData>>, float, float, int, java.util.Map<de.oliver.fancynpcs.api.NpcAttribute, java.lang.String>, boolean);
-  public de.oliver.fancynpcs.api.NpcData(java.lang.String, java.util.UUID, org.bukkit.Location);
-  public java.lang.String getName();
-  public org.bukkit.Location getLocation();
-  public de.oliver.fancynpcs.api.NpcData setLocation(org.bukkit.Location);
-##### de/oliver/fancynpcs/api/NpcManager
+  public final net.kyori.adventure.text.Component getShownText(org.bukkit.entity.Player);
+  public void clearTextCache();
+  public final boolean equals(java.lang.Object);
+  public final int hashCode();
+}
+##### de.oliver.fancynpcs.api.NpcManager
 Compiled from "NpcManager.java"
 public interface de.oliver.fancynpcs.api.NpcManager {
+  public abstract void registerNpc(de.oliver.fancynpcs.api.Npc);
+  public abstract void removeNpc(de.oliver.fancynpcs.api.Npc);
   public abstract de.oliver.fancynpcs.api.Npc getNpc(int);
   public abstract de.oliver.fancynpcs.api.Npc getNpc(java.lang.String);
   public abstract de.oliver.fancynpcs.api.Npc getNpcById(java.lang.String);
   public abstract de.oliver.fancynpcs.api.Npc getNpc(java.lang.String, java.util.UUID);
   public abstract java.util.Collection<de.oliver.fancynpcs.api.Npc> getAllNpcs();
+  public abstract void saveNpcs(boolean);
+  public abstract void loadNpcs();
+  public abstract boolean isLoaded();
+  public abstract void reloadNpcs();
+}
+##### de.oliver.fancynpcs.api.Npc
+Compiled from "Npc.java"
+public abstract class de.oliver.fancynpcs.api.Npc {
+  public de.oliver.fancynpcs.api.Npc(de.oliver.fancynpcs.api.NpcData);
+  public abstract void create();
+  public abstract void spawn(org.bukkit.entity.Player);
+  public void spawnForAll();
+  public abstract void remove(org.bukkit.entity.Player);
+  public void removeForAll();
+  public void checkAndUpdateVisibility(org.bukkit.entity.Player);
+  public void checkAndUpdateVisibilityForAll();
+  public abstract void lookAt(org.bukkit.entity.Player, org.bukkit.Location);
+  public abstract void update(org.bukkit.entity.Player, boolean);
+  public void update(org.bukkit.entity.Player);
+  public void updateForAll(boolean);
+  public void updateForAll();
+  public abstract void move(org.bukkit.entity.Player, boolean);
+  public void move(org.bukkit.entity.Player);
+  public void moveForAll(boolean);
+  public void moveForAll();
+  public void interact(org.bukkit.entity.Player);
+  public void interact(org.bukkit.entity.Player, de.oliver.fancynpcs.api.actions.ActionTrigger);
+  public abstract int getEntityId();
+  public de.oliver.fancynpcs.api.NpcData getData();
+  public abstract float getEyeHeight();
+  public java.util.Map<java.util.UUID, java.lang.Boolean> getIsTeamCreated();
+  public java.util.Map<java.util.UUID, java.lang.Boolean> getIsVisibleForPlayer();
+  public boolean isShownFor(org.bukkit.entity.Player);
+  public java.util.Map<java.util.UUID, java.lang.Boolean> getIsLookingAtPlayer();
+  public java.util.Map<java.util.UUID, java.lang.Long> getLastPlayerInteraction();
+  public boolean isDirty();
+  public void setDirty(boolean);
+  public boolean isSaveToFile();
+  public void setSaveToFile(boolean);
+}
+      728  1980-02-01 00:00   paper-plugin.yml
