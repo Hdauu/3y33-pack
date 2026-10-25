@@ -1,0 +1,29 @@
+name: Explorar API Fancy
+on:
+  workflow_dispatch:
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Bajar jars
+        run: |
+          mkdir j && cd j
+          curl -sSL -o fh.jar "https://cdn.modrinth.com/data/5QNgOj66/versions/dBBdi95S/FancyHolograms-2.12.0.jar"
+          curl -sSL -o fn.jar "https://cdn.modrinth.com/data/EeyAn23L/versions/Xvcnsc7e/FancyNpcs-2.12.1%2B379.jar"
+          ls -la
+      - name: Clases de la API
+        run: |
+          cd j
+          for f in fh fn; do echo "=== $f"; unzip -l $f.jar | awk '{print $4}' | grep -E '/api/' | grep -E '(HologramManager|/Hologram|HologramData|FancyHolograms|NpcManager|/Npc|NpcData|FancyNpcs)[A-Za-z]*\.class$' | grep -v '\$' | head -40; done
+      - name: Firmas
+        run: |
+          cd j
+          for f in fh fn; do
+            for c in $(unzip -l $f.jar | awk '{print $4}' | grep -E '/api/' | grep -E '/(HologramManager|Hologram|FancyHolograms|NpcManager|Npc|FancyNpcsPlugin|NpcData|HologramData|DisplayHologramData)\.class$' | sed 's/\.class$//'); do
+              echo "##### $c"; javap -public -cp $f.jar "$(echo $c | tr / .)" | grep -E 'Location|getHologram|getNpc|getAll|getData|spawn|update|refresh|forceUpdate|getName|get\(|getInstance|Manager|create|Plugin' | head -40
+            done
+          done
