@@ -21,6 +21,12 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+      - name: Bajar la API de Fancy (jars exactos que usa el server)
+        working-directory: plugins/3y33Core
+        run: |
+          mkdir -p libs
+          curl -sSfL -o libs/FancyHolograms.jar "https://cdn.modrinth.com/data/5QNgOj66/versions/dBBdi95S/FancyHolograms-2.12.0.jar"
+          curl -sSfL -o libs/FancyNpcs.jar "https://cdn.modrinth.com/data/EeyAn23L/versions/Xvcnsc7e/FancyNpcs-2.12.1%2B379.jar"
       - name: Compilar
         working-directory: plugins/3y33Core
         run: mvn -B -q package

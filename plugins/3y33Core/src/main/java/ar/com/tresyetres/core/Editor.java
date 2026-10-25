@@ -8,9 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,14 +23,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import de.oliver.fancyholograms.api.FancyHologramsPlugin;
+import de.oliver.fancyholograms.api.hologram.Hologram;
+import de.oliver.fancynpcs.api.FancyNpcsPlugin;
+import de.oliver.fancynpcs.api.Npc;
 
-import java.io.File;
 import java.util.*;
 
 /**
  * Editor de hologramas (FancyHolograms) y NPCs (FancyNpcs) con un panel de botones.
- * No usa la API de esos plugins: lee sus archivos para saber dónde están y los mueve con sus comandos,
- * ejecutados como el staff que lo usa (necesita los permisos de esos plugins).
+ * Usa directamente la API de FancyHolograms y FancyNpcs: lee las posiciones en vivo y los mueve sin pasar por comandos.
  */
 final class Editor implements Listener {
 
@@ -57,59 +56,72 @@ final class Editor implements Listener {
     private final NamespacedKey clave;
     private final Map<UUID, Sel> seleccion = new HashMap<>();
     private final Map<UUID, Integer> paso = new HashMap<>();
-    /** Posición recién movida, por si el plugin todavía no escribió su archivo. */
-    private final Map<String, Location> recientes = new HashMap<>();
-    private final Map<String, Long> recientesHora = new HashMap<>();
 
     Editor(Core core) {
         this.core = core;
         this.clave = new NamespacedKey(core, "editor");
     }
 
-    // ------------------------------------------------------------------ lectura de los archivos de los plugins
+    // ------------------------------------------------------------------ lectura (API de los plugins)
 
     private List<Entrada> leer() {
         List<Entrada> r = new ArrayList<>();
-        File base = core.getDataFolder().getParentFile();
-        leerArchivo(new File(base, "FancyHolograms/holograms.yml"), Tipo.HOLOGRAMA, r);
-        leerArchivo(new File(base, "FancyNpcs/npcs.yml"), Tipo.NPC, r);
-        long ahora = System.currentTimeMillis();
-        List<Entrada> fin = new ArrayList<>();
-        for (Entrada e : r) {
-            String k = e.tipo + ":" + e.nombre.toLowerCase(Locale.ROOT);
-            Location rec = recientes.get(k);
-            if (rec != null && ahora - recientesHora.getOrDefault(k, 0L) < 120_000L) fin.add(new Entrada(e.tipo, e.nombre, rec));
-            else fin.add(e);
-        }
-        return fin;
-    }
-
-    private void leerArchivo(File f, Tipo tipo, List<Entrada> out) {
-        if (!f.isFile()) return;
-        YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
-        recorrer(y, 0, tipo, out);
-    }
-
-    private void recorrer(ConfigurationSection s, int prof, Tipo tipo, List<Entrada> out) {
-        for (String k : s.getKeys(false)) {
-            ConfigurationSection c = s.getConfigurationSection(k);
-            if (c == null) continue;
-            ConfigurationSection l = c.getConfigurationSection("location");
-            if (l != null && l.contains("x") && l.contains("z")) {
-                World w = Bukkit.getWorld(l.getString("world", ""));
-                if (w == null) continue;
-                String nombre = c.getString("name", k);
-                out.add(new Entrada(tipo, nombre, new Location(w, l.getDouble("x"), l.getDouble("y"), l.getDouble("z"),
-                        (float) l.getDouble("yaw"), (float) l.getDouble("pitch"))));
-            } else if (prof < 3) {
-                recorrer(c, prof + 1, tipo, out);
+        if (Bukkit.getPluginManager().isPluginEnabled("FancyHolograms")) {
+            try {
+                for (Hologram h : FancyHologramsPlugin.get().getHologramManager().getHolograms()) {
+                    Location l = h.getData().getLocation();
+                    if (l != null && l.getWorld() != null) r.add(new Entrada(Tipo.HOLOGRAMA, h.getName(), l));
+                }
+            } catch (Throwable t) {
+                core.getLogger().warning("No pude leer los hologramas: " + t);
             }
         }
+        if (Bukkit.getPluginManager().isPluginEnabled("FancyNpcs")) {
+            try {
+                for (Npc n : FancyNpcsPlugin.get().getNpcManager().getAllNpcs()) {
+                    Location l = n.getData().getLocation();
+                    if (l != null && l.getWorld() != null) r.add(new Entrada(Tipo.NPC, n.getData().getName(), l));
+                }
+            } catch (Throwable t) {
+                core.getLogger().warning("No pude leer los NPCs: " + t);
+            }
+        }
+        return r;
     }
 
     private Entrada buscar(Sel s) {
         for (Entrada e : leer()) if (e.tipo == s.tipo && e.nombre.equalsIgnoreCase(s.nombre)) return e;
         return null;
+    }
+
+    /** Pone el holograma o NPC en la posición nueva (mantiene su rotación) y guarda. */
+    private boolean aplicar(Entrada e, Location n) {
+        try {
+            if (e.tipo == Tipo.HOLOGRAMA) {
+                Hologram h = FancyHologramsPlugin.get().getHologramManager().getHologram(e.nombre).orElse(null);
+                if (h == null) return false;
+                n.setYaw(h.getData().getLocation().getYaw());
+                n.setPitch(h.getData().getLocation().getPitch());
+                h.getData().setLocation(n);
+                h.forceUpdate();
+                h.refreshForViewers();
+                FancyHologramsPlugin.get().getHologramManager().saveHolograms();
+            } else {
+                Npc npc = null;
+                for (Npc x : FancyNpcsPlugin.get().getNpcManager().getAllNpcs())
+                    if (x.getData().getName().equalsIgnoreCase(e.nombre)) { npc = x; break; }
+                if (npc == null) return false;
+                n.setYaw(npc.getData().getLocation().getYaw());
+                n.setPitch(npc.getData().getLocation().getPitch());
+                npc.getData().setLocation(n);
+                npc.moveForAll();
+                FancyNpcsPlugin.get().getNpcManager().saveNpcs(false);
+            }
+            return true;
+        } catch (Throwable t) {
+            core.getLogger().warning("No pude mover " + e.nombre + ": " + t);
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------ comando /editor
@@ -358,12 +370,7 @@ final class Editor implements Listener {
         Entrada e = buscar(panel.sel);
         if (e == null) { p.closeInventory(); core.aviso(p, "<red>Ese holograma o NPC ya no existe."); return; }
         Location n = e.lugar.clone().add(dx, dy, dz);
-        if (e.tipo == Tipo.HOLOGRAMA) {
-            p.performCommand("hologram edit " + e.nombre + " moveto " + rel(dx) + " " + rel(dy) + " " + rel(dz));
-        } else {
-            p.performCommand("npc move_to " + e.nombre + " " + num6(n.getX()) + " " + num6(n.getY()) + " " + num6(n.getZ()));
-        }
-        recordar(e, n);
+        if (!aplicar(e, n)) { core.aviso(p, "<red>No se pudo mover. Mirá la consola."); return; }
         feedback(p, n);
         refrescar(p, panel);
     }
@@ -371,21 +378,10 @@ final class Editor implements Listener {
     private void traer(Player p, Panel panel) {
         Entrada e = buscar(panel.sel);
         if (e == null) { p.closeInventory(); return; }
-        Location aqui = p.getLocation();
-        if (e.tipo == Tipo.HOLOGRAMA) p.performCommand("hologram edit " + e.nombre + " movehere");
-        else p.performCommand("npc move_to " + e.nombre + " " + num6(aqui.getX()) + " " + num6(aqui.getY()) + " " + num6(aqui.getZ()));
-        Location n = aqui.clone();
-        n.setYaw(e.lugar.getYaw());
-        n.setPitch(e.lugar.getPitch());
-        recordar(e, n);
+        Location n = p.getLocation().clone();
+        if (!aplicar(e, n)) { core.aviso(p, "<red>No se pudo mover. Mirá la consola."); return; }
         feedback(p, n);
         refrescar(p, panel);
-    }
-
-    private void recordar(Entrada e, Location n) {
-        String k = e.tipo + ":" + e.nombre.toLowerCase(Locale.ROOT);
-        recientes.put(k, n);
-        recientesHora.put(k, System.currentTimeMillis());
     }
 
     private void feedback(Player p, Location n) {
@@ -402,10 +398,6 @@ final class Editor implements Listener {
             }
         }, 2L);
     }
-
-    private static String rel(double d) { return d == 0 ? "~" : "~" + num(d); }
-
-    private static String num6(double d) { return String.format(Locale.ROOT, "%.3f", d); }
 
     @EventHandler
     public void alSalir(PlayerQuitEvent e) {
