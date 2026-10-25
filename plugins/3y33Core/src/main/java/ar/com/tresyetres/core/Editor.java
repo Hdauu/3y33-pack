@@ -56,6 +56,8 @@ final class Editor implements Listener {
     private final NamespacedKey clave;
     private final Map<UUID, Sel> seleccion = new HashMap<>();
     private final Map<UUID, Integer> paso = new HashMap<>();
+    /** Quién pidió borrar y cuándo (hay que confirmar con un segundo clic). */
+    private final Map<UUID, Long> borrando = new HashMap<>();
 
     Editor(Core core) {
         this.core = core;
@@ -92,6 +94,32 @@ final class Editor implements Listener {
     private Entrada buscar(Sel s) {
         for (Entrada e : leer()) if (e.tipo == s.tipo && e.nombre.equalsIgnoreCase(s.nombre)) return e;
         return null;
+    }
+
+    /** Borra el holograma o NPC del server (y de su archivo). */
+    private boolean eliminar(Entrada e) {
+        try {
+            if (e.tipo == Tipo.HOLOGRAMA) {
+                Hologram h = FancyHologramsPlugin.get().getHologramManager().getHologram(e.nombre).orElse(null);
+                if (h == null) return false;
+                h.deleteHologram();
+                FancyHologramsPlugin.get().getHologramManager().removeHologram(h);
+                try { FancyHologramsPlugin.get().getHologramStorage().delete(h); } catch (Throwable ignorar) { }
+                FancyHologramsPlugin.get().getHologramManager().saveHolograms();
+            } else {
+                Npc npc = null;
+                for (Npc x : FancyNpcsPlugin.get().getNpcManager().getAllNpcs())
+                    if (x.getData().getName().equalsIgnoreCase(e.nombre)) { npc = x; break; }
+                if (npc == null) return false;
+                npc.removeForAll();
+                FancyNpcsPlugin.get().getNpcManager().removeNpc(npc);
+                FancyNpcsPlugin.get().getNpcManager().saveNpcs(false);
+            }
+            return true;
+        } catch (Throwable t) {
+            core.getLogger().warning("No pude borrar " + e.nombre + ": " + t);
+            return false;
+        }
     }
 
     /** Pone el holograma o NPC en la posición nueva (mantiene su rotación) y guarda. */
@@ -273,6 +301,12 @@ final class Editor implements Listener {
         inv.setItem(24, boton(Material.ARROW, "<white><bold>Atrás", "<gray>Hacia vos"));
         inv.setItem(15, boton(Material.ENDER_PEARL, "<#FF6B6B><bold>Traer acá", "<gray>Lo pone donde estás parado"));
         inv.setItem(36, boton(Material.BOOK, "<white><bold>Lista", "<gray>Holograma o NPC más cercanos"));
+        Long pedido = borrando.get(p.getUniqueId());
+        if (pedido != null && System.currentTimeMillis() - pedido < 5000) {
+            inv.setItem(40, boton(Material.TNT, "<dark_red><bold>¿Seguro? Clic para BORRAR", "<red>Se borra para siempre.", "<gray>Si no querés, esperá unos segundos."));
+        } else {
+            inv.setItem(40, boton(Material.LAVA_BUCKET, "<red><bold>Borrar", "<gray>Elimina este " + (e.tipo == Tipo.NPC ? "NPC" : "holograma"), "<dark_gray>Pide confirmación"));
+        }
         inv.setItem(44, boton(Material.BARRIER, "<red><bold>Cerrar"));
     }
 
@@ -321,6 +355,28 @@ final class Editor implements Listener {
         Panel panel = (Panel) h;
         switch (slot) {
             case 44 -> { p.closeInventory(); return; }
+            case 40 -> {
+                Long pedido = borrando.get(p.getUniqueId());
+                Entrada en = buscar(panel.sel);
+                if (en == null) { p.closeInventory(); return; }
+                if (pedido != null && System.currentTimeMillis() - pedido < 5000) {
+                    borrando.remove(p.getUniqueId());
+                    p.closeInventory();
+                    seleccion.remove(p.getUniqueId());
+                    if (eliminar(en)) {
+                        p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
+                        core.aviso(p, "<gray>Borraste <white>" + en.nombre + "</white>.");
+                    } else {
+                        core.aviso(p, "<red>No se pudo borrar. Mirá la consola.");
+                    }
+                } else {
+                    borrando.put(p.getUniqueId(), System.currentTimeMillis());
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.8f, 0.8f);
+                    refrescar(p, panel);
+                    Bukkit.getScheduler().runTaskLater(core, () -> refrescar(p, panel), 105L);
+                }
+                return;
+            }
             case 36 -> { Bukkit.getScheduler().runTask(core, () -> abrirLista(p)); return; }
             case 11 -> {
                 paso.put(p.getUniqueId(), (paso.getOrDefault(p.getUniqueId(), 1) + 1) % PASOS.length);
@@ -403,5 +459,6 @@ final class Editor implements Listener {
     public void alSalir(PlayerQuitEvent e) {
         seleccion.remove(e.getPlayer().getUniqueId());
         paso.remove(e.getPlayer().getUniqueId());
+        borrando.remove(e.getPlayer().getUniqueId());
     }
 }
