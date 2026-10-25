@@ -131,6 +131,13 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     reloadConfig();
                     iniciarAnuncios();
                     msg(sender, "<green>Configuración recargada.");
+                } else if (args.length > 1 && args[0].equalsIgnoreCase("holograma")) {
+                    if (!(sender instanceof Player jp)) { msg(sender, "<red>Solo jugadores."); return true; }
+                    String creado = Plantillas.crear(this, jp, args[1], args.length > 2 ? args[2] : null);
+                    if (creado != null) {
+                        msg(sender, "<gray>Holograma <white>" + creado + "</white> creado. Se abre el editor para acomodarlo.");
+                        Bukkit.getScheduler().runTaskLater(this, () -> editor.comando(jp, new String[]{creado}), 3L);
+                    }
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("anuncio")) {
                     anunciar();
                 } else if (args.length > 1 && (args[0].equalsIgnoreCase("aceptar") || args[0].equalsIgnoreCase("rechazar"))) {
@@ -139,7 +146,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     if (args[0].equalsIgnoreCase("aceptar")) reglasObligatorias.aceptar(objetivo);
                     else reglasObligatorias.rechazar(objetivo);
                 } else {
-                    msg(sender, "<gray>/3y33core reload <dark_gray>·</dark_gray> /3y33core anuncio");
+                    msg(sender, "<gray>/3y33core reload <dark_gray>·</dark_gray> anuncio <dark_gray>·</dark_gray> holograma <plantilla> [nombre]");
                 }
             }
         }
@@ -260,7 +267,12 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
             for (String s : editor.nombres()) if (s.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) r.add(s);
             return r;
         }
-        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar");
+        if (n.equals("3y33core") && args.length == 2 && args[0].equalsIgnoreCase("holograma")) {
+            List<String> r = new ArrayList<>();
+            for (String s : Plantillas.nombres()) if (s.startsWith(args[1].toLowerCase(Locale.ROOT))) r.add(s);
+            return r;
+        }
+        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar", "holograma");
         return List.of();
     }
 
