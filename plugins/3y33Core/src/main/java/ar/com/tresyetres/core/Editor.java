@@ -1,6 +1,11 @@
 package ar.com.tresyetres.core;
 
+import de.oliver.fancyholograms.api.data.TextHologramData;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Color;
+import org.joml.Vector3f;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -49,6 +54,45 @@ final class Editor implements Listener {
     private record Lista(List<Entrada> items) implements InventoryHolder {
         @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 9); }
     }
+
+    private record Estilo(Sel sel) implements InventoryHolder {
+        @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 9); }
+    }
+
+    private record Pedido(String nombre, String modo) {}
+
+    private record Preset(String nombre, String a, String b, Material m) {}
+
+    private static final Preset[] PRESETS = {
+            new Preset("Marca 3y33", "#E03131", "#FF8787", Material.RED_DYE),
+            new Preset("Verde", "#2F9E44", "#8CE99A", Material.LIME_DYE),
+            new Preset("Dorado", "#F08C00", "#FFE066", Material.YELLOW_DYE),
+            new Preset("Violeta", "#9C36B5", "#E599F7", Material.PURPLE_DYE),
+            new Preset("Azul", "#1971C2", "#74C0FC", Material.LIGHT_BLUE_DYE),
+            new Preset("Naranja", "#E8590C", "#FFC078", Material.ORANGE_DYE),
+            new Preset("Discord", "#4263EB", "#91A7FF", Material.BLUE_DYE),
+            new Preset("Rosa", "#D6336C", "#FAA2C1", Material.PINK_DYE),
+            new Preset("Cian", "#0C8599", "#99E9F2", Material.CYAN_DYE),
+            new Preset("Fuego", "#E03131", "#FFD43B", Material.MAGMA_CREAM),
+            new Preset("Lima", "#5C940D", "#D8F5A2", Material.SLIME_BALL),
+            new Preset("Plata", "#ADB5BD", "#F8F9FA", Material.LIGHT_GRAY_DYE),
+            new Preset("Oro", "#E67700", "#FFF3BF", Material.GOLD_INGOT),
+            new Preset("Amatista", "#7048E8", "#D0BFFF", Material.AMETHYST_SHARD)};
+
+    private static final String[] FONDO_NOMBRES = {"Oscuro", "Muy oscuro", "Rojo oscuro", "Sin fondo", "Normal de Minecraft"};
+
+    private static Color fondo(int i) {
+        return switch (i) {
+            case 0 -> Color.fromARGB(110, 0, 0, 0);
+            case 1 -> Color.fromARGB(190, 0, 0, 0);
+            case 2 -> Color.fromARGB(150, 90, 8, 8);
+            case 3 -> Hologram.TRANSPARENT;
+            default -> null;
+        };
+    }
+
+    private final Map<UUID, Pedido> pidiendo = new HashMap<>();
+    private final Map<UUID, Integer> fondoIdx = new HashMap<>();
 
     private record Crear() implements InventoryHolder {
         @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(this, 9); }
@@ -322,6 +366,9 @@ final class Editor implements Listener {
         inv.setItem(14, boton(Material.ORANGE_CONCRETE, deg(am1, am2, "Izquierda"), "<gray>A tu izquierda"));
         inv.setItem(16, boton(Material.ORANGE_CONCRETE, deg(am1, am2, "Derecha"), "<gray>A tu derecha"));
         inv.setItem(15, boton(Material.ENDER_PEARL, deg("#9C36B5", "#E599F7", "Traer acá"), "<gray>Lo pone donde estás parado"));
+        if (e.tipo == Tipo.HOLOGRAMA)
+            inv.setItem(38, boton(Material.PAINTING, deg("#D6336C", "#FAA2C1", "Estilo y color"),
+                    "<gray>Colores, fondo, tamaño", "<gray>y texto del holograma"));
         inv.setItem(36, boton(Material.BOOK, deg("#1971C2", "#74C0FC", "Lista"), "<gray>Todos los hologramas y NPCs", "<gray>cercanos"));
         Long pedido = borrando.get(p.getUniqueId());
         if (pedido != null && System.currentTimeMillis() - pedido < 5000) {
@@ -378,17 +425,18 @@ final class Editor implements Listener {
     @EventHandler
     public void alArrastrar(InventoryDragEvent e) {
         InventoryHolder h = e.getView().getTopInventory().getHolder();
-        if (h instanceof Panel || h instanceof Lista || h instanceof Crear) e.setCancelled(true);
+        if (h instanceof Panel || h instanceof Lista || h instanceof Crear || h instanceof Estilo) e.setCancelled(true);
     }
 
     @EventHandler
     public void alClickear(InventoryClickEvent e) {
         InventoryHolder h = e.getView().getTopInventory().getHolder();
-        if (!(h instanceof Panel) && !(h instanceof Lista) && !(h instanceof Crear)) return;
+        if (!(h instanceof Panel) && !(h instanceof Lista) && !(h instanceof Crear) && !(h instanceof Estilo)) return;
         e.setCancelled(true);
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (e.getClickedInventory() == null || e.getClickedInventory() != e.getView().getTopInventory()) return;
         int slot = e.getRawSlot();
+        if (h instanceof Estilo es) { clickEstilo(p, es, slot); return; }
         if (h instanceof Crear) {
             if (slot == 22) { p.closeInventory(); return; }
             int i = slot - 10;
@@ -419,6 +467,11 @@ final class Editor implements Listener {
         Panel panel = (Panel) h;
         switch (slot) {
             case 44 -> { p.closeInventory(); return; }
+            case 38 -> {
+                Entrada en = buscar(panel.sel);
+                if (en != null && en.tipo == Tipo.HOLOGRAMA) Bukkit.getScheduler().runTask(core, () -> abrirEstilo(p, panel.sel));
+                return;
+            }
             case 40 -> {
                 Long pedido = borrando.get(p.getUniqueId());
                 Entrada en = buscar(panel.sel);
@@ -504,6 +557,164 @@ final class Editor implements Listener {
         refrescar(p, panel);
     }
 
+    // ------------------------------------------------------------------ estilo del holograma
+
+    private Hologram holo(String nombre) {
+        try {
+            return FancyHologramsPlugin.get().getHologramManager().getHologram(nombre).orElse(null);
+        } catch (Throwable t) { return null; }
+    }
+
+    private TextHologramData texto(Hologram h) {
+        return h != null && h.getData() instanceof TextHologramData t ? t : null;
+    }
+
+    private void guardarHolo(Hologram h) {
+        h.forceUpdate();
+        h.refreshForViewers();
+        FancyHologramsPlugin.get().getHologramManager().saveHolograms();
+    }
+
+    private void abrirEstilo(Player p, Sel sel) {
+        TextHologramData t = texto(holo(sel.nombre));
+        if (t == null) { core.aviso(p, "<red>Solo se puede dar estilo a hologramas de texto."); return; }
+        Inventory inv = Bukkit.createInventory(new Estilo(sel), 45, core.mm(MARCA + " <dark_gray>»</dark_gray> <white>Estilo de " + sel.nombre));
+        pintarEstilo(inv, p, t);
+        p.openInventory(inv);
+        p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
+    }
+
+    private static int slotPreset(int i) { return i < 7 ? 10 + i : 19 + (i - 7); }
+
+    private void pintarEstilo(Inventory inv, Player p, TextHologramData t) {
+        relleno(inv);
+        for (int i = 0; i < PRESETS.length; i++) {
+            Preset pr = PRESETS[i];
+            inv.setItem(slotPreset(i), boton(pr.m, deg(pr.a, pr.b, pr.nombre), "<gray>Color del título", "<dark_gray>Clic para aplicar"));
+        }
+        inv.setItem(4, boton(Material.PAINTING, deg("#D6336C", "#FAA2C1", "Color del título"), "<gray>Elegí un degradado", "<gray>para la primera línea."));
+        inv.setItem(28, boton(Material.NAME_TAG, deg("#E03131", "#FF8787", "Cambiar título"), "<gray>Escribís el texto nuevo en el chat", "<gray>(mantiene el color)"));
+        inv.setItem(29, boton(Material.WRITABLE_BOOK, deg("#2F9E44", "#8CE99A", "Agregar línea"), "<gray>Escribís la línea en el chat", "<gray>(sale en gris)"));
+        int lineas = t.getText().size();
+        inv.setItem(30, boton(Material.SHEARS, deg("#C92A2A", "#FF6B6B", "Quitar última línea"), "<gray>Tiene " + lineas + " línea" + (lineas == 1 ? "" : "s")));
+        int fi = fondoIdx.getOrDefault(p.getUniqueId(), 0);
+        inv.setItem(32, boton(Material.BLACK_STAINED_GLASS, deg("#868E96", "#CED4DA", "Fondo: " + FONDO_NOMBRES[fi]), "<gray>Clic para cambiar", "<dark_gray>Oscuro · Muy oscuro · Rojo · Sin fondo · Normal"));
+        inv.setItem(33, boton(t.hasTextShadow() ? Material.LIME_DYE : Material.GRAY_DYE,
+                deg("#868E96", "#CED4DA", "Sombra del texto: " + (t.hasTextShadow() ? "sí" : "no")), "<gray>Clic para cambiar"));
+        float s = t.getScale().x;
+        inv.setItem(39, boton(Material.RED_CONCRETE, deg("#E03131", "#FF8787", "Más chico"), "<gray>-0.25"));
+        inv.setItem(40, boton(Material.PAPER, deg("#F08C00", "#FFE066", "Tamaño: " + num(s)), "<gray>1 es el tamaño normal"));
+        inv.setItem(41, boton(Material.LIME_CONCRETE, deg("#2F9E44", "#8CE99A", "Más grande"), "<gray>+0.25"));
+        inv.setItem(36, boton(Material.ARROW, deg("#1971C2", "#74C0FC", "Volver al panel")));
+        inv.setItem(44, boton(Material.BARRIER, deg("#868E96", "#CED4DA", "Cerrar")));
+    }
+
+    private void clickEstilo(Player p, Estilo es, int slot) {
+        if (slot == 44) { p.closeInventory(); return; }
+        if (slot == 36) { Bukkit.getScheduler().runTask(core, () -> abrirPanelDe(p, es.sel)); return; }
+        Hologram h = holo(es.sel.nombre);
+        TextHologramData t = texto(h);
+        if (t == null) { p.closeInventory(); core.aviso(p, "<red>Ese holograma ya no existe."); return; }
+        try {
+            for (int i = 0; i < PRESETS.length; i++) {
+                if (slot != slotPreset(i)) continue;
+                List<String> l = new ArrayList<>(t.getText());
+                if (l.isEmpty()) l.add("Título");
+                String plano = l.get(0).replaceAll("<[^>]*>", "").trim();
+                if (plano.isEmpty()) plano = "Título";
+                l.set(0, deg(PRESETS[i].a, PRESETS[i].b, plano));
+                t.setText(l);
+                guardarHolo(h);
+                p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.3f);
+                refrescarEstilo(p, es);
+                return;
+            }
+            switch (slot) {
+                case 28 -> pedir(p, es, "titulo", "el <white>nuevo título</white>");
+                case 29 -> pedir(p, es, "linea", "la <white>línea nueva</white>");
+                case 30 -> {
+                    List<String> l = new ArrayList<>(t.getText());
+                    if (l.size() > 1) { l.remove(l.size() - 1); t.setText(l); guardarHolo(h); }
+                    refrescarEstilo(p, es);
+                }
+                case 32 -> {
+                    int fi = (fondoIdx.getOrDefault(p.getUniqueId(), 0) + 1) % FONDO_NOMBRES.length;
+                    fondoIdx.put(p.getUniqueId(), fi);
+                    t.setBackground(fondo(fi));
+                    guardarHolo(h);
+                    refrescarEstilo(p, es);
+                }
+                case 33 -> { t.setTextShadow(!t.hasTextShadow()); guardarHolo(h); refrescarEstilo(p, es); }
+                case 39, 41 -> {
+                    float s = Math.max(0.5f, Math.min(4f, t.getScale().x + (slot == 41 ? 0.25f : -0.25f)));
+                    t.setScale(new Vector3f(s, s, s));
+                    guardarHolo(h);
+                    refrescarEstilo(p, es);
+                }
+                default -> { }
+            }
+        } catch (Throwable ex) {
+            core.getLogger().warning("No pude cambiar el estilo de " + es.sel.nombre + ": " + ex);
+            core.aviso(p, "<red>No se pudo cambiar. Mirá la consola.");
+        }
+    }
+
+    private void abrirPanelDe(Player p, Sel sel) {
+        if (buscar(sel) != null) abrirPanel(p, sel);
+    }
+
+    private void refrescarEstilo(Player p, Estilo es) {
+        Bukkit.getScheduler().runTaskLater(core, () -> {
+            Inventory top = p.getOpenInventory().getTopInventory();
+            if (top.getHolder() instanceof Estilo e2 && e2.sel.equals(es.sel)) {
+                TextHologramData t = texto(holo(es.sel.nombre));
+                if (t != null) pintarEstilo(top, p, t);
+            }
+        }, 2L);
+    }
+
+    private void pedir(Player p, Estilo es, String modo, String que) {
+        pidiendo.put(p.getUniqueId(), new Pedido(es.sel.nombre, modo));
+        p.closeInventory();
+        core.aviso(p, "<gray>Escribí en el chat " + que + ". Podés usar colores de MiniMessage. <dark_gray>(escribí <white>cancelar</white> para salir)");
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
+    public void alEscribir(AsyncChatEvent e) {
+        Pedido pe = pidiendo.remove(e.getPlayer().getUniqueId());
+        if (pe == null) return;
+        e.setCancelled(true);
+        String msg = PlainTextComponentSerializer.plainText().serialize(e.message()).trim();
+        Player p = e.getPlayer();
+        Bukkit.getScheduler().runTask(core, () -> {
+            Hologram h = holo(pe.nombre);
+            TextHologramData t = texto(h);
+            if (t == null) { core.aviso(p, "<red>Ese holograma ya no existe."); return; }
+            if (!msg.equalsIgnoreCase("cancelar") && !msg.isEmpty()) {
+                try {
+                    List<String> l = new ArrayList<>(t.getText());
+                    if (pe.modo.equals("titulo")) {
+                        String a = "#E03131", b = "#FF8787";
+                        if (!l.isEmpty()) {
+                            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<gradient:([^:>]+):([^:>]+)>").matcher(l.get(0));
+                            if (m.find()) { a = m.group(1); b = m.group(2); }
+                        }
+                        String nuevo = msg.startsWith("<") ? msg : deg(a, b, msg);
+                        if (l.isEmpty()) l.add(nuevo); else l.set(0, nuevo);
+                    } else {
+                        l.add(msg.startsWith("<") ? msg : "<gray>" + msg);
+                    }
+                    t.setText(l);
+                    guardarHolo(h);
+                } catch (Throwable ex) {
+                    core.getLogger().warning("No pude cambiar el texto de " + pe.nombre + ": " + ex);
+                    core.aviso(p, "<red>No se pudo cambiar el texto. Mirá la consola.");
+                }
+            }
+            abrirEstilo(p, new Sel(Tipo.HOLOGRAMA, pe.nombre));
+        });
+    }
+
     private void feedback(Player p, Location n) {
         p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
         p.spawnParticle(Particle.END_ROD, n.clone().add(0, 0.3, 0), 6, 0.1, 0.1, 0.1, 0.01);
@@ -524,5 +735,7 @@ final class Editor implements Listener {
         seleccion.remove(e.getPlayer().getUniqueId());
         paso.remove(e.getPlayer().getUniqueId());
         borrando.remove(e.getPlayer().getUniqueId());
+        pidiendo.remove(e.getPlayer().getUniqueId());
+        fondoIdx.remove(e.getPlayer().getUniqueId());
     }
 }

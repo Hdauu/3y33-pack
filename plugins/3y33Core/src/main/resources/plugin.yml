@@ -1,5 +1,5 @@
 name: 3y33Core
-version: 1.4.2
+version: 1.5.0
 main: ar.com.tresyetres.core.Core
 api-version: '1.21'
 softdepend: [AuthMe, floodgate, FancyDialogs, FancyHolograms, FancyNpcs]
