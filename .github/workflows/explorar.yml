@@ -1,10 +1,13 @@
 name: Explorar API Fancy
 on:
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   api:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -18,12 +21,23 @@ jobs:
       - name: Clases de la API
         run: |
           cd j
+          exec > ../api-fancy.txt 2>&1
           for f in fh fn; do echo "=== $f"; unzip -l $f.jar | awk '{print $4}' | grep -E '/api/' | grep -E '(HologramManager|/Hologram|HologramData|FancyHolograms|NpcManager|/Npc|NpcData|FancyNpcs)[A-Za-z]*\.class$' | grep -v '\$' | head -40; done
       - name: Firmas
         run: |
           cd j
+          exec >> ../api-fancy.txt 2>&1
           for f in fh fn; do
             for c in $(unzip -l $f.jar | awk '{print $4}' | grep -E '/api/' | grep -E '/(HologramManager|Hologram|FancyHolograms|NpcManager|Npc|FancyNpcsPlugin|NpcData|HologramData|DisplayHologramData)\.class$' | sed 's/\.class$//'); do
               echo "##### $c"; javap -public -cp $f.jar "$(echo $c | tr / .)" | grep -E 'Location|getHologram|getNpc|getAll|getData|spawn|update|refresh|forceUpdate|getName|get\(|getInstance|Manager|create|Plugin' | head -40
             done
           done
+      - name: Guardar el resultado en el repo
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add api-fancy.txt
+          git commit -m "api-fancy: resultado" || true
+          git pull --rebase -q || true
+          git push
