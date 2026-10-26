@@ -20,7 +20,23 @@ final class TerrenosAparte implements Listener {
     private final Tierras pl;
     private final Set<UUID> enProceso = new HashSet<>();
 
-    TerrenosAparte(Tierras pl) { this.pl = pl; }
+    TerrenosAparte(Tierras pl) {
+        this.pl = pl;
+        // al arrancar, borra los terrenos que quedaron sin ningún chunk
+        Bukkit.getScheduler().runTaskLater(pl, this::limpiarVacios, 20L * 20);
+    }
+
+    private void limpiarVacios() {
+        var mgr = LandClaimPlugin.getInstance().getClaimManager();
+        int borrados = 0;
+        for (ClaimProfile c : new java.util.ArrayList<>(mgr.getAllProfiles())) {
+            if (c.getOwnedChunks().isEmpty()) {
+                mgr.deleteProfile(c.getProfileId(), ClaimDeleteEvent.DeleteReason.SYSTEM);
+                borrados++;
+            }
+        }
+        pl.getLogger().info("Terrenos vacíos borrados: " + borrados);
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void alReclamar(ClaimCreateEvent e) {
