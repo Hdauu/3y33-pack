@@ -16,8 +16,8 @@ jobs:
           unzip -qo lc.jar
           : > /tmp/out.txt
           for c in $(find org/ayosynk -name '*.class' | sed 's#/#.#g;s#\.class$##' | grep -E "models\.|ClaimCommand|commands\.|ProfileCommand" | grep -v '\$' | head -60); do javap -p -cp . "$c" >> /tmp/out.txt 2>&1; done
-          cp /tmp/out.txt $GITHUB_WORKSPACE/api-landclaim2.txt
+          cp /tmp/out.txt $GITHUB_WORKSPACE/api-landclaim3.txt
       - name: Guardar
         run: |
           git config user.name github-actions; git config user.email github-actions@users.noreply.github.com
-          git add -f api-landclaim2.txt; git commit -m "api-landclaim: inspeccion" || true; git pull --rebase -q || true; git push
+          git add -f api-landclaim3.txt; git commit -m "api-landclaim: inspeccion" || true; git pull --rebase -q || true; git push
