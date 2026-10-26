@@ -69,6 +69,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         if (economy == null) getLogger().warning("No se encontró economía de Vault: /tierra comprar no va a funcionar.");
 
         getServer().getPluginManager().registerEvents(this, this);
+        if (getServer().getPluginManager().getPlugin("QuickShop-Hikari") != null) getServer().getPluginManager().registerEvents(new Tiendas(this), this);
         // Cada 3 segundos saca los monstruos naturales que entraron caminando a terrenos con monstruos apagados
         getServer().getScheduler().runTaskTimer(this, this::limpiarMonstruos, 60L, 60L);
         Objects.requireNonNull(getCommand("tierra")).setExecutor(this);

@@ -1,11 +1,11 @@
 name: 3y33Tierras
-version: 1.8.4
+version: 1.9.0
 main: ar.com.tresyetres.tierras.Tierras
 api-version: '1.21'
 author: 3y33 SMP
 description: Extras de terrenos para LandClaimPlugin (compra de chunks, mobs, cooldown de teletransportes)
 depend: [LandClaimPlugin]
-softdepend: [Vault, PlaceholderAPI]
+softdepend: [Vault, PlaceholderAPI, QuickShop-Hikari]
 
 commands:
   tierra:
