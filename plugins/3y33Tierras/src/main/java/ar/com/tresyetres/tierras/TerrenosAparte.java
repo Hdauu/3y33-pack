@@ -1,6 +1,8 @@
 package ar.com.tresyetres.tierras;
 
+import org.ayosynk.landClaimPlugin.LandClaimPlugin;
 import org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent;
+import org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent;
 import org.ayosynk.landClaimPlugin.models.ChunkPosition;
 import org.ayosynk.landClaimPlugin.models.ClaimProfile;
 import org.bukkit.Bukkit;
@@ -53,5 +55,20 @@ final class TerrenosAparte implements Listener {
                 Bukkit.getScheduler().runTaskLater(pl, () -> enProceso.remove(id), 20L);
             }, 3L);
         });
+    }
+
+    /** Si te quedás sin ningún chunk en un terreno, el terreno se borra y deja de aparecer en /terrenos. */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void alLiberar(ClaimDeleteEvent e) {
+        ClaimProfile perfil = e.getProfile();
+        if (perfil == null) return;
+        final UUID idPerfil = perfil.getProfileId();
+        Bukkit.getScheduler().runTaskLater(pl, () -> {
+            var mgr = LandClaimPlugin.getInstance().getClaimManager();
+            ClaimProfile vivo = mgr.getProfileById(idPerfil);
+            if (vivo != null && vivo.getOwnedChunks().isEmpty() && !enProceso.contains(vivo.getOwnerId())) {
+                mgr.deleteProfile(idPerfil, ClaimDeleteEvent.DeleteReason.SYSTEM);
+            }
+        }, 5L);
     }
 }
