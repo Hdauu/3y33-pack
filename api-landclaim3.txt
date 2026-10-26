@@ -1,0 +1,1250 @@
+Compiled from "CountMinSketchCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchCommands {
+  public abstract java.lang.String cmsInitByDim(java.lang.String, long, long);
+  public abstract java.lang.String cmsInitByProb(java.lang.String, double, double);
+  public default long cmsIncrBy(java.lang.String, java.lang.String, long);
+  public abstract java.util.List<java.lang.Long> cmsIncrBy(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract java.util.List<java.lang.Long> cmsQuery(java.lang.String, java.lang.String...);
+  public abstract java.lang.String cmsMerge(java.lang.String, java.lang.String...);
+  public abstract java.lang.String cmsMerge(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract java.util.Map<java.lang.String, java.lang.Object> cmsInfo(java.lang.String);
+}
+Compiled from "RedisBloomCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.RedisBloomCommands extends org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchCommands {
+}
+Compiled from "CuckooFilterPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cfReserve(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cfReserve(java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFReserveParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> cfAdd(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> cfAddNx(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> cfInsert(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> cfInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFInsertParams, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> cfInsertNx(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> cfInsertNx(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFInsertParams, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> cfExists(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> cfDel(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> cfCount(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map$Entry<java.lang.Long, byte[]>> cfScanDump(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cfLoadChunk(java.lang.String, long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Object>> cfInfo(java.lang.String);
+}
+Compiled from "TDigestSketchPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestCreate(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestCreate(java.lang.String, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestReset(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestMerge(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestMerge(org.ayosynk.landClaimPlugin.lib.jedis.bloom.TDigestMergeParams, java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Object>> tdigestInfo(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> tdigestAdd(java.lang.String, double...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Double>> tdigestCDF(java.lang.String, double...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Double>> tdigestQuantile(java.lang.String, double...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> tdigestMin(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> tdigestMax(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> tdigestTrimmedMean(java.lang.String, double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> tdigestRank(java.lang.String, double...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> tdigestRevRank(java.lang.String, double...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Double>> tdigestByRank(java.lang.String, long...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Double>> tdigestByRevRank(java.lang.String, long...);
+}
+Compiled from "BloomFilterCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterCommands {
+  public abstract java.lang.String bfReserve(java.lang.String, double, long);
+  public abstract java.lang.String bfReserve(java.lang.String, double, long, org.ayosynk.landClaimPlugin.lib.jedis.bloom.BFReserveParams);
+  public abstract boolean bfAdd(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> bfMAdd(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.Boolean> bfInsert(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.Boolean> bfInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.BFInsertParams, java.lang.String...);
+  public abstract boolean bfExists(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> bfMExists(java.lang.String, java.lang.String...);
+  public abstract java.util.Map$Entry<java.lang.Long, byte[]> bfScanDump(java.lang.String, long);
+  public abstract java.lang.String bfLoadChunk(java.lang.String, long, byte[]);
+  public abstract long bfCard(java.lang.String);
+  public abstract java.util.Map<java.lang.String, java.lang.Object> bfInfo(java.lang.String);
+}
+Compiled from "CountMinSketchPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cmsInitByDim(java.lang.String, long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cmsInitByProb(java.lang.String, double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> cmsIncrBy(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> cmsQuery(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cmsMerge(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> cmsMerge(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Object>> cmsInfo(java.lang.String);
+}
+Compiled from "TDigestSketchCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchCommands {
+  public abstract java.lang.String tdigestCreate(java.lang.String);
+  public abstract java.lang.String tdigestCreate(java.lang.String, int);
+  public abstract java.lang.String tdigestReset(java.lang.String);
+  public abstract java.lang.String tdigestMerge(java.lang.String, java.lang.String...);
+  public abstract java.lang.String tdigestMerge(org.ayosynk.landClaimPlugin.lib.jedis.bloom.TDigestMergeParams, java.lang.String, java.lang.String...);
+  public abstract java.util.Map<java.lang.String, java.lang.Object> tdigestInfo(java.lang.String);
+  public abstract java.lang.String tdigestAdd(java.lang.String, double...);
+  public abstract java.util.List<java.lang.Double> tdigestCDF(java.lang.String, double...);
+  public abstract java.util.List<java.lang.Double> tdigestQuantile(java.lang.String, double...);
+  public abstract double tdigestMin(java.lang.String);
+  public abstract double tdigestMax(java.lang.String);
+  public abstract double tdigestTrimmedMean(java.lang.String, double, double);
+  public abstract java.util.List<java.lang.Long> tdigestRank(java.lang.String, double...);
+  public abstract java.util.List<java.lang.Long> tdigestRevRank(java.lang.String, double...);
+  public abstract java.util.List<java.lang.Double> tdigestByRank(java.lang.String, long...);
+  public abstract java.util.List<java.lang.Double> tdigestByRevRank(java.lang.String, long...);
+}
+Compiled from "BloomFilterPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> bfReserve(java.lang.String, double, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> bfReserve(java.lang.String, double, long, org.ayosynk.landClaimPlugin.lib.jedis.bloom.BFReserveParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> bfAdd(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> bfMAdd(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> bfInsert(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> bfInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.BFInsertParams, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> bfExists(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> bfMExists(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map$Entry<java.lang.Long, byte[]>> bfScanDump(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> bfLoadChunk(java.lang.String, long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bfCard(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Object>> bfInfo(java.lang.String);
+}
+Compiled from "RedisBloomPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.RedisBloomPipelineCommands extends org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterPipelineCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterPipelineCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchPipelineCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterPipelineCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchPipelineCommands {
+}
+Compiled from "TopKFilterCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterCommands {
+  public abstract java.lang.String topkReserve(java.lang.String, long);
+  public abstract java.lang.String topkReserve(java.lang.String, long, long, long, double);
+  public abstract java.util.List<java.lang.String> topkAdd(java.lang.String, java.lang.String...);
+  public default java.lang.String topkIncrBy(java.lang.String, java.lang.String, long);
+  public abstract java.util.List<java.lang.String> topkIncrBy(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract java.util.List<java.lang.Boolean> topkQuery(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.String> topkList(java.lang.String);
+  public abstract java.util.Map<java.lang.String, java.lang.Long> topkListWithCount(java.lang.String);
+  public abstract java.util.Map<java.lang.String, java.lang.Object> topkInfo(java.lang.String);
+}
+Compiled from "TopKFilterPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> topkReserve(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> topkReserve(java.lang.String, long, long, long, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> topkAdd(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> topkIncrBy(java.lang.String, java.util.Map<java.lang.String, java.lang.Long>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> topkQuery(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> topkList(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Long>> topkListWithCount(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.Object>> topkInfo(java.lang.String);
+}
+Compiled from "CuckooFilterCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterCommands {
+  public abstract java.lang.String cfReserve(java.lang.String, long);
+  public abstract java.lang.String cfReserve(java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFReserveParams);
+  public abstract boolean cfAdd(java.lang.String, java.lang.String);
+  public abstract boolean cfAddNx(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> cfInsert(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.Boolean> cfInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFInsertParams, java.lang.String...);
+  public abstract java.util.List<java.lang.Boolean> cfInsertNx(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.Boolean> cfInsertNx(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.bloom.CFInsertParams, java.lang.String...);
+  public abstract boolean cfExists(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> cfMExists(java.lang.String, java.lang.String...);
+  public abstract boolean cfDel(java.lang.String, java.lang.String);
+  public abstract long cfCount(java.lang.String, java.lang.String);
+  public abstract java.util.Map$Entry<java.lang.Long, byte[]> cfScanDump(java.lang.String, long);
+  public abstract java.lang.String cfLoadChunk(java.lang.String, long, byte[]);
+  public abstract java.util.Map<java.lang.String, java.lang.Object> cfInfo(java.lang.String);
+}
+Compiled from "package-info.java"
+interface org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.package-info {
+}
+Compiled from "RedisJsonV1PipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1PipelineCommands {
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetLegacy(java.lang.String, java.lang.Object);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetLegacy(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonMerge(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonGet(java.lang.String);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<T> jsonGet(java.lang.String, java.lang.Class<T>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonGet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path...);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<T> jsonGet(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path...);
+  public default <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<T>> jsonMGet(java.lang.Class<T>, java.lang.String...);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<T>> jsonMGet(org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Class<T>, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonDel(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonDel(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonClear(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonClear(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonToggle(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Class<?>> jsonType(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Class<?>> jsonType(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonStrAppend(java.lang.String, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonStrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonStrLen(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonStrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> jsonNumIncrBy(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrIndex(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonArrPop(java.lang.String);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<T> jsonArrPop(java.lang.String, java.lang.Class<T>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<T> jsonArrPop(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int);
+  public abstract <T> org.ayosynk.landClaimPlugin.lib.jedis.Response<T> jsonArrPop(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrLen(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonArrTrim(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int, int);
+}
+Compiled from "RedisJsonV1Commands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1Commands {
+  public default java.lang.String jsonSetLegacy(java.lang.String, java.lang.Object);
+  public default java.lang.String jsonSetLegacy(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract java.lang.String jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract java.lang.String jsonSetWithPlainString(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.String);
+  public abstract java.lang.String jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract java.lang.String jsonMerge(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract java.lang.Object jsonGet(java.lang.String);
+  public abstract <T> T jsonGet(java.lang.String, java.lang.Class<T>);
+  public abstract java.lang.Object jsonGet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path...);
+  public abstract java.lang.String jsonGetAsPlainString(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract <T> T jsonGet(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path...);
+  public default <T> java.util.List<T> jsonMGet(java.lang.Class<T>, java.lang.String...);
+  public abstract <T> java.util.List<T> jsonMGet(org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Class<T>, java.lang.String...);
+  public abstract long jsonDel(java.lang.String);
+  public abstract long jsonDel(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract long jsonClear(java.lang.String);
+  public abstract long jsonClear(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract java.lang.String jsonToggle(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract java.lang.Class<?> jsonType(java.lang.String);
+  public abstract java.lang.Class<?> jsonType(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract long jsonStrAppend(java.lang.String, java.lang.Object);
+  public abstract long jsonStrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract java.lang.Long jsonStrLen(java.lang.String);
+  public abstract java.lang.Long jsonStrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract double jsonNumIncrBy(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, double);
+  public abstract java.lang.Long jsonArrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object...);
+  public abstract long jsonArrIndex(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, java.lang.Object);
+  public abstract long jsonArrInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int, java.lang.Object...);
+  public abstract java.lang.Object jsonArrPop(java.lang.String);
+  public abstract <T> T jsonArrPop(java.lang.String, java.lang.Class<T>);
+  public abstract java.lang.Object jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract <T> T jsonArrPop(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract java.lang.Object jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int);
+  public abstract <T> T jsonArrPop(java.lang.String, java.lang.Class<T>, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int);
+  public abstract java.lang.Long jsonArrLen(java.lang.String);
+  public abstract java.lang.Long jsonArrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract java.lang.Long jsonArrTrim(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path, int, int);
+  public abstract java.lang.Long jsonObjLen(java.lang.String);
+  public abstract java.lang.Long jsonObjLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract java.util.List<java.lang.String> jsonObjKeys(java.lang.String);
+  public abstract java.util.List<java.lang.String> jsonObjKeys(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+  public abstract long jsonDebugMemory(java.lang.String);
+  public abstract long jsonDebugMemory(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path);
+}
+Compiled from "RedisJsonV2Commands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2Commands {
+  public default java.lang.String jsonSet(java.lang.String, java.lang.Object);
+  public default java.lang.String jsonSetWithEscape(java.lang.String, java.lang.Object);
+  public default java.lang.String jsonSet(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public default java.lang.String jsonSetWithEscape(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract java.lang.String jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.lang.String jsonSetWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.lang.String jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract java.lang.String jsonSetWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract java.lang.String jsonMerge(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.lang.Object jsonGet(java.lang.String);
+  public abstract java.lang.Object jsonGet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2...);
+  public default java.util.List<org.json.JSONArray> jsonMGet(java.lang.String...);
+  public abstract java.util.List<org.json.JSONArray> jsonMGet(org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.String...);
+  public abstract long jsonDel(java.lang.String);
+  public abstract long jsonDel(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract long jsonClear(java.lang.String);
+  public abstract long jsonClear(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Boolean> jsonToggle(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Class<?>> jsonType(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Long> jsonStrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.util.List<java.lang.Long> jsonStrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.lang.Object jsonNumIncrBy(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, double);
+  public abstract java.util.List<java.lang.Long> jsonArrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object...);
+  public abstract java.util.List<java.lang.Long> jsonArrAppendWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object...);
+  public abstract java.util.List<java.lang.Long> jsonArrIndex(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.util.List<java.lang.Long> jsonArrIndexWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract java.util.List<java.lang.Long> jsonArrInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, java.lang.Object...);
+  public abstract java.util.List<java.lang.Long> jsonArrInsertWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, java.lang.Object...);
+  public abstract java.util.List<java.lang.Object> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Object> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int);
+  public abstract java.util.List<java.lang.Long> jsonArrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Long> jsonArrTrim(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, int);
+  public abstract java.util.List<java.lang.Long> jsonObjLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.util.List<java.lang.String>> jsonObjKeys(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract java.util.List<java.lang.Long> jsonDebugMemory(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+}
+Compiled from "RedisJsonV2PipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2PipelineCommands {
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, java.lang.Object);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetWithEscape(java.lang.String, java.lang.Object);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetWithEscape(java.lang.String, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonSetWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object, org.ayosynk.landClaimPlugin.lib.jedis.json.JsonSetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> jsonMerge(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonGet(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonGet(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2...);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.json.JSONArray>> jsonMGet(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.json.JSONArray>> jsonMGet(org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonDel(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonDel(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonClear(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> jsonClear(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> jsonToggle(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Class<?>>> jsonType(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonStrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonStrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> jsonNumIncrBy(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrAppend(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrAppendWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrIndex(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrIndexWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, java.lang.Object);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrInsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrInsertWithEscape(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, java.lang.Object...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> jsonArrPop(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrLen(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> jsonArrTrim(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.json.Path2, int, int);
+}
+Compiled from "RedisJsonCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonCommands extends org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1Commands,org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2Commands {
+}
+Compiled from "RedisJsonPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonPipelineCommands extends org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1PipelineCommands,org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2PipelineCommands {
+}
+Compiled from "SetPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SetPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sadd(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> smembers(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> srem(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> spop(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> spop(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> scard(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> sismember(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> smismember(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> srandmember(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> srandmember(java.lang.String, int);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.lang.String>> sscan(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.lang.String>> sscan(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> sdiff(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sdiffStore(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> sinter(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sinterstore(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sintercard(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sintercard(int, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> sunion(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sunionstore(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> smove(java.lang.String, java.lang.String, java.lang.String);
+}
+Compiled from "ScriptingKeyPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> eval(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> eval(byte[], int, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> eval(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalReadonly(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalsha(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalsha(byte[], int, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalsha(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalshaReadonly(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+}
+Compiled from "FunctionPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> fcall(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> fcallReadonly(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionDelete(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> functionDump();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionFlush();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionFlush(org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionKill();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> functionListBinary();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> functionList(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> functionListWithCodeBinary();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Object>> functionListWithCode(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionLoad(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionLoadReplace(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionRestore(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionRestore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.FunctionRestorePolicy);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> functionStatsBinary();
+}
+Compiled from "ListCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ListCommands {
+  public abstract long rpush(java.lang.String, java.lang.String...);
+  public abstract long lpush(java.lang.String, java.lang.String...);
+  public abstract long llen(java.lang.String);
+  public abstract java.util.List<java.lang.String> lrange(java.lang.String, long, long);
+  public abstract java.lang.String ltrim(java.lang.String, long, long);
+  public abstract java.lang.String lindex(java.lang.String, long);
+  public abstract java.lang.String lset(java.lang.String, long, java.lang.String);
+  public abstract long lrem(java.lang.String, long, java.lang.String);
+  public abstract java.lang.String lpop(java.lang.String);
+  public abstract java.util.List<java.lang.String> lpop(java.lang.String, int);
+  public abstract java.lang.Long lpos(java.lang.String, java.lang.String);
+  public abstract java.lang.Long lpos(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.LPosParams);
+  public abstract java.util.List<java.lang.Long> lpos(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.LPosParams, long);
+  public abstract java.lang.String rpop(java.lang.String);
+  public abstract java.util.List<java.lang.String> rpop(java.lang.String, int);
+  public abstract long linsert(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.args.ListPosition, java.lang.String, java.lang.String);
+  public abstract long lpushx(java.lang.String, java.lang.String...);
+  public abstract long rpushx(java.lang.String, java.lang.String...);
+  public abstract java.util.List<java.lang.String> blpop(int, java.lang.String...);
+  public abstract java.util.List<java.lang.String> blpop(int, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.lang.String> blpop(double, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.lang.String> blpop(double, java.lang.String);
+  public abstract java.util.List<java.lang.String> brpop(int, java.lang.String...);
+  public abstract java.util.List<java.lang.String> brpop(int, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.lang.String> brpop(double, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.lang.String> brpop(double, java.lang.String);
+  public abstract java.lang.String rpoplpush(java.lang.String, java.lang.String);
+  public abstract java.lang.String brpoplpush(java.lang.String, java.lang.String, int);
+  public abstract java.lang.String lmove(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection);
+  public abstract java.lang.String blmove(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.util.List<java.lang.String>> lmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.util.List<java.lang.String>> lmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, int, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.util.List<java.lang.String>> blmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.String, java.util.List<java.lang.String>> blmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.ListDirection, int, java.lang.String...);
+}
+Compiled from "ConfigCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ConfigCommands {
+  public abstract java.util.Map<java.lang.String, java.lang.String> configGet(java.lang.String);
+  public abstract java.util.Map<java.lang.String, java.lang.String> configGet(java.lang.String...);
+  public abstract java.util.Map<byte[], byte[]> configGet(byte[]);
+  public abstract java.util.Map<byte[], byte[]> configGet(byte[]...);
+  public abstract java.lang.String configSet(java.lang.String, java.lang.String);
+  public abstract java.lang.String configSet(java.lang.String...);
+  public abstract java.lang.String configSet(java.util.Map<java.lang.String, java.lang.String>);
+  public abstract java.lang.String configSet(byte[], byte[]);
+  public abstract java.lang.String configSet(byte[]...);
+  public abstract java.lang.String configSetBinary(java.util.Map<byte[], byte[]>);
+  public abstract java.lang.String configResetStat();
+  public abstract java.lang.String configRewrite();
+}
+Compiled from "GeoBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoBinaryCommands {
+  public abstract long geoadd(byte[], double, double, byte[]);
+  public abstract long geoadd(byte[], java.util.Map<byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate>);
+  public abstract long geoadd(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoAddParams, java.util.Map<byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate>);
+  public abstract java.lang.Double geodist(byte[], byte[], byte[]);
+  public abstract java.lang.Double geodist(byte[], byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<byte[]> geohash(byte[], byte[]...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate> geopos(byte[], byte[]...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadius(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusReadonly(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadius(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusReadonly(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusByMember(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusByMemberReadonly(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusByMember(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> georadiusByMemberReadonly(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract long georadiusStore(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusStoreParam);
+  public abstract long georadiusByMemberStore(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusStoreParam);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> geosearch(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> geosearch(byte[], byte[], double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+  public abstract long geosearchStore(byte[], byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract long geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract long geosearchStore(byte[], byte[], byte[], double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract long geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract long geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+  public abstract long geosearchStoreStoreDist(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+}
+Compiled from "SampleBinaryKeyedCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleBinaryKeyedCommands {
+  public abstract long waitReplicas(byte[], int, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Long> waitAOF(byte[], long, long, long);
+  public abstract java.lang.Object eval(byte[], byte[]);
+  public abstract java.lang.Object evalsha(byte[], byte[]);
+  public abstract java.lang.Boolean scriptExists(byte[], byte[]);
+  public abstract java.util.List<java.lang.Boolean> scriptExists(byte[], byte[]...);
+  public abstract byte[] scriptLoad(byte[], byte[]);
+  public abstract java.lang.String scriptFlush(byte[]);
+  public abstract java.lang.String scriptFlush(byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract java.lang.String scriptKill(byte[]);
+}
+Compiled from "SetPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SetPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sadd(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> smembers(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> srem(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> spop(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> spop(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> scard(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> sismember(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> smismember(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> srandmember(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> srandmember(byte[], int);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<byte[]>> sscan(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<byte[]>> sscan(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> sdiff(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sdiffstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> sinter(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sinterstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sintercard(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sintercard(int, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> sunion(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sunionstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> smove(byte[], byte[], byte[]);
+}
+Compiled from "ServerCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ServerCommands {
+  public abstract java.lang.String ping();
+  public abstract java.lang.String ping(java.lang.String);
+  public abstract java.lang.String echo(java.lang.String);
+  public abstract byte[] echo(byte[]);
+  public abstract java.lang.String flushDB();
+  public abstract java.lang.String flushDB(org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract java.lang.String flushAll();
+  public abstract java.lang.String flushAll(org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract java.lang.String auth(java.lang.String);
+  public abstract java.lang.String auth(java.lang.String, java.lang.String);
+  public abstract java.lang.String save();
+  public abstract java.lang.String bgsave();
+  public abstract java.lang.String bgsaveSchedule();
+  public abstract java.lang.String bgrewriteaof();
+  public abstract long lastsave();
+  public abstract void shutdown() throws org.ayosynk.landClaimPlugin.lib.jedis.exceptions.JedisException;
+  public default void shutdown(org.ayosynk.landClaimPlugin.lib.jedis.args.SaveMode) throws org.ayosynk.landClaimPlugin.lib.jedis.exceptions.JedisException;
+  public abstract void shutdown(org.ayosynk.landClaimPlugin.lib.jedis.params.ShutdownParams) throws org.ayosynk.landClaimPlugin.lib.jedis.exceptions.JedisException;
+  public abstract java.lang.String shutdownAbort();
+  public abstract java.lang.String info();
+  public abstract java.lang.String info(java.lang.String);
+  public abstract java.lang.String slaveof(java.lang.String, int);
+  public abstract java.lang.String slaveofNoOne();
+  public abstract java.lang.String replicaof(java.lang.String, int);
+  public abstract java.lang.String replicaofNoOne();
+  public abstract long waitReplicas(int, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Long> waitAOF(long, long, long);
+  public abstract java.lang.String lolwut();
+  public abstract java.lang.String lolwut(org.ayosynk.landClaimPlugin.lib.jedis.params.LolwutParams);
+  public abstract java.lang.String reset();
+  public abstract java.lang.String latencyDoctor();
+}
+Compiled from "AccessControlLogCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.AccessControlLogCommands {
+  public abstract java.lang.String aclWhoAmI();
+  public abstract java.lang.String aclGenPass();
+  public abstract java.lang.String aclGenPass(int);
+  public abstract java.util.List<java.lang.String> aclList();
+  public abstract java.util.List<java.lang.String> aclUsers();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.AccessControlUser aclGetUser(java.lang.String);
+  public abstract java.lang.String aclSetUser(java.lang.String);
+  public abstract java.lang.String aclSetUser(java.lang.String, java.lang.String...);
+  public abstract long aclDelUser(java.lang.String...);
+  public abstract java.util.List<java.lang.String> aclCat();
+  public abstract java.util.List<java.lang.String> aclCat(java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.AccessControlLogEntry> aclLog();
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.AccessControlLogEntry> aclLog(int);
+  public abstract java.lang.String aclLogReset();
+  public abstract java.lang.String aclLoad();
+  public abstract java.lang.String aclSave();
+  public abstract java.lang.String aclDryRun(java.lang.String, java.lang.String, java.lang.String...);
+  public abstract java.lang.String aclDryRun(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.CommandArguments);
+}
+Compiled from "StringBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.StringBinaryCommands extends org.ayosynk.landClaimPlugin.lib.jedis.commands.BitBinaryCommands {
+  public abstract java.lang.String set(byte[], byte[]);
+  public abstract java.lang.String set(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract byte[] get(byte[]);
+  public abstract byte[] setGet(byte[], byte[]);
+  public abstract byte[] setGet(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract byte[] getDel(byte[]);
+  public abstract byte[] getEx(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GetExParams);
+  public abstract long setrange(byte[], long, byte[]);
+  public abstract byte[] getrange(byte[], long, long);
+  public abstract byte[] getSet(byte[], byte[]);
+  public abstract long setnx(byte[], byte[]);
+  public abstract java.lang.String setex(byte[], long, byte[]);
+  public abstract java.lang.String psetex(byte[], long, byte[]);
+  public abstract java.util.List<byte[]> mget(byte[]...);
+  public abstract java.lang.String mset(byte[]...);
+  public abstract long msetnx(byte[]...);
+  public abstract long incr(byte[]);
+  public abstract long incrBy(byte[], long);
+  public abstract double incrByFloat(byte[], double);
+  public abstract long decr(byte[]);
+  public abstract long decrBy(byte[], long);
+  public abstract long append(byte[], byte[]);
+  public abstract byte[] substr(byte[], int, int);
+  public abstract long strlen(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.LCSMatchResult lcs(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.LCSParams);
+}
+Compiled from "ScriptingKeyCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyCommands {
+  public abstract java.lang.Object eval(java.lang.String);
+  public abstract java.lang.Object eval(java.lang.String, int, java.lang.String...);
+  public abstract java.lang.Object eval(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public abstract java.lang.Object evalReadonly(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public abstract java.lang.Object evalsha(java.lang.String);
+  public abstract java.lang.Object evalsha(java.lang.String, int, java.lang.String...);
+  public abstract java.lang.Object evalsha(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public abstract java.lang.Object evalshaReadonly(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+}
+Compiled from "SortedSetPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zadd(byte[], double, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zadd(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zadd(byte[], java.util.Map<byte[], java.lang.Double>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zadd(byte[], java.util.Map<byte[], java.lang.Double>, org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> zaddIncr(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zrem(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> zincrby(byte[], double, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> zincrby(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZIncrByParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zrank(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zrevrank(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Double>> zrankWithScore(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Double>> zrevrankWithScore(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrange(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrange(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeWithScores(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrevrangeWithScores(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> zrandmember(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrandmember(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrandmemberWithScores(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zcard(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> zscore(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Double>> zmscore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zpopmax(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zpopmax(byte[], int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zpopmin(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zpopmin(byte[], int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zcount(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zcount(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByScore(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByScore(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByScore(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByScore(byte[], double, double, int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByScore(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByScore(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByScore(byte[], double, double, int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeByScoreWithScores(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrevrangeByScoreWithScores(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeByScoreWithScores(byte[], double, double, int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByScore(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeByScoreWithScores(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrevrangeByScoreWithScores(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeByScoreWithScores(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrevrangeByScoreWithScores(byte[], double, double, int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrevrangeByScoreWithScores(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zremrangeByRank(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zremrangeByScore(byte[], double, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zremrangeByScore(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zlexcount(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByLex(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrangeByLex(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByLex(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrevrangeByLex(byte[], byte[], byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zrange(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zrangeWithScores(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zrangestore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zremrangeByLex(byte[], byte[], byte[]);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zscan(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zscan(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> bzpopmax(double, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> bzpopmin(double, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zdiff(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zdiffWithScores(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zdiffStore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zdiffstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zinter(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zinterWithScores(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zinterstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zinterstore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zintercard(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zintercard(long, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> zunion(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zunionWithScores(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zunionstore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> zunionstore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>>> zmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>>> zmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, int, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>>> bzmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>>> bzmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, int, byte[]...);
+}
+Compiled from "SortedSetBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetBinaryCommands {
+  public abstract long zadd(byte[], double, byte[]);
+  public abstract long zadd(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract long zadd(byte[], java.util.Map<byte[], java.lang.Double>);
+  public abstract long zadd(byte[], java.util.Map<byte[], java.lang.Double>, org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract java.lang.Double zaddIncr(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZAddParams);
+  public abstract long zrem(byte[], byte[]...);
+  public abstract double zincrby(byte[], double, byte[]);
+  public abstract java.lang.Double zincrby(byte[], double, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZIncrByParams);
+  public abstract java.lang.Long zrank(byte[], byte[]);
+  public abstract java.lang.Long zrevrank(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Double> zrankWithScore(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Double> zrevrankWithScore(byte[], byte[]);
+  public abstract java.util.List<byte[]> zrange(byte[], long, long);
+  public abstract java.util.List<byte[]> zrevrange(byte[], long, long);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeWithScores(byte[], long, long);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrevrangeWithScores(byte[], long, long);
+  public abstract java.util.List<byte[]> zrange(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeWithScores(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract long zrangestore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZRangeParams);
+  public abstract byte[] zrandmember(byte[]);
+  public abstract java.util.List<byte[]> zrandmember(byte[], long);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrandmemberWithScores(byte[], long);
+  public abstract long zcard(byte[]);
+  public abstract java.lang.Double zscore(byte[], byte[]);
+  public abstract java.util.List<java.lang.Double> zmscore(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple zpopmax(byte[]);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zpopmax(byte[], int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple zpopmin(byte[]);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zpopmin(byte[], int);
+  public abstract long zcount(byte[], double, double);
+  public abstract long zcount(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrangeByScore(byte[], double, double);
+  public abstract java.util.List<byte[]> zrangeByScore(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrevrangeByScore(byte[], double, double);
+  public abstract java.util.List<byte[]> zrangeByScore(byte[], double, double, int, int);
+  public abstract java.util.List<byte[]> zrevrangeByScore(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrangeByScore(byte[], byte[], byte[], int, int);
+  public abstract java.util.List<byte[]> zrevrangeByScore(byte[], double, double, int, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeByScoreWithScores(byte[], double, double);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrevrangeByScoreWithScores(byte[], double, double);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeByScoreWithScores(byte[], double, double, int, int);
+  public abstract java.util.List<byte[]> zrevrangeByScore(byte[], byte[], byte[], int, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeByScoreWithScores(byte[], byte[], byte[]);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrevrangeByScoreWithScores(byte[], byte[], byte[]);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrangeByScoreWithScores(byte[], byte[], byte[], int, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrevrangeByScoreWithScores(byte[], double, double, int, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zrevrangeByScoreWithScores(byte[], byte[], byte[], int, int);
+  public abstract long zremrangeByRank(byte[], long, long);
+  public abstract long zremrangeByScore(byte[], double, double);
+  public abstract long zremrangeByScore(byte[], byte[], byte[]);
+  public abstract long zlexcount(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrangeByLex(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrangeByLex(byte[], byte[], byte[], int, int);
+  public abstract java.util.List<byte[]> zrevrangeByLex(byte[], byte[], byte[]);
+  public abstract java.util.List<byte[]> zrevrangeByLex(byte[], byte[], byte[], int, int);
+  public abstract long zremrangeByLex(byte[], byte[], byte[]);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zscan(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zscan(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> bzpopmax(double, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> bzpopmin(double, byte[]...);
+  public abstract java.util.List<byte[]> zdiff(byte[]...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zdiffWithScores(byte[]...);
+  public abstract long zdiffStore(byte[], byte[]...);
+  public abstract long zdiffstore(byte[], byte[]...);
+  public abstract java.util.List<byte[]> zinter(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zinterWithScores(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract long zinterstore(byte[], byte[]...);
+  public abstract long zinterstore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract long zintercard(byte[]...);
+  public abstract long zintercard(long, byte[]...);
+  public abstract java.util.List<byte[]> zunion(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple> zunionWithScores(org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract long zunionstore(byte[], byte[]...);
+  public abstract long zunionstore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ZParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> zmpop(org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, int, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> bzmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<byte[], java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Tuple>> bzmpop(double, org.ayosynk.landClaimPlugin.lib.jedis.args.SortedSetOption, int, byte[]...);
+}
+Compiled from "HyperLogLogBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogBinaryCommands {
+  public abstract long pfadd(byte[], byte[]...);
+  public abstract java.lang.String pfmerge(byte[], byte[]...);
+  public abstract long pfcount(byte[]);
+  public abstract long pfcount(byte[]...);
+}
+Compiled from "HashPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.HashPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hset(java.lang.String, java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hset(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> hget(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hsetnx(java.lang.String, java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> hmset(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> hmget(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hincrBy(java.lang.String, java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> hincrByFloat(java.lang.String, java.lang.String, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> hexists(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hdel(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hlen(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<java.lang.String>> hkeys(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> hvals(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Map<java.lang.String, java.lang.String>> hgetAll(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> hrandfield(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> hrandfield(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.util.Map$Entry<java.lang.String, java.lang.String>>> hrandfieldWithValues(java.lang.String, long);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<java.lang.String, java.lang.String>>> hscan(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<java.lang.String, java.lang.String>>> hscan(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> hstrlen(java.lang.String, java.lang.String);
+}
+Compiled from "SampleKeyedCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleKeyedCommands {
+  public abstract long waitReplicas(java.lang.String, int, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Long> waitAOF(java.lang.String, long, long, long);
+  public abstract java.lang.Object eval(java.lang.String, java.lang.String);
+  public abstract java.lang.Object evalsha(java.lang.String, java.lang.String);
+  public abstract java.lang.Boolean scriptExists(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> scriptExists(java.lang.String, java.lang.String...);
+  public abstract java.lang.String scriptLoad(java.lang.String, java.lang.String);
+  public abstract java.lang.String scriptFlush(java.lang.String);
+  public abstract java.lang.String scriptFlush(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract java.lang.String scriptKill(java.lang.String);
+}
+Compiled from "ProtocolCommand.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ProtocolCommand extends org.ayosynk.landClaimPlugin.lib.jedis.args.Rawable {
+}
+Compiled from "ClusterCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ClusterCommands {
+  public abstract java.lang.String asking();
+  public abstract java.lang.String readonly();
+  public abstract java.lang.String readwrite();
+  public abstract java.lang.String clusterNodes();
+  public abstract java.lang.String clusterMeet(java.lang.String, int);
+  public abstract java.lang.String clusterAddSlots(int...);
+  public abstract java.lang.String clusterDelSlots(int...);
+  public abstract java.lang.String clusterInfo();
+  public abstract java.util.List<java.lang.String> clusterGetKeysInSlot(int, int);
+  public abstract java.util.List<byte[]> clusterGetKeysInSlotBinary(int, int);
+  public abstract java.lang.String clusterSetSlotNode(int, java.lang.String);
+  public abstract java.lang.String clusterSetSlotMigrating(int, java.lang.String);
+  public abstract java.lang.String clusterSetSlotImporting(int, java.lang.String);
+  public abstract java.lang.String clusterSetSlotStable(int);
+  public abstract java.lang.String clusterForget(java.lang.String);
+  public abstract java.lang.String clusterFlushSlots();
+  public abstract long clusterKeySlot(java.lang.String);
+  public abstract long clusterCountFailureReports(java.lang.String);
+  public abstract long clusterCountKeysInSlot(int);
+  public abstract java.lang.String clusterSaveConfig();
+  public abstract java.lang.String clusterSetConfigEpoch(long);
+  public abstract java.lang.String clusterBumpEpoch();
+  public abstract java.lang.String clusterReplicate(java.lang.String);
+  public abstract java.util.List<java.lang.String> clusterSlaves(java.lang.String);
+  public abstract java.util.List<java.lang.String> clusterReplicas(java.lang.String);
+  public abstract java.lang.String clusterFailover();
+  public abstract java.lang.String clusterFailover(org.ayosynk.landClaimPlugin.lib.jedis.args.ClusterFailoverOption);
+  public abstract java.util.List<java.lang.Object> clusterSlots();
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.ClusterShardInfo> clusterShards();
+  public abstract java.lang.String clusterReset();
+  public abstract java.lang.String clusterReset(org.ayosynk.landClaimPlugin.lib.jedis.args.ClusterResetType);
+  public abstract java.lang.String clusterMyId();
+  public abstract java.lang.String clusterMyShardId();
+  public abstract java.util.List<java.util.Map<java.lang.String, java.lang.Object>> clusterLinks();
+  public abstract java.lang.String clusterAddSlotsRange(int...);
+  public abstract java.lang.String clusterDelSlotsRange(int...);
+}
+Compiled from "ClientBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ClientBinaryCommands {
+  public abstract java.lang.String clientKill(byte[]);
+  public abstract java.lang.String clientKill(java.lang.String, int);
+  public abstract long clientKill(org.ayosynk.landClaimPlugin.lib.jedis.params.ClientKillParams);
+  public abstract byte[] clientGetnameBinary();
+  public abstract byte[] clientListBinary();
+  public abstract byte[] clientListBinary(org.ayosynk.landClaimPlugin.lib.jedis.args.ClientType);
+  public abstract byte[] clientListBinary(long...);
+  public abstract byte[] clientInfoBinary();
+  public abstract java.lang.String clientSetInfo(org.ayosynk.landClaimPlugin.lib.jedis.args.ClientAttributeOption, byte[]);
+  public abstract java.lang.String clientSetname(byte[]);
+  public abstract long clientId();
+  public abstract long clientUnblock(long);
+  public abstract long clientUnblock(long, org.ayosynk.landClaimPlugin.lib.jedis.args.UnblockType);
+  public abstract java.lang.String clientPause(long);
+  public abstract java.lang.String clientPause(long, org.ayosynk.landClaimPlugin.lib.jedis.args.ClientPauseMode);
+  public abstract java.lang.String clientUnpause();
+  public abstract java.lang.String clientNoEvictOn();
+  public abstract java.lang.String clientNoEvictOff();
+}
+Compiled from "SlowlogCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SlowlogCommands {
+  public abstract java.lang.String slowlogReset();
+  public abstract long slowlogLen();
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Slowlog> slowlogGet();
+  public abstract java.util.List<java.lang.Object> slowlogGetBinary();
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.Slowlog> slowlogGet(long);
+  public abstract java.util.List<java.lang.Object> slowlogGetBinary(long);
+}
+Compiled from "SentinelCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SentinelCommands {
+  public abstract java.lang.String sentinelMyId();
+  public abstract java.util.List<java.util.Map<java.lang.String, java.lang.String>> sentinelMasters();
+  public abstract java.util.Map<java.lang.String, java.lang.String> sentinelMaster(java.lang.String);
+  public abstract java.util.List<java.util.Map<java.lang.String, java.lang.String>> sentinelSentinels(java.lang.String);
+  public abstract java.util.List<java.lang.String> sentinelGetMasterAddrByName(java.lang.String);
+  public abstract java.lang.Long sentinelReset(java.lang.String);
+  public abstract java.util.List<java.util.Map<java.lang.String, java.lang.String>> sentinelSlaves(java.lang.String);
+  public abstract java.util.List<java.util.Map<java.lang.String, java.lang.String>> sentinelReplicas(java.lang.String);
+  public abstract java.lang.String sentinelFailover(java.lang.String);
+  public abstract java.lang.String sentinelMonitor(java.lang.String, java.lang.String, int, int);
+  public abstract java.lang.String sentinelRemove(java.lang.String);
+  public abstract java.lang.String sentinelSet(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+}
+Compiled from "JedisCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.JedisCommands extends org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.StringCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.ListCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.HashCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.SetCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionCommands {
+}
+Compiled from "SetCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SetCommands {
+  public abstract long sadd(java.lang.String, java.lang.String...);
+  public abstract java.util.Set<java.lang.String> smembers(java.lang.String);
+  public abstract long srem(java.lang.String, java.lang.String...);
+  public abstract java.lang.String spop(java.lang.String);
+  public abstract java.util.Set<java.lang.String> spop(java.lang.String, long);
+  public abstract long scard(java.lang.String);
+  public abstract boolean sismember(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.lang.Boolean> smismember(java.lang.String, java.lang.String...);
+  public abstract java.lang.String srandmember(java.lang.String);
+  public abstract java.util.List<java.lang.String> srandmember(java.lang.String, int);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.lang.String> sscan(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.lang.String> sscan(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract java.util.Set<java.lang.String> sdiff(java.lang.String...);
+  public abstract long sdiffstore(java.lang.String, java.lang.String...);
+  public abstract java.util.Set<java.lang.String> sinter(java.lang.String...);
+  public abstract long sinterstore(java.lang.String, java.lang.String...);
+  public abstract long sintercard(java.lang.String...);
+  public abstract long sintercard(int, java.lang.String...);
+  public abstract java.util.Set<java.lang.String> sunion(java.lang.String...);
+  public abstract long sunionstore(java.lang.String, java.lang.String...);
+  public abstract long smove(java.lang.String, java.lang.String, java.lang.String);
+}
+Compiled from "HashCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.HashCommands {
+  public abstract long hset(java.lang.String, java.lang.String, java.lang.String);
+  public abstract long hset(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public abstract java.lang.String hget(java.lang.String, java.lang.String);
+  public abstract long hsetnx(java.lang.String, java.lang.String, java.lang.String);
+  public abstract java.lang.String hmset(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+  public abstract java.util.List<java.lang.String> hmget(java.lang.String, java.lang.String...);
+  public abstract long hincrBy(java.lang.String, java.lang.String, long);
+  public abstract double hincrByFloat(java.lang.String, java.lang.String, double);
+  public abstract boolean hexists(java.lang.String, java.lang.String);
+  public abstract long hdel(java.lang.String, java.lang.String...);
+  public abstract long hlen(java.lang.String);
+  public abstract java.util.Set<java.lang.String> hkeys(java.lang.String);
+  public abstract java.util.List<java.lang.String> hvals(java.lang.String);
+  public abstract java.util.Map<java.lang.String, java.lang.String> hgetAll(java.lang.String);
+  public abstract java.lang.String hrandfield(java.lang.String);
+  public abstract java.util.List<java.lang.String> hrandfield(java.lang.String, long);
+  public abstract java.util.List<java.util.Map$Entry<java.lang.String, java.lang.String>> hrandfieldWithValues(java.lang.String, long);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<java.lang.String, java.lang.String>> hscan(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<java.lang.String, java.lang.String>> hscan(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract long hstrlen(java.lang.String, java.lang.String);
+}
+Compiled from "GeoPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geoadd(byte[], double, double, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geoadd(byte[], java.util.Map<byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geoadd(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoAddParams, java.util.Map<byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> geodist(byte[], byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> geodist(byte[], byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> geohash(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate>> geopos(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadius(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusReadonly(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadius(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusReadonly(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusByMember(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusByMemberReadonly(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusByMember(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> georadiusByMemberReadonly(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> georadiusStore(byte[], double, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusStoreParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> georadiusByMemberStore(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusParam, org.ayosynk.landClaimPlugin.lib.jedis.params.GeoRadiusStoreParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> geosearch(byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> geosearch(byte[], byte[], double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.GeoRadiusResponse>> geosearch(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStore(byte[], byte[], byte[], double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStore(byte[], byte[], byte[], double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.GeoCoordinate, double, double, org.ayosynk.landClaimPlugin.lib.jedis.args.GeoUnit);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStore(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> geosearchStoreStoreDist(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GeoSearchParam);
+}
+Compiled from "StringPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.StringPipelineCommands extends org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> set(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> set(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> get(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> setGet(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> getDel(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> getEx(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.GetExParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> setrange(java.lang.String, long, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> getrange(java.lang.String, long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> getSet(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> setnx(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> setex(java.lang.String, long, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> psetex(java.lang.String, long, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.String>> mget(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> mset(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> msetnx(java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> incr(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> incrBy(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> incrByFloat(java.lang.String, double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> decr(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> decrBy(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> append(java.lang.String, java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> substr(java.lang.String, int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> strlen(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.LCSMatchResult> lcs(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.LCSParams);
+}
+Compiled from "BitBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.BitBinaryCommands {
+  public abstract boolean setbit(byte[], long, boolean);
+  public abstract boolean getbit(byte[], long);
+  public abstract long bitcount(byte[]);
+  public abstract long bitcount(byte[], long, long);
+  public abstract long bitcount(byte[], long, long, org.ayosynk.landClaimPlugin.lib.jedis.args.BitCountOption);
+  public abstract long bitpos(byte[], boolean);
+  public abstract long bitpos(byte[], boolean, org.ayosynk.landClaimPlugin.lib.jedis.params.BitPosParams);
+  public abstract java.util.List<java.lang.Long> bitfield(byte[], byte[]...);
+  public abstract java.util.List<java.lang.Long> bitfieldReadonly(byte[], byte[]...);
+  public abstract long bitop(org.ayosynk.landClaimPlugin.lib.jedis.args.BitOP, byte[], byte[]...);
+}
+Compiled from "FunctionPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> fcall(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> fcallReadonly(java.lang.String, java.util.List<java.lang.String>, java.util.List<java.lang.String>);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionDelete(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> functionDump();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionFlush();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionFlush(org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionKill();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.LibraryInfo>> functionList();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.LibraryInfo>> functionList(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.LibraryInfo>> functionListWithCode();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.LibraryInfo>> functionListWithCode(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionLoad(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionLoadReplace(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionRestore(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> functionRestore(byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.FunctionRestorePolicy);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.FunctionStats> functionStats();
+}
+Compiled from "KeyPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> exists(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> exists(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> persist(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> type(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> dump(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> restore(byte[], long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> restore(byte[], long, byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.RestoreParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> expire(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> expire(byte[], long, org.ayosynk.landClaimPlugin.lib.jedis.args.ExpiryOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pexpire(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pexpire(byte[], long, org.ayosynk.landClaimPlugin.lib.jedis.args.ExpiryOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> expireTime(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pexpireTime(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> expireAt(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> expireAt(byte[], long, org.ayosynk.landClaimPlugin.lib.jedis.args.ExpiryOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pexpireAt(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pexpireAt(byte[], long, org.ayosynk.landClaimPlugin.lib.jedis.args.ExpiryOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> ttl(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> pttl(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> touch(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> touch(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> sort(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> sort(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SortingParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> sortReadonly(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SortingParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> del(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> del(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> unlink(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> unlink(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> copy(byte[], byte[], boolean);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> rename(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> renamenx(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sort(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SortingParams, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> sort(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> memoryUsage(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> memoryUsage(byte[], int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> objectRefcount(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> objectEncoding(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> objectIdletime(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> objectFreq(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> migrate(java.lang.String, int, byte[], int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> migrate(java.lang.String, int, int, org.ayosynk.landClaimPlugin.lib.jedis.params.MigrateParams, byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.Set<byte[]>> keys(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<byte[]>> scan(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<byte[]>> scan(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<byte[]>> scan(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> randomBinaryKey();
+}
+Compiled from "ControlCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ControlCommands extends org.ayosynk.landClaimPlugin.lib.jedis.commands.AccessControlLogCommands,org.ayosynk.landClaimPlugin.lib.jedis.commands.ClientCommands {
+  public abstract java.util.List<java.lang.Object> role();
+  public abstract java.lang.Long objectRefcount(java.lang.String);
+  public abstract java.lang.String objectEncoding(java.lang.String);
+  public abstract java.lang.Long objectIdletime(java.lang.String);
+  public abstract java.util.List<java.lang.String> objectHelp();
+  public abstract java.lang.Long objectFreq(java.lang.String);
+  public abstract java.lang.String memoryDoctor();
+  public abstract java.lang.Long memoryUsage(java.lang.String);
+  public abstract java.lang.Long memoryUsage(java.lang.String, int);
+  public abstract java.lang.String memoryPurge();
+  public abstract java.util.Map<java.lang.String, java.lang.Object> memoryStats();
+}
+Compiled from "StringPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.StringPipelineBinaryCommands extends org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> set(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> set(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> get(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> setGet(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.SetParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> getDel(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> getEx(byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.GetExParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> setrange(byte[], long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> getrange(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> getSet(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> setnx(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> setex(byte[], long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> psetex(byte[], long, byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<byte[]>> mget(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> mset(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> msetnx(byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> incr(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> incrBy(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Double> incrByFloat(byte[], double);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> decr(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> decrBy(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> append(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> substr(byte[], int, int);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> strlen(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.resps.LCSMatchResult> lcs(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.LCSParams);
+}
+Compiled from "RedisModuleCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.RedisModuleCommands extends org.ayosynk.landClaimPlugin.lib.jedis.search.RediSearchCommands,org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonCommands,org.ayosynk.landClaimPlugin.lib.jedis.timeseries.RedisTimeSeriesCommands,org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.RedisBloomCommands,org.ayosynk.landClaimPlugin.lib.jedis.graph.RedisGraphCommands,org.ayosynk.landClaimPlugin.lib.jedis.gears.RedisGearsCommands {
+}
+Compiled from "ScriptingKeyBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyBinaryCommands {
+  public abstract java.lang.Object eval(byte[]);
+  public abstract java.lang.Object eval(byte[], int, byte[]...);
+  public abstract java.lang.Object eval(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract java.lang.Object evalReadonly(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract java.lang.Object evalsha(byte[]);
+  public abstract java.lang.Object evalsha(byte[], int, byte[]...);
+  public abstract java.lang.Object evalsha(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+  public abstract java.lang.Object evalshaReadonly(byte[], java.util.List<byte[]>, java.util.List<byte[]>);
+}
+Compiled from "SampleBinaryKeyedPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleBinaryKeyedPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> waitReplicas(byte[], int, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<org.ayosynk.landClaimPlugin.lib.jedis.util.KeyValue<java.lang.Long, java.lang.Long>> waitAOF(byte[], long, long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> eval(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Object> evalsha(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Boolean>> scriptExists(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<byte[]> scriptLoad(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> scriptFlush(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> scriptFlush(byte[], org.ayosynk.landClaimPlugin.lib.jedis.args.FlushMode);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.String> scriptKill(byte[]);
+}
+Compiled from "AccessControlLogBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.AccessControlLogBinaryCommands {
+  public abstract byte[] aclWhoAmIBinary();
+  public abstract byte[] aclGenPassBinary();
+  public abstract byte[] aclGenPassBinary(int);
+  public abstract java.util.List<byte[]> aclListBinary();
+  public abstract java.util.List<byte[]> aclUsersBinary();
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.AccessControlUser aclGetUser(byte[]);
+  public abstract java.lang.String aclSetUser(byte[]);
+  public abstract java.lang.String aclSetUser(byte[], byte[]...);
+  public abstract long aclDelUser(byte[]...);
+  public abstract java.util.List<byte[]> aclCatBinary();
+  public abstract java.util.List<byte[]> aclCat(byte[]);
+  public abstract java.util.List<byte[]> aclLogBinary();
+  public abstract java.util.List<byte[]> aclLogBinary(int);
+  public abstract java.lang.String aclLogReset();
+  public abstract java.lang.String aclLoad();
+  public abstract java.lang.String aclSave();
+  public abstract byte[] aclDryRunBinary(byte[], byte[], byte[]...);
+  public abstract byte[] aclDryRunBinary(byte[], org.ayosynk.landClaimPlugin.lib.jedis.CommandArguments);
+}
+Compiled from "BitPipelineBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineBinaryCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> setbit(byte[], long, boolean);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> getbit(byte[], long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(byte[], long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(byte[], long, long, org.ayosynk.landClaimPlugin.lib.jedis.args.BitCountOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitpos(byte[], boolean);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitpos(byte[], boolean, org.ayosynk.landClaimPlugin.lib.jedis.params.BitPosParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> bitfield(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> bitfieldReadonly(byte[], byte[]...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitop(org.ayosynk.landClaimPlugin.lib.jedis.args.BitOP, byte[], byte[]...);
+}
+Compiled from "BitPipelineCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> setbit(java.lang.String, long, boolean);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Boolean> getbit(java.lang.String, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(java.lang.String, long, long);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitcount(java.lang.String, long, long, org.ayosynk.landClaimPlugin.lib.jedis.args.BitCountOption);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitpos(java.lang.String, boolean);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitpos(java.lang.String, boolean, org.ayosynk.landClaimPlugin.lib.jedis.params.BitPosParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> bitfield(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.util.List<java.lang.Long>> bitfieldReadonly(java.lang.String, java.lang.String...);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.Response<java.lang.Long> bitop(org.ayosynk.landClaimPlugin.lib.jedis.args.BitOP, java.lang.String, java.lang.String...);
+}
+Compiled from "StreamCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamCommands {
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID xadd(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, java.util.Map<java.lang.String, java.lang.String>);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID xadd(java.lang.String, java.util.Map<java.lang.String, java.lang.String>, org.ayosynk.landClaimPlugin.lib.jedis.params.XAddParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID xadd(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.XAddParams, java.util.Map<java.lang.String, java.lang.String>);
+  public abstract long xlen(java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrange(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrange(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrevrange(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrevrange(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrange(java.lang.String, java.lang.String, java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrange(java.lang.String, java.lang.String, java.lang.String, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrevrange(java.lang.String, java.lang.String, java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xrevrange(java.lang.String, java.lang.String, java.lang.String, int);
+  public abstract long xack(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID...);
+  public abstract java.lang.String xgroupCreate(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, boolean);
+  public abstract java.lang.String xgroupSetID(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID);
+  public abstract long xgroupDestroy(java.lang.String, java.lang.String);
+  public abstract boolean xgroupCreateConsumer(java.lang.String, java.lang.String, java.lang.String);
+  public abstract long xgroupDelConsumer(java.lang.String, java.lang.String, java.lang.String);
+  public abstract long xdel(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID...);
+  public abstract long xtrim(java.lang.String, long, boolean);
+  public abstract long xtrim(java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.XTrimParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamPendingSummary xpending(java.lang.String, java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamPendingEntry> xpending(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.XPendingParams);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry> xclaim(java.lang.String, java.lang.String, java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.params.XClaimParams, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID...);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID> xclaimJustId(java.lang.String, java.lang.String, java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.params.XClaimParams, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID...);
+  public abstract java.util.Map$Entry<org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry>> xautoclaim(java.lang.String, java.lang.String, java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.params.XAutoClaimParams);
+  public abstract java.util.Map$Entry<org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID>> xautoclaimJustId(java.lang.String, java.lang.String, java.lang.String, long, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID, org.ayosynk.landClaimPlugin.lib.jedis.params.XAutoClaimParams);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamInfo xinfoStream(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamFullInfo xinfoStreamFull(java.lang.String);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamFullInfo xinfoStreamFull(java.lang.String, int);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamGroupInfo> xinfoGroups(java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamConsumersInfo> xinfoConsumers(java.lang.String, java.lang.String);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamConsumerInfo> xinfoConsumers2(java.lang.String, java.lang.String);
+  public abstract java.util.List<java.util.Map$Entry<java.lang.String, java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry>>> xread(org.ayosynk.landClaimPlugin.lib.jedis.params.XReadParams, java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID>);
+  public abstract java.util.List<java.util.Map$Entry<java.lang.String, java.util.List<org.ayosynk.landClaimPlugin.lib.jedis.resps.StreamEntry>>> xreadGroup(java.lang.String, java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.params.XReadGroupParams, java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.lib.jedis.StreamEntryID>);
+}
+Compiled from "HashBinaryCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.HashBinaryCommands {
+  public abstract long hset(byte[], byte[], byte[]);
+  public abstract long hset(byte[], java.util.Map<byte[], byte[]>);
+  public abstract byte[] hget(byte[], byte[]);
+  public abstract long hsetnx(byte[], byte[], byte[]);
+  public abstract java.lang.String hmset(byte[], java.util.Map<byte[], byte[]>);
+  public abstract java.util.List<byte[]> hmget(byte[], byte[]...);
+  public abstract long hincrBy(byte[], byte[], long);
+  public abstract double hincrByFloat(byte[], byte[], double);
+  public abstract boolean hexists(byte[], byte[]);
+  public abstract long hdel(byte[], byte[]...);
+  public abstract long hlen(byte[]);
+  public abstract java.util.Set<byte[]> hkeys(byte[]);
+  public abstract java.util.List<byte[]> hvals(byte[]);
+  public abstract java.util.Map<byte[], byte[]> hgetAll(byte[]);
+  public abstract byte[] hrandfield(byte[]);
+  public abstract java.util.List<byte[]> hrandfield(byte[], long);
+  public abstract java.util.List<java.util.Map$Entry<byte[], byte[]>> hrandfieldWithValues(byte[], long);
+  public default org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<byte[], byte[]>> hscan(byte[], byte[]);
+  public abstract org.ayosynk.landClaimPlugin.lib.jedis.resps.ScanResult<java.util.Map$Entry<byte[], byte[]>> hscan(byte[], byte[], org.ayosynk.landClaimPlugin.lib.jedis.params.ScanParams);
+  public abstract long hstrlen(byte[], byte[]);
+}
+Compiled from "HyperLogLogCommands.java"
+public interface org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogCommands {
+  public abstract long pfadd(java.lang.String, java.lang.String...);
+  public abstract java.lang.String pfmerge(java.lang.String, java.lang.String...);
+  public abstract long pfcount(java.lang.String);
+  public abstract long pfcount(java.lang.String...);
+}
