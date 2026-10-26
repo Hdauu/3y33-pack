@@ -36,6 +36,7 @@ import java.util.*;
 public final class Tierras extends JavaPlugin implements Listener, TabCompleter {
 
     private LandClaimAPI api;
+    private TiendaTexto tiendaTexto;
     private MenusTerrenos menus;
     private final Map<UUID, java.util.function.Consumer<String>> esperandoTexto = new HashMap<>();
     private final Set<UUID> conPack = new HashSet<>();
@@ -70,7 +71,12 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new TerrenosAparte(this), this);
-        if (getServer().getPluginManager().getPlugin("QuickShop-Hikari") != null) getServer().getPluginManager().registerEvents(new Tiendas(this), this);
+        if (getServer().getPluginManager().getPlugin("QuickShop-Hikari") != null) {
+            getServer().getPluginManager().registerEvents(new Tiendas(this), this);
+            tiendaTexto = new TiendaTexto(this);
+            getServer().getPluginManager().registerEvents(tiendaTexto, this);
+            getServer().getPluginManager().registerEvents(new TiendaPanel(this, tiendaTexto), this);
+        }
         // Cada 3 segundos saca los monstruos naturales que entraron caminando a terrenos con monstruos apagados
         getServer().getScheduler().runTaskTimer(this, this::limpiarMonstruos, 60L, 60L);
         Objects.requireNonNull(getCommand("tierra")).setExecutor(this);
@@ -87,6 +93,7 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
 
     @Override
     public void onDisable() {
+        if (tiendaTexto != null) tiendaTexto.apagar();
         esperas.values().forEach(BukkitTask::cancel);
         guardarDatos();
     }
