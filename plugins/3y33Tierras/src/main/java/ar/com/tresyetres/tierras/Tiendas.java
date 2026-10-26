@@ -79,6 +79,7 @@ final class Tiendas implements Listener {
             for (int dy = -2; dy <= 2 && tienda == null; dy++)
                 for (int dz = -2; dz <= 2 && tienda == null; dz++)
                     tienda = mgr.getShop(to.clone().add(dx, dy, dz));
+        pl.getLogger().info("[catalogo] " + e.getPlayer().getName() + " tp " + to.getBlockX() + "," + to.getBlockY() + "," + to.getBlockZ() + " tienda=" + (tienda != null));
         if (tienda == null) return;
         Player p = e.getPlayer();
         ClaimProfile c = pl.api().getClaimAt(tienda.bukkitLocation());
@@ -91,6 +92,7 @@ final class Tiendas implements Listener {
                 punto = w.getLocation();
             }
         }
+        pl.getLogger().info("[catalogo] terreno=" + (c == null ? "ninguno" : c.getName()) + " punto=" + punto);
         if (punto == null) {
             e.setCancelled(true);
             pl.msg(p, "&cEse terreno todavía no tiene un punto de teletransporte.");
