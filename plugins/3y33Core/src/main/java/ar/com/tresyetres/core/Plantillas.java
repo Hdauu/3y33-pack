@@ -45,13 +45,18 @@ final class Plantillas {
 
     /** Devuelve el nombre con el que quedó creado, o null si falló (el motivo ya se le avisó al jugador). */
     static String crear(Core core, Player p, String plantilla, String nombre) {
+        return crearEn(core, p, p.getLocation().clone().add(0, 1.8, 0), plantilla, nombre);
+    }
+
+    /** Igual que crear, pero en un lugar puntual (p puede ser null: se avisa por consola). */
+    static String crearEn(Core core, Player p, Location donde, String plantilla, String nombre) {
         Plantilla t = TODAS.get(plantilla.toLowerCase(Locale.ROOT));
         if (t == null) {
-            core.aviso(p, "<red>Plantillas: <white>" + String.join(", ", TODAS.keySet()));
+            if (p != null) core.aviso(p, "<red>Plantillas: <white>" + String.join(", ", TODAS.keySet()));
             return null;
         }
         if (!Bukkit.getPluginManager().isPluginEnabled("FancyHolograms")) {
-            core.aviso(p, "<red>FancyHolograms no está activo.");
+            if (p != null) core.aviso(p, "<red>FancyHolograms no está activo.");
             return null;
         }
         try {
@@ -60,7 +65,7 @@ final class Plantillas {
             String final_ = base;
             int n = 2;
             while (manager.getHologram(final_).isPresent()) final_ = base + "_" + n++;
-            Location l = p.getLocation().clone().add(0, 1.8, 0);
+            Location l = donde.clone();
             TextHologramData d = new TextHologramData(final_, l);
             d.setText(new ArrayList<>(t.lineas));
             d.setBackground(Color.fromARGB(110, 0, 0, 0));
@@ -75,7 +80,7 @@ final class Plantillas {
             return final_;
         } catch (Throwable e) {
             core.getLogger().warning("No pude crear el holograma: " + e);
-            core.aviso(p, "<red>No se pudo crear el holograma. Mirá la consola.");
+            if (p != null) core.aviso(p, "<red>No se pudo crear el holograma. Mirá la consola.");
             return null;
         }
     }

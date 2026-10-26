@@ -146,6 +146,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                         msg(sender, "<gray>Holograma <white>" + creado + "</white> creado. Se abre el editor para acomodarlo.");
                         Bukkit.getScheduler().runTaskLater(this, () -> editor.comando(jp, new String[]{creado}), 3L);
                     }
+                } else if (args.length > 0 && args[0].equalsIgnoreCase("spawn")) {
+                    if (!sender.hasPermission(STAFF)) { msg(sender, "<red>No tenés permiso."); return true; }
+                    int n = Spawn.armar(this, sender instanceof Player jp ? jp : null);
+                    msg(sender, "<gray>Hologramas de spawn creados: <white>" + n + "</white>. Acomodalos con <white>/editor</white>.");
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("anuncio")) {
                     anunciar();
                 } else if (args.length > 1 && (args[0].equalsIgnoreCase("aceptar") || args[0].equalsIgnoreCase("rechazar"))) {
@@ -281,7 +285,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
             for (String s : Plantillas.nombres()) if (s.startsWith(args[1].toLowerCase(Locale.ROOT))) r.add(s);
             return r;
         }
-        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar", "holograma");
+        if (n.equals("3y33core") && args.length == 1) return List.of("reload", "anuncio", "aceptar", "rechazar", "holograma", "spawn");
         return List.of();
     }
 
