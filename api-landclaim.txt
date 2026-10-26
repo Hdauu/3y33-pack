@@ -1,0 +1,832 @@
+## clases
+org.apiguardian.api.API
+org.apiguardian.api.API$Status
+org.apache.commons.pool2.SwallowedExceptionListener
+org.slf4j.event.Level
+org.slf4j.event.KeyValuePair
+org.slf4j.event.LoggingEvent
+org.slf4j.event.EventConstants
+org.slf4j.event.EventRecordingLogger
+org.slf4j.event.DefaultLoggingEvent
+org.slf4j.event.SubstituteLoggingEvent
+org.slf4j.spi.NOPLoggingEventBuilder
+org.slf4j.spi.LoggingEventBuilder
+org.slf4j.spi.DefaultLoggingEventBuilder
+org.slf4j.spi.LoggingEventAware
+org.slf4j.spi.DefaultLoggingEventBuilder$1
+org.ayosynk.landClaimPlugin.listeners.protections.VehicleProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.EntityProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.PvpProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.PistonProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.ExplosionProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.InteractProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.ItemProtectionListener
+org.ayosynk.landClaimPlugin.listeners.protections.BlockProtectionListener
+org.ayosynk.landClaimPlugin.listeners.MinimapListener
+org.ayosynk.landClaimPlugin.listeners.EventListener
+org.ayosynk.landClaimPlugin.listeners.CommandBlocker
+org.ayosynk.landClaimPlugin.listeners.PlayerJoinListener
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$5
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$4
+org.ayosynk.landClaimPlugin.lib.cloud.StandardCommandExecutor
+org.ayosynk.landClaimPlugin.lib.cloud.CommandFactory
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$3
+org.ayosynk.landClaimPlugin.lib.cloud.CommandTree
+org.ayosynk.landClaimPlugin.lib.cloud.execution.NullCommandExecutionHandler
+org.ayosynk.landClaimPlugin.lib.cloud.execution.CommandResult
+org.ayosynk.landClaimPlugin.lib.cloud.execution.CommandExecutor
+org.ayosynk.landClaimPlugin.lib.cloud.execution.MulticastDelegateFutureCommandExecutionHandler
+org.ayosynk.landClaimPlugin.lib.cloud.execution.CommandExecutionHandler
+org.ayosynk.landClaimPlugin.lib.cloud.execution.CommandExecutionHandler$FutureCommandExecutionHandler
+org.ayosynk.landClaimPlugin.lib.cloud.execution.CommandResultImpl
+org.ayosynk.landClaimPlugin.lib.cloud.execution.preprocessor.AcceptingCommandPreprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.execution.preprocessor.CommandPreprocessingContext
+org.ayosynk.landClaimPlugin.lib.cloud.execution.preprocessor.CommandPreprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.execution.preprocessor.CommandPreprocessingContextImpl
+org.ayosynk.landClaimPlugin.lib.cloud.execution.postprocessor.AcceptingCommandPostprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.execution.postprocessor.CommandPostprocessingContextImpl
+org.ayosynk.landClaimPlugin.lib.cloud.execution.postprocessor.CommandPostprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.execution.postprocessor.CommandPostprocessingContext
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$6
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager$1
+org.ayosynk.landClaimPlugin.lib.cloud.paper.LegacyPaperCommandManager
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager$Builder
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager$Bootstrapped
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandPreprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.SuggestionListener
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.SuggestionListenerFactory$1
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.BrigadierAsyncCommandSuggestionListener
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.SuggestionListenerFactory$SuggestionListenerFactoryImpl
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.AsyncCommandSuggestionListener
+org.ayosynk.landClaimPlugin.lib.cloud.paper.suggestion.SuggestionListenerFactory
+org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager$CoordinatedBuilder
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.CommandEntryImpl
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.VerboseCommandResult
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.CommandEntry
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.VerboseCommandResultImpl
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.MultipleCommandResultImpl
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.IndexCommandResult
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.MultipleCommandResult
+org.ayosynk.landClaimPlugin.lib.cloud.help.result.IndexCommandResultImpl
+org.ayosynk.landClaimPlugin.lib.cloud.help.CommandPredicate
+org.ayosynk.landClaimPlugin.lib.cloud.CommandBuilderSource
+org.ayosynk.landClaimPlugin.lib.cloud.Command
+org.ayosynk.landClaimPlugin.lib.cloud.exception.InvalidCommandSenderException
+org.ayosynk.landClaimPlugin.lib.cloud.exception.CommandParseException
+org.ayosynk.landClaimPlugin.lib.cloud.exception.NoCommandInLeafException
+org.ayosynk.landClaimPlugin.lib.cloud.exception.CommandExecutionException
+org.ayosynk.landClaimPlugin.lib.cloud.exception.NoSuchCommandException
+org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder
+org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput
+org.ayosynk.landClaimPlugin.lib.cloud.context.StandardCommandContextFactory
+org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext
+org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInputImpl
+org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput$CursorOutOfBoundsException
+org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContextFactory
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlagParser$1
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlagParser$FlagParseException
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlagParser
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlag
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlag$1
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlag$Builder
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlagParser$FailureReason
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlag$FlagMode
+org.ayosynk.landClaimPlugin.lib.cloud.parser.flag.CommandFlagParser$FlagParser
+org.ayosynk.landClaimPlugin.lib.cloud.component.CommandComponent
+org.ayosynk.landClaimPlugin.lib.cloud.component.CommandComponent$Builder
+org.ayosynk.landClaimPlugin.lib.cloud.component.TypedCommandComponent
+org.ayosynk.landClaimPlugin.lib.cloud.component.CommandComponent$ComponentType
+org.ayosynk.landClaimPlugin.lib.cloud.brigadier.CloudBrigadierCommand$ParsedCommandNodeHandler
+org.ayosynk.landClaimPlugin.lib.cloud.brigadier.CloudBrigadierCommand
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$1
+org.ayosynk.landClaimPlugin.lib.cloud.bean.CommandBean
+org.ayosynk.landClaimPlugin.lib.cloud.bean.CommandPropertiesImpl
+org.ayosynk.landClaimPlugin.lib.cloud.bean.CommandProperties
+org.ayosynk.landClaimPlugin.lib.cloud.meta.SimpleCommandMeta
+org.ayosynk.landClaimPlugin.lib.cloud.meta.CommandMetaBuilder
+org.ayosynk.landClaimPlugin.lib.cloud.meta.CommandMeta
+org.ayosynk.landClaimPlugin.lib.cloud.Command$1
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandManager
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandManager$BrigadierInitializationException
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitPluginRegistrationHandler$RegisteredCommandData
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandMeta
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.CloudBukkitListener
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandPreprocessor
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommand
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.internal.CommandBuildContextSupplier
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandManager$InitializationException
+org.ayosynk.landClaimPlugin.lib.cloud.bukkit.BukkitCommandContextKeys
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager$2
+org.ayosynk.landClaimPlugin.lib.cloud.description.CommandDescriptionImpl
+org.ayosynk.landClaimPlugin.lib.cloud.description.CommandDescription
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandNode$2
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandInputTokenizer$1
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandInputTokenizer
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandNode
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandNode$1
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandRegistrationHandler$NullCommandRegistrationHandler
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandInputTokenizer$StringTokenizerFactory
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandRegistrationHandler
+org.ayosynk.landClaimPlugin.lib.cloud.internal.CommandRegistrationHandler$1
+org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder$Applicable
+org.ayosynk.landClaimPlugin.lib.cloud.syntax.StandardCommandSyntaxFormatter
+org.ayosynk.landClaimPlugin.lib.cloud.syntax.CommandSyntaxFormatter
+org.ayosynk.landClaimPlugin.lib.cloud.syntax.StandardCommandSyntaxFormatter$FormattingInstance
+org.ayosynk.landClaimPlugin.lib.cloud.syntax.StandardCommandSyntaxFormatter$1
+org.ayosynk.landClaimPlugin.lib.cloud.CommandManager
+org.ayosynk.landClaimPlugin.lib.hikari.util.ConcurrentBag$IBagStateListener
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.RedisBloomProtocol$TDigestCommand
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.RedisBloomProtocol$BloomFilterCommand
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.RedisBloomProtocol$CuckooFilterCommand
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.RedisBloomProtocol$TopKCommand
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.RedisBloomCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CountMinSketchPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TDigestSketchCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.BloomFilterPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.RedisBloomPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.TopKFilterPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.CuckooFilterCommands
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.commands.package-info
+org.ayosynk.landClaimPlugin.lib.jedis.bloom.RedisBloomProtocol$CountMinSketchCommand
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObjects$JsonObjectBuilder
+org.ayosynk.landClaimPlugin.lib.jedis.graph.GraphCommandObjects$GraphCacheList
+org.ayosynk.landClaimPlugin.lib.jedis.graph.RedisGraphCommands
+org.ayosynk.landClaimPlugin.lib.jedis.graph.GraphCommandObjects$GraphCacheImpl
+org.ayosynk.landClaimPlugin.lib.jedis.graph.RedisGraphPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.graph.GraphCommandObjects
+org.ayosynk.landClaimPlugin.lib.jedis.graph.GraphProtocol$GraphCommand
+org.ayosynk.landClaimPlugin.lib.jedis.JedisSentinelPool$MasterListener
+org.ayosynk.landClaimPlugin.lib.jedis.CommandArguments
+org.ayosynk.landClaimPlugin.lib.jedis.resps.CommandDocument$1
+org.ayosynk.landClaimPlugin.lib.jedis.resps.CommandInfo$1
+org.ayosynk.landClaimPlugin.lib.jedis.resps.CommandInfo
+org.ayosynk.landClaimPlugin.lib.jedis.resps.CommandDocument
+org.ayosynk.landClaimPlugin.lib.jedis.ClusterCommandArguments
+org.ayosynk.landClaimPlugin.lib.jedis.json.JsonProtocol$JsonCommand
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1PipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV1Commands
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2Commands
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonV2PipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonCommands
+org.ayosynk.landClaimPlugin.lib.jedis.json.commands.RedisJsonPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.ShardedCommandArguments
+org.ayosynk.landClaimPlugin.lib.jedis.Protocol$Command
+org.ayosynk.landClaimPlugin.lib.jedis.mcf.CircuitBreakerCommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.providers.SentineledConnectionProvider$SentinelListener$1
+org.ayosynk.landClaimPlugin.lib.jedis.providers.SentineledConnectionProvider$SentinelListener
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObjects$1
+org.ayosynk.landClaimPlugin.lib.jedis.JedisSentinelPool$MasterListener$1
+org.ayosynk.landClaimPlugin.lib.jedis.ShardedCommandObjects
+org.ayosynk.landClaimPlugin.lib.jedis.executors.CommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.executors.ClusterCommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.executors.DefaultCommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.executors.SimpleCommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.executors.RetryableCommandExecutor
+org.ayosynk.landClaimPlugin.lib.jedis.search.RediSearchCommands
+org.ayosynk.landClaimPlugin.lib.jedis.search.RediSearchPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.search.SearchProtocol$SearchCommand
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObjects$SearchProfileResponseBuilder
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SetPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ListCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ConfigCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleBinaryKeyedCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SetPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ServerCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.AccessControlLogCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StringBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HashPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleKeyedCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ProtocolCommand
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ClusterCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ClientBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SlowlogCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SentinelCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.JedisCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SetCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HashCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StringPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.BitBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ControlCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StringPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.RedisModuleCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleBinaryKeyedPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.AccessControlLogBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.BitPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HashBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.PipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ListPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ListPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.CommandCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.GenericControlCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.GeoCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StreamPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.PipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ListBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingKeyPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ClientCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.DatabasePipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SampleKeyedPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HashPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.KeyPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ModuleCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.JedisBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.StringCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogPipelineBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ScriptingControlCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.HyperLogLogPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.FunctionCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.ControlBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.package-info
+org.ayosynk.landClaimPlugin.lib.jedis.commands.DatabaseCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.BitCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.RedisModulePipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SortedSetPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.commands.SetBinaryCommands
+org.ayosynk.landClaimPlugin.lib.jedis.params.CommandListFilterByParams
+org.ayosynk.landClaimPlugin.lib.jedis.timeseries.RedisTimeSeriesPipelineCommands
+org.ayosynk.landClaimPlugin.lib.jedis.timeseries.TimeSeriesProtocol$TimeSeriesCommand
+org.ayosynk.landClaimPlugin.lib.jedis.timeseries.RedisTimeSeriesCommands
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObjects$JsonObjectListBuilder
+org.ayosynk.landClaimPlugin.lib.jedis.util.JedisCommandIterationBase
+org.ayosynk.landClaimPlugin.lib.jedis.gears.RedisGearsCommands
+org.ayosynk.landClaimPlugin.lib.jedis.gears.RedisGearsProtocol$GearsCommand
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObject
+org.ayosynk.landClaimPlugin.lib.jedis.ClusterCommandObjects
+org.ayosynk.landClaimPlugin.lib.jedis.CommandObjects
+org.ayosynk.landClaimPlugin.lib.caffeine.cache.RemovalListener
+org.ayosynk.landClaimPlugin.lib.caffeine.cache.Async$AsyncRemovalListener
+org.ayosynk.landClaimPlugin.lib.caffeine.cache.Async$AsyncEvictionListener
+org.ayosynk.landClaimPlugin.managers.ListenerManager
+org.ayosynk.landClaimPlugin.managers.ClaimManager
+org.ayosynk.landClaimPlugin.hooks.papi.LandClaimExpansion
+org.ayosynk.landClaimPlugin.hooks.papi.ClaimPluginExpansion
+org.ayosynk.landClaimPlugin.hooks.map.SquaremapHook$EnableListener
+org.ayosynk.landClaimPlugin.gui.framework.GuiListener$1
+org.ayosynk.landClaimPlugin.gui.framework.GuiListener
+org.ayosynk.landClaimPlugin.commands.ClaimCommand
+org.ayosynk.landClaimPlugin.commands.BuyCommand
+org.ayosynk.landClaimPlugin.commands.AbandonCommand
+org.ayosynk.landClaimPlugin.commands.VisualizationModeSuggestions
+org.ayosynk.landClaimPlugin.commands.OfflinePlayerSuggestions
+org.ayosynk.landClaimPlugin.commands.CommandHandler
+org.ayosynk.landClaimPlugin.commands.BanCommand
+org.ayosynk.landClaimPlugin.commands.AllyCommand
+org.ayosynk.landClaimPlugin.commands.SellCommand
+org.ayosynk.landClaimPlugin.commands.ClaimLeaveSuggestions
+org.ayosynk.landClaimPlugin.commands.TrustCommand
+org.ayosynk.landClaimPlugin.commands.LandClaimCommand
+org.ayosynk.landClaimPlugin.commands.MemberCommand
+org.ayosynk.landClaimPlugin.commands.AdminCommand
+org.ayosynk.landClaimPlugin.commands.UnstuckCommand
+org.ayosynk.landClaimPlugin.commands.UnclaimCommand
+org.ayosynk.landClaimPlugin.api.LandClaimAPI
+org.ayosynk.landClaimPlugin.api.event.ClaimTransferEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason
+org.ayosynk.landClaimPlugin.api.event.WarpCreateEvent
+org.ayosynk.landClaimPlugin.api.event.PlayerEnterClaimEvent
+org.ayosynk.landClaimPlugin.api.event.PlayerLeaveClaimEvent
+org.ayosynk.landClaimPlugin.api.event.WarpDeleteEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimTrustAddEvent
+org.ayosynk.landClaimPlugin.api.event.ClaimMemberAddEvent
+org.ayosynk.landClaimPlugin.api.event.WarpPrivacyChangeEvent
+org.ayosynk.landClaimPlugin.api.LandClaimAPIImpl
+Compiled from "API.java"
+public interface org.apiguardian.api.API extends java.lang.annotation.Annotation {
+  public abstract org.apiguardian.api.API$Status status();
+  public abstract java.lang.String since();
+  public abstract java.lang.String[] consumers();
+}
+Compiled from "API.java"
+public final class org.apiguardian.api.API$Status extends java.lang.Enum<org.apiguardian.api.API$Status> {
+  public static final org.apiguardian.api.API$Status INTERNAL;
+  public static final org.apiguardian.api.API$Status DEPRECATED;
+  public static final org.apiguardian.api.API$Status EXPERIMENTAL;
+  public static final org.apiguardian.api.API$Status MAINTAINED;
+  public static final org.apiguardian.api.API$Status STABLE;
+  private static final org.apiguardian.api.API$Status[] $VALUES;
+  public static org.apiguardian.api.API$Status[] values();
+  public static org.apiguardian.api.API$Status valueOf(java.lang.String);
+  private org.apiguardian.api.API$Status();
+  static {};
+}
+Compiled from "Level.java"
+public final class org.slf4j.event.Level extends java.lang.Enum<org.slf4j.event.Level> {
+  public static final org.slf4j.event.Level ERROR;
+  public static final org.slf4j.event.Level WARN;
+  public static final org.slf4j.event.Level INFO;
+  public static final org.slf4j.event.Level DEBUG;
+  public static final org.slf4j.event.Level TRACE;
+  private final int levelInt;
+  private final java.lang.String levelStr;
+  private static final org.slf4j.event.Level[] $VALUES;
+  public static org.slf4j.event.Level[] values();
+  public static org.slf4j.event.Level valueOf(java.lang.String);
+  private org.slf4j.event.Level(int, java.lang.String);
+  public int toInt();
+  public static org.slf4j.event.Level intToLevel(int);
+  public java.lang.String toString();
+  private static org.slf4j.event.Level[] $values();
+  static {};
+}
+Compiled from "KeyValuePair.java"
+public class org.slf4j.event.KeyValuePair {
+  public final java.lang.String key;
+  public final java.lang.Object value;
+  public org.slf4j.event.KeyValuePair(java.lang.String, java.lang.Object);
+  public java.lang.String toString();
+  public boolean equals(java.lang.Object);
+  public int hashCode();
+}
+Compiled from "LoggingEvent.java"
+public interface org.slf4j.event.LoggingEvent {
+  public abstract org.slf4j.event.Level getLevel();
+  public abstract java.lang.String getLoggerName();
+  public abstract java.lang.String getMessage();
+  public abstract java.util.List<java.lang.Object> getArguments();
+  public abstract java.lang.Object[] getArgumentArray();
+  public abstract java.util.List<org.slf4j.Marker> getMarkers();
+  public abstract java.util.List<org.slf4j.event.KeyValuePair> getKeyValuePairs();
+  public abstract java.lang.Throwable getThrowable();
+  public abstract long getTimeStamp();
+  public abstract java.lang.String getThreadName();
+  public default java.lang.String getCallerBoundary();
+}
+Compiled from "EventConstants.java"
+public class org.slf4j.event.EventConstants {
+  public static final int ERROR_INT;
+  public static final int WARN_INT;
+  public static final int INFO_INT;
+  public static final int DEBUG_INT;
+  public static final int TRACE_INT;
+  public static final java.lang.String NA_SUBST;
+  public org.slf4j.event.EventConstants();
+}
+Compiled from "EventRecordingLogger.java"
+public class org.slf4j.event.EventRecordingLogger extends org.slf4j.helpers.LegacyAbstractLogger {
+  private static final long serialVersionUID;
+  java.lang.String name;
+  org.slf4j.helpers.SubstituteLogger logger;
+  java.util.Queue<org.slf4j.event.SubstituteLoggingEvent> eventQueue;
+  static final boolean RECORD_ALL_EVENTS;
+  public org.slf4j.event.EventRecordingLogger(org.slf4j.helpers.SubstituteLogger, java.util.Queue<org.slf4j.event.SubstituteLoggingEvent>);
+  public java.lang.String getName();
+  public boolean isTraceEnabled();
+  public boolean isDebugEnabled();
+  public boolean isInfoEnabled();
+  public boolean isWarnEnabled();
+  public boolean isErrorEnabled();
+  protected void handleNormalizedLoggingCall(org.slf4j.event.Level, org.slf4j.Marker, java.lang.String, java.lang.Object[], java.lang.Throwable);
+  protected java.lang.String getFullyQualifiedCallerName();
+}
+Compiled from "DefaultLoggingEvent.java"
+public class org.slf4j.event.DefaultLoggingEvent implements org.slf4j.event.LoggingEvent {
+  org.slf4j.Logger logger;
+  org.slf4j.event.Level level;
+  java.lang.String message;
+  java.util.List<org.slf4j.Marker> markers;
+  java.util.List<java.lang.Object> arguments;
+  java.util.List<org.slf4j.event.KeyValuePair> keyValuePairs;
+  java.lang.Throwable throwable;
+  java.lang.String threadName;
+  long timeStamp;
+  java.lang.String callerBoundary;
+  public org.slf4j.event.DefaultLoggingEvent(org.slf4j.event.Level, org.slf4j.Logger);
+  public void addMarker(org.slf4j.Marker);
+  public java.util.List<org.slf4j.Marker> getMarkers();
+  public void addArgument(java.lang.Object);
+  public void addArguments(java.lang.Object...);
+  private java.util.List<java.lang.Object> getNonNullArguments();
+  public java.util.List<java.lang.Object> getArguments();
+  public java.lang.Object[] getArgumentArray();
+  public void addKeyValue(java.lang.String, java.lang.Object);
+  private java.util.List<org.slf4j.event.KeyValuePair> getNonnullKeyValuePairs();
+  public java.util.List<org.slf4j.event.KeyValuePair> getKeyValuePairs();
+  public void setThrowable(java.lang.Throwable);
+  public org.slf4j.event.Level getLevel();
+  public java.lang.String getLoggerName();
+  public java.lang.String getMessage();
+  public void setMessage(java.lang.String);
+  public java.lang.Throwable getThrowable();
+  public java.lang.String getThreadName();
+  public long getTimeStamp();
+  public void setTimeStamp(long);
+  public void setCallerBoundary(java.lang.String);
+  public java.lang.String getCallerBoundary();
+}
+Compiled from "SubstituteLoggingEvent.java"
+public class org.slf4j.event.SubstituteLoggingEvent implements org.slf4j.event.LoggingEvent {
+  org.slf4j.event.Level level;
+  java.util.List<org.slf4j.Marker> markers;
+  java.lang.String loggerName;
+  org.slf4j.helpers.SubstituteLogger logger;
+  java.lang.String threadName;
+  java.lang.String message;
+  java.lang.Object[] argArray;
+  java.util.List<org.slf4j.event.KeyValuePair> keyValuePairList;
+  long timeStamp;
+  java.lang.Throwable throwable;
+  public org.slf4j.event.SubstituteLoggingEvent();
+  public org.slf4j.event.Level getLevel();
+  public void setLevel(org.slf4j.event.Level);
+  public java.util.List<org.slf4j.Marker> getMarkers();
+  public void addMarker(org.slf4j.Marker);
+  public java.lang.String getLoggerName();
+  public void setLoggerName(java.lang.String);
+  public org.slf4j.helpers.SubstituteLogger getLogger();
+  public void setLogger(org.slf4j.helpers.SubstituteLogger);
+  public java.lang.String getMessage();
+  public void setMessage(java.lang.String);
+  public java.lang.Object[] getArgumentArray();
+  public void setArgumentArray(java.lang.Object[]);
+  public java.util.List<java.lang.Object> getArguments();
+  public long getTimeStamp();
+  public void setTimeStamp(long);
+  public java.lang.String getThreadName();
+  public void setThreadName(java.lang.String);
+  public java.lang.Throwable getThrowable();
+  public void setThrowable(java.lang.Throwable);
+  public java.util.List<org.slf4j.event.KeyValuePair> getKeyValuePairs();
+}
+Compiled from "ClaimManager.java"
+public class org.ayosynk.landClaimPlugin.managers.ClaimManager {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  private final java.util.Map<java.util.UUID, java.util.Set<java.util.UUID>> pendingAllyInvites;
+  private final java.util.Map<java.util.UUID, java.util.UUID> pendingMemberInvites;
+  private final java.util.Map<java.util.UUID, java.util.UUID> pendingTrustInvites;
+  private final java.util.Map<org.ayosynk.landClaimPlugin.models.ChunkPosition, org.ayosynk.landClaimPlugin.models.ClaimProfile> chunkToProfileMap;
+  public void addToSpatialIndex(org.ayosynk.landClaimPlugin.models.ChunkPosition, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  void removeFromSpatialIndex(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  void rebuildProfileIndex(org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  void removeAllChunksForProfile(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.managers.ClaimManager(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void initialize();
+  public void loadProfiles();
+  public java.util.Collection<org.ayosynk.landClaimPlugin.models.ClaimProfile> getAllProfiles();
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfileById(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfileAt(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getActiveProfile(org.bukkit.entity.Player);
+  public java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getOwnedProfiles(java.util.UUID);
+  public int getTotalClaimedChunks(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfileByNameOrOwner(java.lang.String);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfileByName(java.lang.String);
+  public boolean isClaimNameUnique(java.lang.String);
+  public boolean isChunkClaimed(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public java.util.UUID getChunkOwner(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public int getTotalClaims();
+  public void addAllyInvite(java.util.UUID, java.util.UUID);
+  public void removeAllyInvite(java.util.UUID, java.util.UUID);
+  public void sendAllyInvite(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public boolean hasAllyInvite(java.util.UUID, java.util.UUID);
+  public void sendMemberInvite(org.bukkit.entity.Player, org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public java.util.UUID getAndRemoveMemberInvite(java.util.UUID);
+  public void sendTrustInvite(org.bukkit.entity.Player, org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public java.util.UUID getAndRemoveTrustInvite(java.util.UUID);
+  public java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getMemberProfiles(java.util.UUID);
+  public boolean canCreateProfile(java.util.UUID);
+  public boolean claimChunk(org.bukkit.entity.Player, org.bukkit.Chunk);
+  public int claimRadius(org.bukkit.entity.Player, org.bukkit.Chunk, int);
+  public int unclaimRadius(org.bukkit.entity.Player, org.bukkit.Chunk, int);
+  public boolean unclaimChunk(org.bukkit.Chunk);
+  public int deleteProfile(java.util.UUID, org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason);
+  public int abandonProfile(java.util.UUID);
+  public boolean transferOwnership(java.util.UUID, java.util.UUID);
+  public boolean transferClaimProfile(java.util.UUID, java.util.UUID);
+  private void publishInvalidate(java.util.UUID);
+  public int unclaimAllById(java.util.UUID);
+  public void saveAndSync(org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private boolean isTooCloseToOtherProfile(java.lang.String, org.ayosynk.landClaimPlugin.models.ChunkPosition, java.util.UUID, int);
+  private boolean isTooCloseToWorldGuardRegion(org.ayosynk.landClaimPlugin.models.ChunkPosition, int);
+  private boolean isConnectedToOwnChunks(org.ayosynk.landClaimPlugin.models.ChunkPosition, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public int getClaimLimit(org.bukkit.entity.Player);
+  public int getClaimLimit(java.util.UUID);
+  private int getClaimLimit(java.util.UUID, org.bukkit.entity.Player);
+  private java.lang.Void lambda$saveAndSync$1(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.Throwable);
+  private void lambda$saveAndSync$0(org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private java.lang.Void lambda$transferOwnership$3(java.util.UUID, java.lang.Throwable);
+  private void lambda$transferOwnership$0(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.util.UUID);
+  private java.lang.Void lambda$transferOwnership$2(java.util.UUID, java.lang.Throwable);
+  private void lambda$transferOwnership$1(java.util.UUID, java.util.UUID);
+  private java.lang.Void lambda$deleteProfile$1(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.Throwable);
+  private void lambda$deleteProfile$0(org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private static int lambda$claimRadius$0(int, int, org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  private static java.util.Set lambda$addAllyInvite$0(java.util.UUID);
+  private java.lang.Void lambda$loadProfiles$1(java.lang.Throwable);
+  private void lambda$loadProfiles$0(java.util.List);
+  private static boolean lambda$removeAllChunksForProfile$0(java.util.UUID, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private static boolean lambda$rebuildProfileIndex$0(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+}
+Compiled from "LandClaimExpansion.java"
+public class org.ayosynk.landClaimPlugin.hooks.papi.LandClaimExpansion extends me.clip.placeholderapi.expansion.PlaceholderExpansion {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  public org.ayosynk.landClaimPlugin.hooks.papi.LandClaimExpansion(org.ayosynk.landClaimPlugin.LandClaimPlugin);
+  public java.lang.String getIdentifier();
+  public java.lang.String getAuthor();
+  public java.lang.String getVersion();
+  public boolean persist();
+  public java.lang.String onRequest(org.bukkit.OfflinePlayer, java.lang.String);
+}
+Compiled from "ClaimPluginExpansion.java"
+public class org.ayosynk.landClaimPlugin.hooks.papi.ClaimPluginExpansion extends me.clip.placeholderapi.expansion.PlaceholderExpansion {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  public org.ayosynk.landClaimPlugin.hooks.papi.ClaimPluginExpansion(org.ayosynk.landClaimPlugin.LandClaimPlugin);
+  public java.lang.String getIdentifier();
+  public java.lang.String getAuthor();
+  public java.lang.String getVersion();
+  public boolean persist();
+  public java.lang.String onRequest(org.bukkit.OfflinePlayer, java.lang.String);
+}
+Compiled from "LandClaimAPI.java"
+public interface org.ayosynk.landClaimPlugin.api.LandClaimAPI {
+  public static org.ayosynk.landClaimPlugin.api.LandClaimAPI getInstance();
+  public abstract boolean isChunkClaimed(java.lang.String, int, int);
+  public abstract boolean isChunkClaimed(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public abstract boolean isLocationClaimed(org.bukkit.Location);
+  public abstract org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(java.lang.String, int, int);
+  public abstract org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public abstract org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(org.bukkit.Location);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getClaimsByOwner(java.util.UUID);
+  public abstract java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getClaimsByMember(java.util.UUID);
+  public abstract java.util.Collection<org.ayosynk.landClaimPlugin.models.ClaimProfile> getAllClaimProfiles();
+  public abstract org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimById(java.util.UUID);
+  public abstract org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimByName(java.lang.String);
+  public abstract int getTotalChunksByOwner(java.util.UUID);
+  public abstract boolean hasPermission(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String);
+  public abstract java.lang.String getPlayerStatus(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public abstract boolean isOwner(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public abstract boolean isMember(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public abstract boolean isTrusted(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public abstract java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Warp> getWarps(java.util.UUID);
+  public abstract org.ayosynk.landClaimPlugin.models.Warp getWarp(java.util.UUID, java.lang.String);
+  public abstract boolean isInCombat(org.bukkit.entity.Player);
+  public abstract int getClaimLimit(org.bukkit.entity.Player);
+  public abstract int getClaimLimit(java.util.UUID);
+  public abstract boolean canCreateClaim(java.util.UUID);
+  public abstract boolean adminClaimChunk(org.bukkit.entity.Player, org.bukkit.Location);
+  public abstract boolean adminUnclaimChunk(org.bukkit.entity.Player, org.bukkit.Location);
+  public abstract boolean transferClaim(org.bukkit.entity.Player, java.util.UUID, java.util.UUID);
+  public abstract boolean transferClaim(java.util.UUID, java.util.UUID);
+  public abstract int unclaimAll(org.bukkit.entity.Player, java.util.UUID);
+  public abstract int unclaimAll(java.util.UUID);
+  public abstract java.util.concurrent.CompletableFuture<java.lang.Integer> addBonusBlocks(java.util.UUID, int);
+  public abstract java.util.concurrent.CompletableFuture<java.lang.Integer> getBonusBlocks(java.util.UUID);
+  public abstract java.util.concurrent.CompletableFuture<java.lang.Integer> setBonusBlocks(java.util.UUID, int);
+  public abstract long getServerTime();
+}
+Compiled from "ClaimTransferEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.ClaimTransferEvent extends org.bukkit.event.Event {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final java.util.UUID oldOwnerId;
+  private final java.util.UUID newOwnerId;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimTransferEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public java.util.UUID getOldOwnerId();
+  public java.util.UUID getNewOwnerId();
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "ClaimDeleteEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent extends org.ayosynk.landClaimPlugin.api.event.ClaimEvent {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason reason;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ChunkPosition, java.util.UUID, org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason);
+  public org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason getReason();
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "ClaimDeleteEvent.java"
+public final class org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason extends java.lang.Enum<org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason> {
+  public static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason PLAYER_ABANDON;
+  public static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason ADMIN_UNCLAIM;
+  public static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason OWNERSHIP_TRANSFER;
+  public static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason SYSTEM;
+  public static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason INACTIVITY_DECAY;
+  private static final org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason[] $VALUES;
+  public static org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason[] values();
+  public static org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason valueOf(java.lang.String);
+  private org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason();
+  private static org.ayosynk.landClaimPlugin.api.event.ClaimDeleteEvent$DeleteReason[] $values();
+  static {};
+}
+Compiled from "WarpCreateEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.WarpCreateEvent extends org.bukkit.event.Event implements org.bukkit.event.Cancellable {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final org.ayosynk.landClaimPlugin.models.Warp warp;
+  private final org.bukkit.entity.Player player;
+  private boolean cancelled;
+  public org.ayosynk.landClaimPlugin.api.event.WarpCreateEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.Warp, org.bukkit.entity.Player);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public org.ayosynk.landClaimPlugin.models.Warp getWarp();
+  public org.bukkit.entity.Player getPlayer();
+  public boolean isCancelled();
+  public void setCancelled(boolean);
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "PlayerEnterClaimEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.PlayerEnterClaimEvent extends org.ayosynk.landClaimPlugin.api.event.ClaimEvent {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.bukkit.entity.Player player;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile fromClaim;
+  public org.ayosynk.landClaimPlugin.api.event.PlayerEnterClaimEvent(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ChunkPosition, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public org.bukkit.entity.Player getPlayer();
+  public java.util.UUID getPlayerId();
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getFromClaim();
+  public boolean isFromWilderness();
+  public boolean isClaimToClaim();
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "PlayerLeaveClaimEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.PlayerLeaveClaimEvent extends org.ayosynk.landClaimPlugin.api.event.ClaimEvent {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.bukkit.entity.Player player;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile toClaim;
+  public org.ayosynk.landClaimPlugin.api.event.PlayerLeaveClaimEvent(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ChunkPosition, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  public org.bukkit.entity.Player getPlayer();
+  public java.util.UUID getPlayerId();
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getToClaim();
+  public boolean isToWilderness();
+  public boolean isClaimToClaim();
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "WarpDeleteEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.WarpDeleteEvent extends org.bukkit.event.Event {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final org.ayosynk.landClaimPlugin.models.Warp warp;
+  private final org.bukkit.entity.Player player;
+  public org.ayosynk.landClaimPlugin.api.event.WarpDeleteEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.Warp, org.bukkit.entity.Player);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public org.ayosynk.landClaimPlugin.models.Warp getWarp();
+  public org.bukkit.entity.Player getPlayer();
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "ClaimEvent.java"
+public abstract class org.ayosynk.landClaimPlugin.api.event.ClaimEvent extends org.bukkit.event.Event {
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final org.ayosynk.landClaimPlugin.models.ChunkPosition chunk;
+  private final java.util.UUID creatorId;
+  private final long timestamp;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ChunkPosition, java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public org.ayosynk.landClaimPlugin.models.ChunkPosition getChunk();
+  public java.util.UUID getCreatorId();
+  public long getTimestamp();
+  public java.util.UUID getClaimId();
+  public java.lang.String getClaimName();
+  public java.lang.String getWorld();
+  public int getChunkX();
+  public int getChunkZ();
+}
+Compiled from "ClaimCreateEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent extends org.ayosynk.landClaimPlugin.api.event.ClaimEvent implements org.bukkit.event.Cancellable {
+  private static final org.bukkit.event.HandlerList handlers;
+  private boolean cancelled;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimCreateEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ChunkPosition, java.util.UUID);
+  public boolean isCancelled();
+  public void setCancelled(boolean);
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "ClaimTrustAddEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.ClaimTrustAddEvent extends org.bukkit.event.Event implements org.bukkit.event.Cancellable {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final java.util.UUID targetId;
+  private final org.bukkit.entity.Player inviter;
+  private boolean cancelled;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimTrustAddEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, org.bukkit.entity.Player);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public java.util.UUID getTargetId();
+  public org.bukkit.entity.Player getInviter();
+  public boolean isCancelled();
+  public void setCancelled(boolean);
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "ClaimMemberAddEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.ClaimMemberAddEvent extends org.bukkit.event.Event implements org.bukkit.event.Cancellable {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final java.util.UUID memberId;
+  private final org.bukkit.entity.Player inviter;
+  private boolean cancelled;
+  public org.ayosynk.landClaimPlugin.api.event.ClaimMemberAddEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, org.bukkit.entity.Player);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public java.util.UUID getMemberId();
+  public org.bukkit.entity.Player getInviter();
+  public boolean isCancelled();
+  public void setCancelled(boolean);
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "WarpPrivacyChangeEvent.java"
+public class org.ayosynk.landClaimPlugin.api.event.WarpPrivacyChangeEvent extends org.bukkit.event.Event implements org.bukkit.event.Cancellable {
+  private static final org.bukkit.event.HandlerList handlers;
+  private final org.ayosynk.landClaimPlugin.models.ClaimProfile profile;
+  private final org.ayosynk.landClaimPlugin.models.Warp warp;
+  private final org.bukkit.entity.Player player;
+  private final boolean newIsPublic;
+  private boolean cancelled;
+  public org.ayosynk.landClaimPlugin.api.event.WarpPrivacyChangeEvent(org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.Warp, org.bukkit.entity.Player, boolean);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getProfile();
+  public org.ayosynk.landClaimPlugin.models.Warp getWarp();
+  public org.bukkit.entity.Player getPlayer();
+  public boolean isNewIsPublic();
+  public boolean isCancelled();
+  public void setCancelled(boolean);
+  public org.bukkit.event.HandlerList getHandlers();
+  public static org.bukkit.event.HandlerList getHandlerList();
+  static {};
+}
+Compiled from "LandClaimAPIImpl.java"
+public class org.ayosynk.landClaimPlugin.api.LandClaimAPIImpl implements org.ayosynk.landClaimPlugin.api.LandClaimAPI {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  public org.ayosynk.landClaimPlugin.api.LandClaimAPIImpl(org.ayosynk.landClaimPlugin.LandClaimPlugin);
+  private org.ayosynk.landClaimPlugin.managers.ClaimManager getClaimManager();
+  private org.ayosynk.landClaimPlugin.managers.ConfigManager getConfigManager();
+  private org.ayosynk.landClaimPlugin.managers.WarpManager getWarpManager();
+  private org.ayosynk.landClaimPlugin.managers.CombatManager getCombatManager();
+  public boolean isChunkClaimed(java.lang.String, int, int);
+  public boolean isChunkClaimed(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public boolean isLocationClaimed(org.bukkit.Location);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(java.lang.String, int, int);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimAt(org.bukkit.Location);
+  public java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getClaimsByOwner(java.util.UUID);
+  public java.util.List<org.ayosynk.landClaimPlugin.models.ClaimProfile> getClaimsByMember(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimByName(java.lang.String);
+  public java.util.Collection<org.ayosynk.landClaimPlugin.models.ClaimProfile> getAllClaimProfiles();
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile getClaimById(java.util.UUID);
+  public int getTotalChunksByOwner(java.util.UUID);
+  public boolean hasPermission(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String);
+  public java.lang.String getPlayerStatus(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public boolean isOwner(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public boolean isMember(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public boolean isTrusted(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  public java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Warp> getWarps(java.util.UUID);
+  public org.ayosynk.landClaimPlugin.models.Warp getWarp(java.util.UUID, java.lang.String);
+  public boolean isInCombat(org.bukkit.entity.Player);
+  public int getClaimLimit(org.bukkit.entity.Player);
+  public int getClaimLimit(java.util.UUID);
+  public boolean canCreateClaim(java.util.UUID);
+  public boolean adminClaimChunk(org.bukkit.entity.Player, org.bukkit.Location);
+  public boolean adminUnclaimChunk(org.bukkit.entity.Player, org.bukkit.Location);
+  public boolean transferClaim(org.bukkit.entity.Player, java.util.UUID, java.util.UUID);
+  public boolean transferClaim(java.util.UUID, java.util.UUID);
+  public int unclaimAll(org.bukkit.entity.Player, java.util.UUID);
+  public int unclaimAll(java.util.UUID);
+  private boolean isAuthorizedForTransfer(org.bukkit.entity.Player, java.util.UUID);
+  public java.util.concurrent.CompletableFuture<java.lang.Integer> addBonusBlocks(java.util.UUID, int);
+  public java.util.concurrent.CompletableFuture<java.lang.Integer> getBonusBlocks(java.util.UUID);
+  public java.util.concurrent.CompletableFuture<java.lang.Integer> setBonusBlocks(java.util.UUID, int);
+  public long getServerTime();
+  private java.lang.Integer lambda$setBonusBlocks$0(java.util.UUID, int, org.ayosynk.landClaimPlugin.models.ClaimPlayer);
+  private static java.lang.Integer lambda$getBonusBlocks$0(org.ayosynk.landClaimPlugin.models.ClaimPlayer);
+  private java.lang.Integer lambda$addBonusBlocks$0(java.util.UUID, int, org.ayosynk.landClaimPlugin.models.ClaimPlayer);
+}
