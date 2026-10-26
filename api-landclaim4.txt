@@ -1,0 +1,502 @@
+Compiled from "ClaimProfile.java"
+public class org.ayosynk.landClaimPlugin.models.ClaimProfile {
+  public static final java.util.UUID ADMIN_PROFILE_ID;
+  private final java.util.UUID profileId;
+  private java.util.UUID realOwnerId;
+  private java.lang.String name;
+  private java.lang.String ownerAlias;
+  private final java.util.Set<org.ayosynk.landClaimPlugin.models.ChunkPosition> ownedChunks;
+  private final java.util.Set<java.lang.String> visitorFlags;
+  private final java.util.Map<java.util.UUID, java.util.Set<java.lang.String>> trustedPlayerFlags;
+  private final java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Role> roles;
+  private final java.util.Map<java.util.UUID, java.lang.String> memberRoles;
+  private final java.util.Map<java.util.UUID, java.util.Set<java.lang.String>> allyFlags;
+  private final java.util.Set<java.util.UUID> bannedPlayers;
+  private final java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Warp> warps;
+  private java.lang.String claimColor;
+  private java.lang.String visualizationMode;
+  private boolean enterTitleEnabled;
+  private java.lang.String enterTitle;
+  private java.lang.String enterTitleMode;
+  private java.lang.String leaveTitle;
+  private java.lang.String leaveTitleMode;
+  private boolean pvpEnabled;
+  private long pvpTimerEnd;
+  private int bonusRoleSlots;
+  private int bonusMemberSlots;
+  private int bonusWarpSlots;
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile(java.util.UUID, java.util.UUID, java.lang.String);
+  public org.ayosynk.landClaimPlugin.models.ClaimProfile(java.util.UUID, java.lang.String);
+  private void setupDefaultVisitorFlags();
+  private void setupDefaultRoles();
+  public boolean canManage(org.bukkit.entity.Player);
+  public java.util.UUID getProfileId();
+  public java.util.UUID getOwnerId();
+  public void setOwnerId(java.util.UUID);
+  public boolean isOwner(java.util.UUID);
+  public java.lang.String getName();
+  public void setName(java.lang.String);
+  public java.lang.String getOwnerAlias();
+  public void setOwnerAlias(java.lang.String);
+  public java.lang.String getDisplayOwnerName();
+  public boolean isPvpEnabled();
+  public void setPvpEnabled(boolean);
+  public long getPvpTimerEnd();
+  public void setPvpTimerEnd(long);
+  public java.util.Set<org.ayosynk.landClaimPlugin.models.ChunkPosition> getOwnedChunks();
+  public void addChunk(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public void removeChunk(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public boolean ownsChunk(org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  public java.util.Set<java.lang.String> getVisitorFlags();
+  public boolean hasVisitorFlag(java.lang.String);
+  public void addVisitorFlag(java.lang.String);
+  public void removeVisitorFlag(java.lang.String);
+  public java.util.Map<java.util.UUID, java.util.Set<java.lang.String>> getTrustedPlayerFlags();
+  public boolean isTrusted(java.util.UUID);
+  public java.util.Set<java.lang.String> getTrustedFlags(java.util.UUID);
+  public void setTrustedFlags(java.util.UUID, java.util.Set<java.lang.String>);
+  public void addTrustedPlayer(java.util.UUID);
+  public void removeTrustedPlayer(java.util.UUID);
+  public java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Role> getRoles();
+  public org.ayosynk.landClaimPlugin.models.Role getRoleByName(java.lang.String);
+  public void addRole(org.ayosynk.landClaimPlugin.models.Role);
+  public void removeRole(java.lang.String);
+  public java.util.Map<java.util.UUID, java.lang.String> getMemberRoles();
+  public boolean isMember(java.util.UUID);
+  public java.lang.String getMemberRole(java.util.UUID);
+  public void setMemberRole(java.util.UUID, java.lang.String);
+  public void removeMember(java.util.UUID);
+  public java.util.Map<java.util.UUID, java.util.Set<java.lang.String>> getAllyFlags();
+  public boolean hasAlly(java.util.UUID);
+  public java.util.Set<java.lang.String> getAllyFlags(java.util.UUID);
+  public void setAllyFlags(java.util.UUID, java.util.Set<java.lang.String>);
+  public void addAlly(java.util.UUID);
+  public void removeAlly(java.util.UUID);
+  public java.util.Set<java.util.UUID> getBannedPlayers();
+  public boolean isBanned(java.util.UUID);
+  public void addBannedPlayer(java.util.UUID);
+  public void removeBannedPlayer(java.util.UUID);
+  public java.util.Map<java.lang.String, org.ayosynk.landClaimPlugin.models.Warp> getWarps();
+  public org.ayosynk.landClaimPlugin.models.Warp getWarp(java.lang.String);
+  public void addWarp(org.ayosynk.landClaimPlugin.models.Warp);
+  public void removeWarp(java.lang.String);
+  public java.lang.String getColoredName();
+  public java.lang.String getColoredOwnerName();
+  public java.lang.String getLegacyColoredName();
+  public java.lang.String getLegacyColoredOwnerName();
+  public java.lang.String getClaimColor();
+  public void setClaimColor(java.lang.String);
+  public java.lang.String getVisualizationMode();
+  public void setVisualizationMode(java.lang.String);
+  public boolean isEnterTitleEnabled();
+  public void setEnterTitleEnabled(boolean);
+  public java.lang.String getEnterTitle();
+  public void setEnterTitle(java.lang.String);
+  public java.lang.String getLeaveTitle();
+  public void setLeaveTitle(java.lang.String);
+  public java.lang.String getEnterTitleMode();
+  public void setEnterTitleMode(java.lang.String);
+  public java.lang.String getLeaveTitleMode();
+  public void setLeaveTitleMode(java.lang.String);
+  public int getBonusRoleSlots();
+  public void setBonusRoleSlots(int);
+  public int getBonusMemberSlots();
+  public void setBonusMemberSlots(int);
+  public int getBonusWarpSlots();
+  public void setBonusWarpSlots(int);
+  static {};
+}
+Compiled from "ChunkPosition.java"
+public final class org.ayosynk.landClaimPlugin.models.ChunkPosition extends java.lang.Record {
+  private final java.lang.String world;
+  private final int x;
+  private final int z;
+  public org.ayosynk.landClaimPlugin.models.ChunkPosition(org.bukkit.Chunk);
+  public org.ayosynk.landClaimPlugin.models.ChunkPosition(org.bukkit.block.Block);
+  public org.ayosynk.landClaimPlugin.models.ChunkPosition(org.bukkit.Location);
+  public org.ayosynk.landClaimPlugin.models.ChunkPosition(java.lang.String, int, int);
+  public static org.ayosynk.landClaimPlugin.models.ChunkPosition of(java.lang.String, int, int);
+  public static org.ayosynk.landClaimPlugin.models.ChunkPosition of(org.bukkit.Chunk);
+  public java.util.List<org.ayosynk.landClaimPlugin.models.ChunkPosition> getNeighbors(boolean);
+  public boolean isAdjacentTo(org.ayosynk.landClaimPlugin.models.ChunkPosition, boolean);
+  public java.lang.String toString();
+  public final int hashCode();
+  public final boolean equals(java.lang.Object);
+  public java.lang.String world();
+  public int x();
+  public int z();
+}
+Compiled from "CommandBlocker.java"
+public class org.ayosynk.landClaimPlugin.listeners.CommandBlocker implements org.bukkit.event.Listener {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  public org.ayosynk.landClaimPlugin.listeners.CommandBlocker(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager);
+  public void onPlayerCommand(org.bukkit.event.player.PlayerCommandPreprocessEvent);
+}
+Compiled from "ClaimCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.ClaimCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  private final org.ayosynk.landClaimPlugin.managers.VisualizationManager visualizationManager;
+  private final java.util.Map<java.util.UUID, java.lang.Boolean> autoClaimPlayers;
+  private final java.util.Map<java.util.UUID, java.lang.Boolean> autoUnclaimPlayers;
+  private static final java.util.regex.Pattern NAME_PATTERN;
+  private static final java.util.regex.Pattern HEX_PATTERN;
+  private static final java.util.Map<java.lang.String, java.lang.String> NAMED_COLORS;
+  public org.ayosynk.landClaimPlugin.commands.ClaimCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager, org.ayosynk.landClaimPlugin.managers.VisualizationManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  public boolean isAutoClaimEnabled(java.util.UUID);
+  public boolean isAutoUnclaimEnabled(java.util.UUID);
+  public void cleanupPlayer(java.util.UUID);
+  private void toggleChatNotify(org.bukkit.entity.Player);
+  private void claimCurrentChunk(org.bukkit.entity.Player);
+  private void updateActionBarInstant(org.bukkit.entity.Player);
+  private void createProfile(org.bukkit.entity.Player, java.lang.String);
+  public void toggleAutoClaim(org.bukkit.entity.Player);
+  public void toggleAutoUnclaim(org.bukkit.entity.Player);
+  private void toggleVisibility(org.bukkit.entity.Player);
+  private void toggleVisualizationMode(org.bukkit.entity.Player, java.lang.String);
+  private void togglePvp(org.bukkit.entity.Player, boolean, java.lang.Integer);
+  private boolean isCoOwner(org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID);
+  private void abandonClaim(org.bukkit.entity.Player);
+  private void sendClaimInfo(org.bukkit.entity.Player);
+  private void setWarp(org.bukkit.entity.Player, java.lang.String);
+  private void setWarp(org.bukkit.entity.Player, java.lang.String, java.lang.String);
+  private void delWarp(org.bukkit.entity.Player, java.lang.String);
+  private void teleportToWarp(org.bukkit.entity.Player, java.lang.String, java.lang.String);
+  private org.ayosynk.landClaimPlugin.models.ClaimProfile resolveProfileForMenu(org.bukkit.entity.Player);
+  private boolean checkMenuPermission(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.String);
+  private void renameClaim(org.bukkit.entity.Player, java.lang.String);
+  private void changeClaimColor(org.bukkit.entity.Player, java.lang.String);
+  private void leaveClaim(org.bukkit.entity.Player, java.lang.String);
+  private static boolean lambda$renameClaim$0(java.lang.String, org.ayosynk.landClaimPlugin.models.ClaimProfile, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$teleportToWarp$2(org.bukkit.entity.Player, java.lang.String, org.ayosynk.landClaimPlugin.models.Warp, java.lang.Boolean);
+  private void lambda$teleportToWarp$1(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.Warp, java.lang.Boolean);
+  private void lambda$teleportToWarp$0(org.bukkit.entity.Player, java.lang.String, org.ayosynk.landClaimPlugin.models.Warp, java.lang.Boolean);
+  private void lambda$togglePvp$0(org.bukkit.entity.Player, boolean, java.lang.Integer);
+  private static void lambda$togglePvp$3(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.String);
+  private void lambda$togglePvp$1(org.ayosynk.landClaimPlugin.models.ClaimProfile, long);
+  private static void lambda$togglePvp$2(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.String);
+  private void lambda$toggleVisualizationMode$0(org.bukkit.entity.Player, java.lang.String);
+  private void lambda$toggleVisibility$0(org.bukkit.entity.Player);
+  private void lambda$claimCurrentChunk$0(org.bukkit.entity.Player);
+  private void lambda$register$57(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$58(org.bukkit.entity.Player, java.lang.String);
+  private void lambda$register$56(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$54(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$55(org.bukkit.entity.Player, java.lang.String);
+  private static java.util.concurrent.CompletableFuture lambda$register$53(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private void lambda$register$51(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$52(org.bukkit.entity.Player, java.lang.String);
+  private void lambda$register$49(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$50(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$48(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$47(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$46(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$44(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$45(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$42(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$43(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$40(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$41(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$38(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$39(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$36(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$37(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$34(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$35(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$33(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private static java.util.concurrent.CompletableFuture lambda$register$32(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private void lambda$register$31(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$29(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$30(org.bukkit.entity.Player);
+  private void lambda$register$27(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$28(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$25(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$26(org.bukkit.entity.Player, java.lang.String, java.lang.String);
+  private void lambda$register$23(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$24(org.bukkit.entity.Player, java.lang.String);
+  private void lambda$register$21(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$22(org.bukkit.entity.Player);
+  private void lambda$register$19(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$20(org.bukkit.entity.Player, java.lang.String, java.lang.String);
+  private static java.util.concurrent.CompletableFuture lambda$register$18(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private void lambda$register$16(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$17(org.bukkit.entity.Player);
+  private void lambda$register$13(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$15(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$14(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$10(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$12(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$11(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$8(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$9(org.bukkit.entity.Player, java.lang.String);
+  private void lambda$register$7(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$6(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$5(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.bukkit.entity.Player, int);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  static {};
+}
+Compiled from "BuyCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.BuyCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.BuyCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private boolean isLimitPurchasesEnabled();
+  private double getCost(java.lang.String, double);
+  private boolean chargePlayer(org.bukkit.entity.Player, double, java.lang.String);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.bukkit.entity.Player, int, java.lang.Integer);
+}
+Compiled from "AbandonCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.AbandonCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.AbandonCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void showAbandonForm(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void performAbandon(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$showAbandonForm$0(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.lang.Boolean);
+  private void lambda$showAbandonForm$1(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "VisualizationModeSuggestions.java"
+public final class org.ayosynk.landClaimPlugin.commands.VisualizationModeSuggestions {
+  private org.ayosynk.landClaimPlugin.commands.VisualizationModeSuggestions();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> modes();
+  private static java.lang.Iterable lambda$modes$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+}
+Compiled from "OfflinePlayerSuggestions.java"
+public final class org.ayosynk.landClaimPlugin.commands.OfflinePlayerSuggestions {
+  private static final java.util.List<java.lang.String> COMMON_AMOUNTS;
+  private static final java.util.List<java.lang.String> SELECTORS;
+  private static final java.util.List<java.lang.String> BOOLEAN_STATES;
+  private org.ayosynk.landClaimPlugin.commands.OfflinePlayerSuggestions();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> all();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> playersOnly();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> withSelectors();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> adminChunk();
+  public static <C> org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<C> decayExempt();
+  private static boolean isPositiveInt(java.lang.String);
+  private static java.lang.Iterable lambda$decayExempt$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private static boolean lambda$decayExempt$1(java.lang.String);
+  private static java.lang.Iterable lambda$adminChunk$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private static org.ayosynk.landClaimPlugin.lib.cloud.suggestion.Suggestion lambda$adminChunk$3(java.lang.String, java.lang.String);
+  private static boolean lambda$adminChunk$2(java.lang.String);
+  private static boolean lambda$adminChunk$1(java.lang.String);
+  private static java.lang.Iterable lambda$withSelectors$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private static boolean lambda$withSelectors$1(java.lang.String);
+  private static java.lang.Iterable lambda$playersOnly$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+  private static boolean lambda$playersOnly$1(java.lang.String);
+  static {};
+}
+Compiled from "CommandHandler.java"
+public class org.ayosynk.landClaimPlugin.commands.CommandHandler {
+  private final org.ayosynk.landClaimPlugin.commands.ClaimCommand claimCommand;
+  private final java.util.concurrent.ExecutorService commandExecutor;
+  public org.ayosynk.landClaimPlugin.commands.CommandHandler(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager, org.ayosynk.landClaimPlugin.managers.VisualizationManager, org.ayosynk.landClaimPlugin.managers.WarpManager);
+  public boolean isAutoClaimEnabled(java.util.UUID);
+  public boolean isAutoUnclaimEnabled(java.util.UUID);
+  public void toggleAutoClaim(org.bukkit.entity.Player);
+  public void toggleAutoUnclaim(org.bukkit.entity.Player);
+  public void cleanupPlayer(java.util.UUID);
+  public void shutdown();
+  private static void lambda$new$2(org.ayosynk.landClaimPlugin.managers.ConfigManager, org.ayosynk.landClaimPlugin.lib.cloud.exception.handling.ExceptionContext) throws java.lang.Throwable;
+  private static void lambda$new$1(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.lib.cloud.execution.preprocessor.CommandPreprocessingContext);
+  private static java.lang.Thread lambda$new$0(java.lang.Runnable);
+}
+Compiled from "BanCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.BanCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.BanCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  public void applyBan(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String);
+  private void finishBan(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String);
+  private java.util.UUID resolveTargetId(java.lang.String);
+  private void lambda$applyBan$0(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String, java.lang.Boolean);
+  private void lambda$applyBan$1(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, java.util.UUID, java.lang.String);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "AllyCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.AllyCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.AllyCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "SellCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.SellCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.SellCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void executeSell(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, double);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private static void lambda$register$2(org.bukkit.entity.Player);
+  private void lambda$register$1(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile, double);
+}
+Compiled from "ClaimLeaveSuggestions.java"
+public final class org.ayosynk.landClaimPlugin.commands.ClaimLeaveSuggestions {
+  private org.ayosynk.landClaimPlugin.commands.ClaimLeaveSuggestions();
+  public static org.ayosynk.landClaimPlugin.lib.cloud.suggestion.SuggestionProvider<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source> get(org.ayosynk.landClaimPlugin.LandClaimPlugin);
+  private static java.lang.Iterable lambda$get$0(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext, org.ayosynk.landClaimPlugin.lib.cloud.context.CommandInput);
+}
+Compiled from "TrustCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.TrustCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.TrustCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "LandClaimCommand.java"
+public interface org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  public abstract void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+}
+Compiled from "MemberCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.MemberCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.MemberCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "AdminCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.AdminCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.AdminCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void handleAdminAddChunk(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void handleAdminSetChunk(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void handleAdminRemoveChunk(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void handleAdminResetChunk(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void handleAdminDecayExempt(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private java.util.List<java.lang.String> tokenize(java.lang.String);
+  private java.util.List<org.bukkit.OfflinePlayer> resolveTargets(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private java.util.List<org.bukkit.OfflinePlayer> resolveTargets(org.bukkit.command.CommandSender, java.lang.String);
+  private java.util.List<org.bukkit.OfflinePlayer> resolveTargets(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, org.bukkit.command.CommandSender, java.lang.String);
+  private java.util.List<org.bukkit.OfflinePlayer> selectEntitiesSafely(org.bukkit.command.CommandSender, java.lang.String);
+  private java.util.List<org.bukkit.OfflinePlayer> doSelectEntities(org.bukkit.command.CommandSender, java.lang.String);
+  private org.bukkit.entity.Player findNearestPlayer(org.bukkit.Location);
+  private org.bukkit.OfflinePlayer resolveSinglePlayer(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private org.bukkit.OfflinePlayer resolveSinglePlayer(org.bukkit.command.CommandSender, java.lang.String);
+  private java.lang.Integer tryParsePositiveInt(java.lang.String);
+  private java.lang.Integer tryParseNonNegativeInt(java.lang.String);
+  private void adminAddChunk(org.bukkit.command.CommandSender, int, java.util.List<org.bukkit.OfflinePlayer>);
+  private void adminSetChunk(org.bukkit.command.CommandSender, int, java.util.List<org.bukkit.OfflinePlayer>);
+  private void adminRemoveChunk(org.bukkit.command.CommandSender, int, java.util.List<org.bukkit.OfflinePlayer>);
+  private void adminResetChunk(org.bukkit.command.CommandSender, java.util.List<org.bukkit.OfflinePlayer>);
+  private void sendAdminClaimInfo(org.bukkit.entity.Player);
+  private void adminUnclaimCurrentChunk(org.bukkit.entity.Player);
+  private void adminEditProfile(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void adminEditProfile(org.bukkit.entity.Player, java.lang.String);
+  private void adminTrustList(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void adminTrustList(org.bukkit.command.CommandSender, java.lang.String);
+  private void adminTrustWho(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String);
+  private void adminTrustWho(org.bukkit.command.CommandSender, java.lang.String);
+  private void adminDecayExempt(org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source, java.lang.String, java.lang.Boolean);
+  private void adminDecayList(org.bukkit.command.CommandSender);
+  private void adminSetAlias(org.bukkit.command.CommandSender, java.lang.String, java.lang.String);
+  private java.lang.String escapeMiniMessage(java.lang.String);
+  private void lambda$adminSetAlias$0(java.lang.String, org.bukkit.command.CommandSender, java.lang.String);
+  private void lambda$adminDecayList$0(org.bukkit.command.CommandSender);
+  private void lambda$adminDecayExempt$0(java.util.UUID, java.lang.Boolean, org.bukkit.OfflinePlayer, org.bukkit.command.CommandSender);
+  private void lambda$adminTrustWho$1(org.bukkit.OfflinePlayer, java.lang.String, org.bukkit.command.CommandSender, java.util.UUID);
+  private void lambda$adminTrustWho$0(org.bukkit.OfflinePlayer, java.lang.String, org.bukkit.command.CommandSender, java.util.UUID);
+  private void lambda$adminTrustList$1(org.bukkit.OfflinePlayer, org.bukkit.command.CommandSender, java.lang.String);
+  private void lambda$adminTrustList$0(org.bukkit.OfflinePlayer, org.bukkit.command.CommandSender, java.lang.String);
+  private void lambda$adminUnclaimCurrentChunk$0(org.bukkit.entity.Player);
+  private void lambda$adminResetChunk$0(java.util.List, org.bukkit.command.CommandSender);
+  private void lambda$adminRemoveChunk$0(java.util.List, org.bukkit.command.CommandSender, int);
+  private void lambda$adminSetChunk$0(java.util.List, org.bukkit.command.CommandSender, int);
+  private void lambda$adminAddChunk$0(java.util.List, org.bukkit.command.CommandSender, int);
+  private void lambda$selectEntitiesSafely$0(java.util.concurrent.CompletableFuture, org.bukkit.command.CommandSender, java.lang.String);
+  private void lambda$register$16(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$14(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$15(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ClaimProfile);
+  private void lambda$register$13(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$12(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$11(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$10(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$9(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$8(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$7(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$6(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$5(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
+Compiled from "UnstuckCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.UnstuckCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.UnstuckCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void unstuckPlayer(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ChunkPosition);
+  private void lambda$unstuckPlayer$0(org.ayosynk.landClaimPlugin.models.ChunkPosition, org.bukkit.entity.Player);
+  private void lambda$unstuckPlayer$1(org.bukkit.World, int, int, org.bukkit.entity.Player);
+  private void lambda$unstuckPlayer$2(org.bukkit.entity.Player, java.lang.Boolean);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$1(org.bukkit.entity.Player, org.ayosynk.landClaimPlugin.models.ChunkPosition);
+}
+Compiled from "UnclaimCommand.java"
+public class org.ayosynk.landClaimPlugin.commands.UnclaimCommand implements org.ayosynk.landClaimPlugin.commands.LandClaimCommand {
+  private final org.ayosynk.landClaimPlugin.LandClaimPlugin plugin;
+  private final org.ayosynk.landClaimPlugin.managers.ClaimManager claimManager;
+  private final org.ayosynk.landClaimPlugin.managers.ConfigManager configManager;
+  public org.ayosynk.landClaimPlugin.commands.UnclaimCommand(org.ayosynk.landClaimPlugin.LandClaimPlugin, org.ayosynk.landClaimPlugin.managers.ClaimManager, org.ayosynk.landClaimPlugin.managers.ConfigManager);
+  public void register(org.ayosynk.landClaimPlugin.lib.cloud.paper.PaperCommandManager<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.Source>, org.ayosynk.landClaimPlugin.lib.cloud.Command$Builder<org.ayosynk.landClaimPlugin.lib.cloud.paper.util.sender.PlayerSource>);
+  private void promptUnclaimAll(org.bukkit.entity.Player);
+  private void performUnclaimAll(org.bukkit.entity.Player);
+  private void unclaimCurrentChunk(org.bukkit.entity.Player);
+  private void lambda$unclaimCurrentChunk$0(org.bukkit.entity.Player);
+  private void lambda$promptUnclaimAll$0(org.bukkit.entity.Player, java.lang.Boolean);
+  private void lambda$promptUnclaimAll$1(org.bukkit.entity.Player);
+  private void lambda$register$7(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$8(org.bukkit.entity.Player);
+  private void lambda$register$5(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$6(org.bukkit.entity.Player);
+  private void lambda$register$4(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$2(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$3(org.bukkit.entity.Player, int);
+  private void lambda$register$1(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+  private void lambda$register$0(org.ayosynk.landClaimPlugin.lib.cloud.context.CommandContext);
+}
