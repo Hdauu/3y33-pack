@@ -21,8 +21,8 @@ final class PvpExpansion extends PlaceholderExpansion {
         if (!(off instanceof Player p)) return "";
         if (params.equalsIgnoreCase("pvp")) return pvp.tienePvp(p) ? "&c⚔" : "&a⚔";
         // sin colores: el cartel (ModernTags) le pone el color. El que no corresponde devuelve un espacio de ancho cero.
-        if (params.equalsIgnoreCase("pvp_rojo")) return pvp.tienePvp(p) ? "⚔" : "\u200b";
-        if (params.equalsIgnoreCase("pvp_verde")) return pvp.tienePvp(p) ? "\u200b" : "⚔";
+        if (params.equalsIgnoreCase("pvp_rojo")) return pvp.tienePvp(p) ? "⚔" : "";
+        if (params.equalsIgnoreCase("pvp_verde")) return pvp.tienePvp(p) ? "" : "⚔";
         if (params.equalsIgnoreCase("pvp_estado")) return pvp.tienePvp(p) ? "activado" : "desactivado";
         return null;
     }
