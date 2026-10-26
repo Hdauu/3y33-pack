@@ -6,7 +6,7 @@
 
     <groupId>ar.com.tresyetres</groupId>
     <artifactId>3y33Tierras</artifactId>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <packaging>jar</packaging>
 
     <properties>
