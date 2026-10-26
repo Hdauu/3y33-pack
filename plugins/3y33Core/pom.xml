@@ -5,11 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ar.com.tresyetres</groupId>
     <artifactId>3y33Core</artifactId>
-    <version>1.6.1</version>
+    <version>1.7.0</version>
     <packaging>jar</packaging>
     <properties><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
     <repositories>
         <repository><id>papermc</id><url>https://repo.papermc.io/repository/maven-public/</url></repository>
+        <repository><id>placeholderapi</id><url>https://repo.extendedclip.com/releases/</url></repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -25,6 +26,10 @@
         <dependency>
             <groupId>local</groupId><artifactId>FancyNpcs</artifactId><version>2.12.1</version>
             <scope>system</scope><systemPath>${project.basedir}/libs/FancyNpcs.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId><artifactId>placeholderapi</artifactId><version>2.11.6</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
