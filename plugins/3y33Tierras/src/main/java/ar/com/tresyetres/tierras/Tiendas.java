@@ -81,7 +81,6 @@ final class Tiendas implements Listener {
                     tienda = mgr.getShop(to.clone().add(dx, dy, dz));
         if (tienda == null) return;
         Player p = e.getPlayer();
-        if (p.hasPermission("tresyetres.staff")) return;
         ClaimProfile c = pl.api().getClaimAt(tienda.bukkitLocation());
         Location punto = null;
         if (c != null) {
