@@ -100,4 +100,14 @@ final class Tiendas implements Listener {
         e.setTo(punto);
         pl.msg(p, "&7Te llevo al punto de &f" + c.getName() + "&7.");
     }
+
+    /** /tienda solo (sin nada más) abre el catálogo de tiendas. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void soloTienda(PlayerCommandPreprocessEvent e) {
+        String m = e.getMessage().toLowerCase(Locale.ROOT).trim();
+        if (m.equals("/tienda") || m.equals("/tiendas")) {
+            e.setCancelled(true);
+            e.getPlayer().performCommand("qs browse");
+        }
+    }
 }
