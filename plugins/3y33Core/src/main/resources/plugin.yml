@@ -1,8 +1,8 @@
 name: 3y33Core
-version: 1.6.1
+version: 1.7.0
 main: ar.com.tresyetres.core.Core
 api-version: '1.21'
-softdepend: [AuthMe, floodgate, FancyDialogs, FancyHolograms, FancyNpcs]
+softdepend: [PlaceholderAPI, AuthMe, floodgate, FancyDialogs, FancyHolograms, FancyNpcs]
 author: 3y33 SMP
 description: Reglas, anuncios, reportes y comandos de 3y33 SMP
 

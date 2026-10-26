@@ -53,6 +53,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(editor, this);
         pvp = new Pvp(this);
         getServer().getPluginManager().registerEvents(pvp, this);
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PvpExpansion(this, pvp).register();
         for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
