@@ -120,21 +120,3 @@ rtp:
 pvp:
   combate-segundos: 20        # tiempo en combate después del último golpe
   espera-cambio-segundos: 10  # espera entre un /pvp y otro
-  comandos-bloqueados:        # no se pueden usar mientras estás en combate
-    - tpa
-    - tpahere
-    - tpaccept
-    - home
-    - spawn
-    - warp
-    - back
-    - rtp
-    - wild
-    - explorar
-    - tierra ir
-    - tierra tp
-    - claim warp
-    - shop
-    - tienda
-    - qs
-    - pvp
