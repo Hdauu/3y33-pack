@@ -78,7 +78,7 @@ final class Tiendas implements Listener {
         double mejor = 25.0; // hasta 5 bloques
         for (int cx = -1; cx <= 1; cx++) {
             for (int cz = -1; cz <= 1; cz++) {
-                var mapa = mgr.getShops(to.getWorld().getChunkAt(to.getBlockX() / 16 + cx, to.getBlockZ() / 16 + cz));
+                var mapa = mgr.getShops(to.getWorld().getChunkAt((to.getBlockX() >> 4) + cx, (to.getBlockZ() >> 4) + cz));
                 if (mapa == null) continue;
                 for (Shop sh : mapa.values()) {
                     Location l = sh.bukkitLocation();
