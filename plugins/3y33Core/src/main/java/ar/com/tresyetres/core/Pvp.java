@@ -11,7 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.io.File;
@@ -145,22 +145,17 @@ final class Pvp implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void alComando(PlayerCommandPreprocessEvent e) {
+    /** En combate no se puede teletransportar nadie (comandos, puntos, tpa...), salvo con perla de ender. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void alTeletransportar(PlayerTeleportEvent e) {
         Player p = e.getPlayer();
         if (!enCombate(p) || p.hasPermission("tresyetres.staff")) return;
-        String m = e.getMessage().toLowerCase(Locale.ROOT).trim();
-        if (m.startsWith("/")) m = m.substring(1);
-        int i = m.indexOf(':');
-        if (i >= 0 && i < m.indexOf(' ') || (i >= 0 && !m.contains(" "))) m = m.substring(i + 1);
-        for (String bloq : core.getConfig().getStringList("pvp.comandos-bloqueados")) {
-            String b = bloq.toLowerCase(Locale.ROOT);
-            if (m.equals(b) || m.startsWith(b + " ")) {
-                e.setCancelled(true);
-                decir(p, "<red>No podés usar ese comando en combate.");
-                return;
-            }
-        }
+        PlayerTeleportEvent.TeleportCause c = e.getCause();
+        if (c == PlayerTeleportEvent.TeleportCause.ENDER_PEARL || c == PlayerTeleportEvent.TeleportCause.CHORUS_FRUIT
+                || c == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || c == PlayerTeleportEvent.TeleportCause.END_PORTAL
+                || c == PlayerTeleportEvent.TeleportCause.END_GATEWAY) return;
+        e.setCancelled(true);
+        p.sendActionBar(core.mm("<red>⚔ No podés teletransportarte en combate."));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
