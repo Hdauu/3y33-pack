@@ -37,6 +37,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     private Reglas reglasObligatorias;
     private Rtp rtp;
     private Editor editor;
+    private Pvp pvp;
 
     @Override
     public void onEnable() {
@@ -50,7 +51,9 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(rtp, this);
         editor = new Editor(this);
         getServer().getPluginManager().registerEvents(editor, this);
-        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor")) {
+        pvp = new Pvp(this);
+        getServer().getPluginManager().registerEvents(pvp, this);
+        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
         }
@@ -118,6 +121,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
             case "reglas" -> reglas(sender);
             case "rtp" -> {
                 if (sender instanceof Player jp) rtp.usar(jp);
+                else msg(sender, "<red>Solo jugadores.");
+            }
+            case "pvp" -> {
+                if (sender instanceof Player jp) pvp.comando(jp, args);
                 else msg(sender, "<red>Solo jugadores.");
             }
             case "editor" -> {
@@ -262,6 +269,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                 return r;
             }
         }
+        if (n.equals("pvp") && args.length == 1) return pvp.sugerencias();
         if (n.equals("editor") && args.length == 1 && sender.hasPermission(STAFF)) {
             List<String> r = new ArrayList<>();
             for (String s : editor.nombres()) if (s.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT))) r.add(s);
