@@ -75,10 +75,19 @@ final class Tiendas implements Listener {
         if (to == null || to.getWorld() == null) return;
         Shop tienda = null;
         var mgr = com.ghostchu.quickshop.api.QuickShopAPI.getInstance().getShopManager();
-        for (int dx = -2; dx <= 2 && tienda == null; dx++)
-            for (int dy = -2; dy <= 2 && tienda == null; dy++)
-                for (int dz = -2; dz <= 2 && tienda == null; dz++)
-                    tienda = mgr.getShop(to.clone().add(dx, dy, dz));
+        double mejor = 25.0; // hasta 5 bloques
+        for (int cx = -1; cx <= 1; cx++) {
+            for (int cz = -1; cz <= 1; cz++) {
+                var mapa = mgr.getShops(to.getWorld().getChunkAt(to.getBlockX() / 16 + cx, to.getBlockZ() / 16 + cz));
+                if (mapa == null) continue;
+                for (Shop sh : mapa.values()) {
+                    Location l = sh.bukkitLocation();
+                    if (l == null || l.getWorld() == null || !l.getWorld().equals(to.getWorld())) continue;
+                    double d = l.clone().add(0.5, 0.5, 0.5).distanceSquared(to);
+                    if (d < mejor) { mejor = d; tienda = sh; }
+                }
+            }
+        }
         pl.getLogger().info("[catalogo] " + e.getPlayer().getName() + " tp " + to.getBlockX() + "," + to.getBlockY() + "," + to.getBlockZ() + " tienda=" + (tienda != null));
         if (tienda == null) return;
         Player p = e.getPlayer();
