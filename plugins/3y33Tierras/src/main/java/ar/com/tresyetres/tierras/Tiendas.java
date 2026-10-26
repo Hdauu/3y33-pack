@@ -8,7 +8,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.Location;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.ayosynk.landClaimPlugin.models.Warp;
+import java.util.Map;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -61,5 +65,39 @@ final class Tiendas implements Listener {
         if (p.hasPermission("tresyetres.tienda.nombre") || p.hasPermission("tresyetres.staff")) return;
         e.setCancelled(true);
         pl.msg(p, "&cEl nombre de tu tienda es el de tu terreno. Cambiarlo es un beneficio de los rangos pagos.");
+    }
+
+    /** El catálogo no te lleva al cofre: te lleva al punto de teletransporte del terreno del dueño. */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void catalogo(PlayerTeleportEvent e) {
+        if (e.getCause() != PlayerTeleportEvent.TeleportCause.PLUGIN) return;
+        Location to = e.getTo();
+        if (to == null || to.getWorld() == null) return;
+        Shop tienda = null;
+        var mgr = com.ghostchu.quickshop.api.QuickShopAPI.getInstance().getShopManager();
+        for (int dx = -2; dx <= 2 && tienda == null; dx++)
+            for (int dy = -2; dy <= 2 && tienda == null; dy++)
+                for (int dz = -2; dz <= 2 && tienda == null; dz++)
+                    tienda = mgr.getShop(to.clone().add(dx, dy, dz));
+        if (tienda == null) return;
+        Player p = e.getPlayer();
+        if (p.hasPermission("tresyetres.staff")) return;
+        ClaimProfile c = pl.api().getClaimAt(tienda.bukkitLocation());
+        Location punto = null;
+        if (c != null) {
+            Map<String, Warp> warps = pl.api().getWarps(c.getProfileId());
+            if (warps != null && !warps.isEmpty()) {
+                Warp w = warps.get("spawn");
+                if (w == null) w = warps.values().iterator().next();
+                punto = w.getLocation();
+            }
+        }
+        if (punto == null) {
+            e.setCancelled(true);
+            pl.msg(p, "&cEse terreno todavía no tiene un punto de teletransporte.");
+            return;
+        }
+        e.setTo(punto);
+        pl.msg(p, "&7Te llevo al punto de &f" + c.getName() + "&7.");
     }
 }
