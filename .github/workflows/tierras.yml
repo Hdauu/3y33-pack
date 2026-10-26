@@ -21,9 +21,23 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+      - name: Bajar la API de QuickShop
+        working-directory: plugins/3y33Tierras
+        run: |
+          mkdir -p libs
+          curl -sSfL -o libs/QuickShop.jar "https://github.com/QuickShop-Community/QuickShop-Hikari/releases/download/6.3.0.3/QuickShop-Hikari-6.3.0.3.jar"
       - name: Compilar
         working-directory: plugins/3y33Tierras
-        run: mvn -B -q package
+        run: mvn -B -q package 2>&1 | tee ../../build-log.txt; test ${PIPESTATUS[0]} -eq 0
+      - name: Guardar el error de compilacion
+        if: failure()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -f build-log.txt
+          git commit -m "build-log: error de compilacion" || true
+          git pull --rebase -q || true
+          git push || true
       - name: Guardar el jar en el repo
         run: |
           cp plugins/3y33Tierras/target/3y33Tierras-*.jar plugins/3y33Tierras/
