@@ -68,8 +68,21 @@ final class Color implements Listener {
     }
 
     private String[] rango(Player p) {
-        for (String[] r : RANGOS) if (p.hasPermission("group." + r[0])) return r;
+        // grupo principal de LuckPerms (los OP tienen todos los group.* en true, por eso no sirve mirar permisos)
+        String g = "";
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
+            g = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(p, "%vault_rank%").toLowerCase(Locale.ROOT);
+        for (String[] r : RANGOS) if (r[0].equals(g)) return r;
         return null;
+    }
+
+    /** id del color que se ve: el elegido, el del rango o blanco. Los ids "r_<rango>" son los colores de rango. */
+    String efectivo(Player p) {
+        String[] r = rango(p);
+        if (r == null && !p.hasPermission("tresyetres.color")) return "blanco";
+        Preset pr = buscar(elegido.get(p.getUniqueId()));
+        if (pr != null) return pr.id();
+        return r != null ? "r_" + r[0] : "blanco";
     }
 
     boolean puede(Player p) { return rango(p) != null || p.hasPermission("tresyetres.color"); }
