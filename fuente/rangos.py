@@ -36,34 +36,52 @@ def claro(c, f):
     return tuple(int(v + (255 - v) * f) for v in c)
 
 
+GLIFOS = {
+    'I': ["###", ".#.", ".#.", ".#.", "###"],
+    'V': ["#...#", "#...#", "#...#", ".#.#.", "..#.."],
+    'P': ["###.", "#..#", "###.", "#...", "#..."],
+    '+': ["...", ".#.", "###", ".#.", "..."],
+    'M': ["#...#", "##.##", "#.#.#", "#...#", "#...#"],
+    'O': [".##.", "#..#", "#..#", "#..#", ".##."],
+    'D': ["###.", "#..#", "#..#", "#..#", "###."],
+    'A': [".##.", "#..#", "####", "#..#", "#..#"],
+    'N': ["#..#", "##.#", "#.##", "#..#", "#..#"],
+    'R': ["###.", "#..#", "###.", "#.#.", "#..#"],
+    'W': ["#...#", "#...#", "#.#.#", "##.##", "#...#"],
+    'E': ["####", "#...", "###.", "#...", "####"],
+}
+
+
 def dibujar(texto, c1, c2):
-    """Bloque solido con bisel y degradé vertical, letras blancas con sombra (estilo insignia de servidor)."""
-    fnt = ImageFont.truetype(FUENTE, 8)
-    w = len(texto) * 8 + 8
-    H = 13
-    a, b = hexc(c1), hexc(c2)
+    """Insignia solida de 10px logicos de alto, pixeles bien definidos (se escala x2 EXACTO con vecino mas cercano)."""
+    ancho = sum(len(GLIFOS[c][0]) for c in texto) + (len(texto) - 1)
+    w = ancho + 6
+    H = 10
+    col = hexc(c1)
     im = Image.new('RGBA', (w, H), (0, 0, 0, 0))
     px = im.load()
-    m = Image.new('1', (w, H), 0)
-    d = ImageDraw.Draw(m)
-    d.fontmode = '1'
-    d.text((4, 3), texto, font=fnt, fill=1)
-    mp = m.load()
     for x in range(w):
-        col = mezcla(a, b, x / (w - 1))
         for y in range(H):
             if x in (0, w - 1) and y in (0, H - 1):
                 continue
             if x in (0, w - 1) or y in (0, H - 1):
-                px[x, y] = oscuro(col, 0.45) + (255,)
-            elif x in (1, w - 2) or y in (1, H - 2):
-                px[x, y] = (claro(col, 0.45) if (y == 1 or x == 1) else oscuro(col, 0.62)) + (255,)
+                px[x, y] = oscuro(col, 0.5) + (255,)
+            elif y == 1:
+                px[x, y] = claro(col, 0.35) + (255,)
             else:
-                px[x, y] = mezcla(col, oscuro(col, 0.9), (y - 2) / (H - 5)) + (255,)
-    for y in range(H):
-        for x in range(w):
-            if mp[x, y]:
-                px[x, y] = (255, 255, 255, 255)
+                px[x, y] = mezcla(col, oscuro(col, 0.85), (y - 2) / (H - 4)) + (255,)
+    x0 = 3
+    for c in texto:
+        g = GLIFOS[c]
+        for gy, fila in enumerate(g):
+            for gx, v in enumerate(fila):
+                if v == '#':
+                    px[x0 + gx, 2 + gy + 1] = oscuro(col, 0.4) + (255,)   # sombra finita
+        for gy, fila in enumerate(g):
+            for gx, v in enumerate(fila):
+                if v == '#':
+                    px[x0 + gx, 2 + gy] = (255, 255, 255, 255)
+        x0 += len(g[0]) + 1
     return im
 
 
@@ -81,8 +99,7 @@ vista = Image.new('RGBA', (170, 17 * len(RANGOS) + 4), (30, 30, 36, 255))
 for i, (rid, txt, c1, c2) in enumerate(RANGOS):
     ch = chr(BASE_CHAR + i)
     im = dibujar(txt, c1, c2)
-    im2 = im.resize((round(im.width * 20 / 13), 20), Image.LANCZOS)
-    datos, _ = png(im2, 1)  # alto 20 = doble exacto del alto 10 del font
+    datos, _ = png(im, 2)  # x2 exacto, vecino mas cercano: alto 20 textura = alto 10 del font
     archivos['assets/3y33/textures/font/rango_%s.png' % rid] = datos
     proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 10, "ascent": 8, "chars": [ch]})
     mapa[rid] = {"char": ch, "texto": txt, "c1": c1, "c2": c2}
