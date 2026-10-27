@@ -87,7 +87,7 @@ for i, (rid, txt, c1, c2) in enumerate(RANGOS):
     im = dibujar(txt, c1, c2)
     datos, _ = png(im, 2)  # imagen al doble para que se vea nitido, el font la baja con height
     archivos['assets/3y33/textures/font/rango_%s.png' % rid] = datos
-    proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 13, "ascent": 10, "chars": [ch]})
+    proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 10, "ascent": 8, "chars": [ch]})
     mapa[rid] = {"char": ch, "texto": txt, "c1": c1, "c2": c2}
     vista.paste(im, (4, 2 + i * 17), im)
 vista.resize((vista.width * 4, vista.height * 4), Image.NEAREST).save(os.path.join(BASE, 'rangos_preview.png'))
