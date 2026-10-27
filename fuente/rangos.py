@@ -9,7 +9,7 @@ ZIP = os.path.join(BASE, '..', 'java', '3y33-pack.zip')
 FUENTE = os.path.join(BASE, 'fuentes', 'PressStart2P.ttf')
 
 RANGOS = [  # id, texto, color 1, color 2 (casi planos: tags solidos)
-    ('vip', 'VIP', '#1FA855', '#2BBF63'),
+    ('vip', 'VIP', '#00AEE0', '#12C4F5'),
     ('vipplus', 'VIP+', '#F2A900', '#FFBE1F'),
     ('mod', 'MOD', '#1670D9', '#2A86F0'),
     ('dev', 'DEV', '#7B3FE4', '#9257F5'),

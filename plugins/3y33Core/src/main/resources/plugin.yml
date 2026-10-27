@@ -1,5 +1,5 @@
 name: 3y33Core
-version: 1.8.0
+version: 1.9.0
 main: ar.com.tresyetres.core.Core
 api-version: '1.21'
 softdepend: [PlaceholderAPI, AuthMe, floodgate, FancyDialogs, FancyHolograms, FancyNpcs]
@@ -7,6 +7,10 @@ author: 3y33 SMP
 description: Reglas, anuncios, reportes y comandos de 3y33 SMP
 
 commands:
+  color:
+    description: Elegí el color de tu nombre (VIP y VIP+)
+    usage: /color
+    aliases: [colornombre]
   pvp:
     description: Activá o desactivá tu PvP
     usage: /pvp [on|off]

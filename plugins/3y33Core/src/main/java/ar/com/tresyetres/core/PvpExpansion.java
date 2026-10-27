@@ -8,8 +8,9 @@ import org.bukkit.entity.Player;
 final class PvpExpansion extends PlaceholderExpansion {
     private final Core core;
     private final Pvp pvp;
+    private final Color color;
 
-    PvpExpansion(Core core, Pvp pvp) { this.core = core; this.pvp = pvp; }
+    PvpExpansion(Core core, Pvp pvp, Color color) { this.core = core; this.pvp = pvp; this.color = color; }
 
     @Override public String getIdentifier() { return "3y33"; }
     @Override public String getAuthor() { return "3y33"; }
@@ -24,6 +25,8 @@ final class PvpExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("pvp_rojo")) return pvp.tienePvp(p) ? "⚔" : "";
         if (params.equalsIgnoreCase("pvp_verde")) return pvp.tienePvp(p) ? "" : "⚔";
         if (params.equalsIgnoreCase("pvp_estado")) return pvp.tienePvp(p) ? "activado" : "desactivado";
+        if (params.equalsIgnoreCase("color_a")) return color.colores(p)[0];
+        if (params.equalsIgnoreCase("color_b")) return color.colores(p)[1];
         return null;
     }
 }
