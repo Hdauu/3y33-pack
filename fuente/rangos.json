@@ -1,0 +1,50 @@
+{
+ "plata": {
+  "char": "\ue300",
+  "texto": "PLATA",
+  "c1": "#9E9E9E",
+  "c2": "#E8E8E8"
+ },
+ "sheriff": {
+  "char": "\ue301",
+  "texto": "SHERIFF",
+  "c1": "#FF8C00",
+  "c2": "#FFD27F"
+ },
+ "supreme": {
+  "char": "\ue302",
+  "texto": "SUPREME",
+  "c1": "#00C8FF",
+  "c2": "#B5FFFF"
+ },
+ "global": {
+  "char": "\ue303",
+  "texto": "GLOBAL",
+  "c1": "#FFE259",
+  "c2": "#FFA751"
+ },
+ "mod": {
+  "char": "\ue304",
+  "texto": "MOD",
+  "c1": "#5555FF",
+  "c2": "#55FFFF"
+ },
+ "dev": {
+  "char": "\ue305",
+  "texto": "DEV",
+  "c1": "#AA00AA",
+  "c2": "#FF55FF"
+ },
+ "admin": {
+  "char": "\ue306",
+  "texto": "ADMIN",
+  "c1": "#FF5555",
+  "c2": "#FFAAAA"
+ },
+ "owner": {
+  "char": "\ue307",
+  "texto": "OWNER",
+  "c1": "#AA0000",
+  "c2": "#FF5555"
+ }
+}
