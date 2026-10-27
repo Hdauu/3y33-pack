@@ -37,32 +37,29 @@ def claro(c, f):
 
 
 def dibujar(texto, c1, c2):
-    """Insignia solida de 11px de alto, a escala 1:1 (sin reescalar, asi no parpadea de lejos)."""
+    """Bloque solido con bisel y degradé vertical, letras blancas con sombra (estilo insignia de servidor)."""
     fnt = ImageFont.truetype(FUENTE, 8)
-    w = len(texto) * 8 + 5
-    H = 11
-    col = hexc(c1)
+    w = len(texto) * 8 + 8
+    H = 13
+    a, b = hexc(c1), hexc(c2)
     im = Image.new('RGBA', (w, H), (0, 0, 0, 0))
     px = im.load()
     m = Image.new('1', (w, H), 0)
     d = ImageDraw.Draw(m)
     d.fontmode = '1'
-    d.text((3, 2), texto, font=fnt, fill=1)
+    d.text((4, 3), texto, font=fnt, fill=1)
     mp = m.load()
     for x in range(w):
+        col = mezcla(a, b, x / (w - 1))
         for y in range(H):
             if x in (0, w - 1) and y in (0, H - 1):
                 continue
             if x in (0, w - 1) or y in (0, H - 1):
-                px[x, y] = oscuro(col, 0.5) + (255,)
-            elif y == 1:
-                px[x, y] = claro(col, 0.35) + (255,)
+                px[x, y] = oscuro(col, 0.45) + (255,)
+            elif x in (1, w - 2) or y in (1, H - 2):
+                px[x, y] = (claro(col, 0.45) if (y == 1 or x == 1) else oscuro(col, 0.62)) + (255,)
             else:
-                px[x, y] = mezcla(col, oscuro(col, 0.85), (y - 2) / (H - 4)) + (255,)
-    for y in range(H - 1):
-        for x in range(w - 1):
-            if mp[x, y] and not mp[x + 1, y + 1] and y + 1 < H - 1:
-                px[x + 1, y + 1] = oscuro(col, 0.45) + (255,)
+                px[x, y] = mezcla(col, oscuro(col, 0.9), (y - 2) / (H - 5)) + (255,)
     for y in range(H):
         for x in range(w):
             if mp[x, y]:
@@ -84,9 +81,10 @@ vista = Image.new('RGBA', (170, 17 * len(RANGOS) + 4), (30, 30, 36, 255))
 for i, (rid, txt, c1, c2) in enumerate(RANGOS):
     ch = chr(BASE_CHAR + i)
     im = dibujar(txt, c1, c2)
-    datos, _ = png(im, 1)  # imagen al doble para que se vea nitido, el font la baja con height
+    im2 = im.resize((round(im.width * 20 / 13), 20), Image.LANCZOS)
+    datos, _ = png(im2, 1)  # alto 20 = doble exacto del alto 10 del font
     archivos['assets/3y33/textures/font/rango_%s.png' % rid] = datos
-    proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 11, "ascent": 9, "chars": [ch]})
+    proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 10, "ascent": 8, "chars": [ch]})
     mapa[rid] = {"char": ch, "texto": txt, "c1": c1, "c2": c2}
     vista.paste(im, (4, 2 + i * 17), im)
 vista.resize((vista.width * 4, vista.height * 4), Image.NEAREST).save(os.path.join(BASE, 'rangos_preview.png'))
