@@ -25,6 +25,7 @@ final class PvpExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("pvp_rojo")) return pvp.tienePvp(p) ? "⚔" : "";
         if (params.equalsIgnoreCase("pvp_verde")) return pvp.tienePvp(p) ? "" : "⚔";
         if (params.equalsIgnoreCase("pvp_estado")) return pvp.tienePvp(p) ? "activado" : "desactivado";
+        if (params.startsWith("n_")) return color.efectivo(p).equals(params.substring(2)) ? p.getName() : "";
         if (params.equalsIgnoreCase("color_a")) return color.colores(p)[0];
         if (params.equalsIgnoreCase("color_b")) return color.colores(p)[1];
         return null;
