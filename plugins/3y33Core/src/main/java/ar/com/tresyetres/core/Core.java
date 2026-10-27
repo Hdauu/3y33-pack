@@ -38,6 +38,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
     private Rtp rtp;
     private Editor editor;
     private Pvp pvp;
+    private Color color;
 
     @Override
     public void onEnable() {
@@ -53,8 +54,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(editor, this);
         pvp = new Pvp(this);
         getServer().getPluginManager().registerEvents(pvp, this);
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PvpExpansion(this, pvp).register();
-        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp")) {
+        color = new Color(this);
+        getServer().getPluginManager().registerEvents(color, this);
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PvpExpansion(this, pvp, color).register();
+        for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp", "color")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
             Objects.requireNonNull(getCommand(c)).setTabCompleter(this);
         }
@@ -122,6 +125,10 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
             case "reglas" -> reglas(sender);
             case "rtp" -> {
                 if (sender instanceof Player jp) rtp.usar(jp);
+                else msg(sender, "<red>Solo jugadores.");
+            }
+            case "color" -> {
+                if (sender instanceof Player jp) color.abrir(jp);
                 else msg(sender, "<red>Solo jugadores.");
             }
             case "pvp" -> {

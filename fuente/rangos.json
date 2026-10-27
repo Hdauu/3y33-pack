@@ -2,8 +2,8 @@
  "vip": {
   "char": "\ue300",
   "texto": "VIP",
-  "c1": "#1FA855",
-  "c2": "#2BBF63"
+  "c1": "#00AEE0",
+  "c2": "#12C4F5"
  },
  "vipplus": {
   "char": "\ue301",
