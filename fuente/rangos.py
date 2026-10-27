@@ -8,15 +8,13 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 ZIP = os.path.join(BASE, '..', 'java', '3y33-pack.zip')
 FUENTE = os.path.join(BASE, 'fuentes', 'PressStart2P.ttf')
 
-RANGOS = [  # id, texto, color 1, color 2
-    ('plata', 'PLATA', '#9E9E9E', '#E8E8E8'),
-    ('sheriff', 'SHERIFF', '#FF8C00', '#FFD27F'),
-    ('supreme', 'SUPREME', '#00C8FF', '#B5FFFF'),
-    ('global', 'GLOBAL', '#FFE259', '#FFA751'),
-    ('mod', 'MOD', '#5555FF', '#55FFFF'),
-    ('dev', 'DEV', '#AA00AA', '#FF55FF'),
-    ('admin', 'ADMIN', '#FF5555', '#FFAAAA'),
-    ('owner', 'OWNER', '#AA0000', '#FF5555'),
+RANGOS = [  # id, texto, color 1, color 2 (casi planos: tags solidos)
+    ('vip', 'VIP', '#1FA855', '#2BBF63'),
+    ('vipplus', 'VIP+', '#F2A900', '#FFBE1F'),
+    ('mod', 'MOD', '#1670D9', '#2A86F0'),
+    ('dev', 'DEV', '#7B3FE4', '#9257F5'),
+    ('admin', 'ADMIN', '#E02B2B', '#F23D3D'),
+    ('owner', 'OWNER', '#A3123A', '#C21A4C'),
 ]
 BASE_CHAR = 0xE300
 
@@ -61,7 +59,7 @@ def dibujar(texto, c1, c2):
             elif x in (1, w - 2) or y in (1, H - 2):
                 px[x, y] = (claro(col, 0.45) if (y == 1 or x == 1) else oscuro(col, 0.62)) + (255,)
             else:
-                px[x, y] = mezcla(claro(col, 0.18), oscuro(col, 0.78), (y - 2) / (H - 5)) + (255,)
+                px[x, y] = mezcla(col, oscuro(col, 0.9), (y - 2) / (H - 5)) + (255,)
     for y in range(H - 1):
         for x in range(w - 1):
             if mp[x, y] and not mp[x + 1, y + 1]:
