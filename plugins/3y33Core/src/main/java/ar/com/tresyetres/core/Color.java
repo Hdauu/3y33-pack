@@ -76,6 +76,22 @@ final class Color implements Listener {
         return null;
     }
 
+    /** Tag de rango para el scoreboard: el glifo del pack, o "Usuario" si no tiene tag. */
+    String etiqueta(Player p) {
+        String g = "";
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
+            g = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(p, "%vault_rank%").toLowerCase(Locale.ROOT);
+        return switch (g) {
+            case "vip" -> "\uE300";
+            case "vipplus" -> "\uE301";
+            case "moderador" -> "\uE302";
+            case "dev" -> "\uE303";
+            case "admin" -> "\uE304";
+            case "owner" -> "\uE305";
+            default -> "Usuario";
+        };
+    }
+
     /** id del color que se ve: el elegido, el del rango o blanco. Los ids "r_<rango>" son los colores de rango. */
     String efectivo(Player p) {
         String[] r = rango(p);
