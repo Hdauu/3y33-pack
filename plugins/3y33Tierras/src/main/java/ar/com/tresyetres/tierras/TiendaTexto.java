@@ -138,6 +138,7 @@ final class TiendaTexto implements Listener {
             t.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
             t.setShadowed(true);
             t.setSeeThrough(false);
+            t.setBrightness(new Display.Brightness(15, 15));
             t.setLineWidth(220);
             t.setAlignment(TextDisplay.TextAlignment.CENTER);
             t.setViewRange(publico ? 0.05f : 0.07f);
