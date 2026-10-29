@@ -11,6 +11,8 @@ import java.util.List;
 
 /** Arma los hologramas de bienvenida alrededor del spawn de Essentials (se acomodan después con /editor). */
 final class Spawn {
+    private static String pref = "spawn_";
+
     private Spawn() { }
 
     static Location punto() {
@@ -25,8 +27,12 @@ final class Spawn {
     }
 
     /** Devuelve cuántos hologramas creó. */
-    static int armar(Core core, Player quien) {
-        Location sp = punto();
+    static int armar(Core core, Player quien) { return armar(core, quien, null); }
+
+    /** mundo = null usa el spawn de Essentials; si no, el spawn de ese mundo (hologramas con prefijo del mundo). */
+    static int armar(Core core, Player quien, World mundo) {
+        Location sp = mundo == null ? punto() : mundo.getSpawnLocation();
+        pref = mundo == null ? "spawn_" : "beta_";
         double yaw = Math.toRadians(sp.getYaw());
         double fx = -Math.sin(yaw), fz = Math.cos(yaw);   // adelante
         double rx = -Math.cos(yaw), rz = -Math.sin(yaw);  // derecha
@@ -45,7 +51,7 @@ final class Spawn {
 
     private static int poner(Core core, Player quien, Location sp, double fx, double fz, double rx, double rz,
                              double f, double r, double alto, String plantilla) {
-        String nombre = "spawn_" + plantilla;
+        String nombre = pref + plantilla;
         try {
             var m = de.oliver.fancyholograms.api.FancyHologramsPlugin.get().getHologramManager();
             if (m.getHologram(nombre).isPresent()) return 0;

@@ -155,7 +155,9 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     }
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("spawn")) {
                     if (!sender.hasPermission(STAFF)) { msg(sender, "<red>No tenés permiso."); return true; }
-                    int n = Spawn.armar(this, sender instanceof Player jp ? jp : null);
+                    org.bukkit.World mundo = args.length > 1 ? Bukkit.getWorld(args[1]) : null;
+                    if (args.length > 1 && mundo == null) { msg(sender, "<red>No existe ese mundo."); return true; }
+                    int n = Spawn.armar(this, sender instanceof Player jp ? jp : null, mundo);
                     msg(sender, "<gray>Hologramas de spawn creados: <white>" + n + "</white>. Acomodalos con <white>/editor</white>.");
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("anuncio")) {
                     anunciar();
