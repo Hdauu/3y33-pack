@@ -70,6 +70,7 @@ final class Plantillas {
             d.setText(new ArrayList<>(t.lineas));
             d.setBackground(Color.fromARGB(110, 0, 0, 0));
             d.setTextShadow(true);
+            d.setBrightness(new Display.Brightness(15, 15));
             d.setBillboard(Display.Billboard.CENTER);
             d.setScale(new Vector3f(t.escala, t.escala, t.escala));
             Hologram h = manager.create(d);
