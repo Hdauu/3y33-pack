@@ -1,0 +1,23 @@
+name: Bajar Geyser
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bajar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bajar el ultimo Geyser-Spigot
+        run: |
+          mkdir -p plugins/terceros
+          curl -sSfL -o plugins/terceros/Geyser-Spigot.jar "https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot"
+          curl -sSfL "https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest" > plugins/terceros/Geyser-Spigot.info.json
+          unzip -p plugins/terceros/Geyser-Spigot.jar plugin.yml | head -5
+      - name: Guardar en el repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -f plugins/terceros/Geyser-Spigot.jar plugins/terceros/Geyser-Spigot.info.json
+          git commit -m "Geyser-Spigot: ultimo build" || echo "sin cambios"
+          git push
