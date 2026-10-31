@@ -36,6 +36,9 @@ import java.util.*;
 public final class Tierras extends JavaPlugin implements Listener, TabCompleter {
 
     private LandClaimAPI api;
+    private Hermandades hermandades;
+
+    Hermandades hermandades() { return hermandades; }
     private TiendaTexto tiendaTexto;
     private MenusTerrenos menus;
     private final Map<UUID, java.util.function.Consumer<String>> esperandoTexto = new HashMap<>();
@@ -84,6 +87,9 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
         Objects.requireNonNull(getCommand("tierras")).setExecutor(this);
         Objects.requireNonNull(getCommand("tierrasadmin")).setExecutor(this);
         Objects.requireNonNull(getCommand("discord")).setExecutor(this);
+        hermandades = new Hermandades(this);
+        Objects.requireNonNull(getCommand("hermandad")).setExecutor(hermandades);
+        Objects.requireNonNull(getCommand("hermandad")).setTabCompleter(hermandades);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new TierrasExpansion(this).register();
