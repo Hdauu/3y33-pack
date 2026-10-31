@@ -38,6 +38,14 @@ final class TierrasExpansion extends PlaceholderExpansion {
         if (off == null) return "";
         var api = plugin.api();
         switch (params.toLowerCase()) {
+            case "hermandad": {
+                var hh = plugin.hermandades() == null ? null : plugin.hermandades().de(off.getUniqueId());
+                return hh == null ? "" : hh.nombre;
+            }
+            case "hermandad_tag": {
+                var hh = plugin.hermandades() == null ? null : plugin.hermandades().de(off.getUniqueId());
+                return hh == null ? "" : hh.tag;
+            }
             case "chunks_usados":
                 return String.valueOf(api.getTotalChunksByOwner(off.getUniqueId()));
             case "chunks_limite":
