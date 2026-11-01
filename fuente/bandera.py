@@ -6,7 +6,7 @@ from PIL import Image
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 ZIP = os.path.join(BASE, '..', 'java', '3y33-pack.zip')
-CELESTE = (58, 150, 235, 255)  # mas intenso que el #74ACDF oficial para que el blanco se note sobre el chat
+CELESTE = (116, 172, 223, 255)  # celeste de la bandera
 BLANCO = (255, 255, 255, 255)
 
 HOJA = Image.open(os.path.join(BASE, 'fuentes', 'ascii.png')).convert('RGBA')      # celdas de 8x8
@@ -39,10 +39,10 @@ def franjas(src, ancho, alto, base, fase=0):
     if vacia[base]:  # letra sin pixeles en la linea base: busca el bloque mas cercano
         top = base + 1
     n = base - top + 1
-    azul = max(1, round(n / 3)) if n >= 3 else 0
+    w = max(1, min(n - 2, int(n * 0.45 + 0.5))) if n >= 3 else 0   # franja blanca: ~45% del cuerpo (minimo 2 filas desde 4)
+    azul = (n - w + 1) // 2 if n >= 3 else 0                 # celeste de arriba (abajo queda el resto)
     out = Image.new('RGBA', (ancho, alto), (0, 0, 0, 0))
     px = out.load()
-    w = n - 2 * azul
     ini = min(max(top + azul + fase, top + 1), base - w + 1) if w > 0 else 0
     for y in range(alto):
         if w > 0 and ini <= y < ini + w:
