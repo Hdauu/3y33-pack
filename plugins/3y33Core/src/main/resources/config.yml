@@ -124,3 +124,7 @@ pvp:
 # Regalo por jugar la beta: estilo de nombre "Argentina"
 beta:
   activa: true
+
+# Mismo id que resource-pack-id de server.properties (sirve para saber quien tiene el pack cargado)
+pack:
+  id: "ef3f1687-b5e2-5f53-8801-bba345af9db3"
