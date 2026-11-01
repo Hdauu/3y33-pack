@@ -145,13 +145,70 @@ final class ChatEstilo implements Listener {
         return x.id().equals("argentina") && puedeFranjas(v) ? franjas(texto) : pintar(texto, x);
     }
 
+    private static final String COLORES = "0123456789abcdef";
+    private static final java.util.Map<Character, TextColor> CODIGOS = new java.util.HashMap<>();
+    static {
+        String[] hex = {"000000", "0000AA", "00AA00", "00AAAA", "AA0000", "AA00AA", "FFAA00", "AAAAAA", "555555", "5555FF", "55FF55", "55FFFF", "FF5555", "FF55FF", "FFFF55", "FFFFFF"};
+        for (int i = 0; i < 16; i++) CODIGOS.put(COLORES.charAt(i), TextColor.fromHexString("#" + hex[i]));
+    }
+
+    /** Codigos tipo &3, &l y &#RRGGBB. VIP: colores; VIP+ y staff: ademas negrita, cursiva, subrayado, tachado y hex. Null si no usa ninguno. */
+    static Component codigos(String t, int nivel) {
+        if (nivel < 1 || t.indexOf('&') < 0) return null;
+        Component r = Component.empty();
+        StringBuilder tramo = new StringBuilder();
+        TextColor col = null;
+        boolean neg = false, cur = false, sub = false, tac = false, uso = false;
+        for (int i = 0; i < t.length(); i++) {
+            char c = t.charAt(i);
+            if (c == '&' && i + 1 < t.length()) {
+                char n = Character.toLowerCase(t.charAt(i + 1));
+                TextColor nuevo = null; int salto = 0; char fmt = 0;
+                if (COLORES.indexOf(n) >= 0) { nuevo = CODIGOS.get(n); salto = 1; }
+                else if (n == 'r') { salto = 1; fmt = 'r'; }
+                else if (nivel >= 2 && "lonm".indexOf(n) >= 0) { salto = 1; fmt = n; }
+                else if (nivel >= 2 && n == '#' && i + 7 < t.length() + 0 && t.substring(i + 2).length() >= 6
+                        && t.substring(i + 2, i + 8).matches("[0-9a-fA-F]{6}")) { nuevo = TextColor.fromHexString("#" + t.substring(i + 2, i + 8)); salto = 7; }
+                if (salto > 0) {
+                    if (tramo.length() > 0) { r = r.append(estilo(tramo.toString(), col, neg, cur, sub, tac)); tramo.setLength(0); }
+                    uso = true;
+                    if (nuevo != null) { col = nuevo; neg = cur = sub = tac = false; }
+                    else switch (fmt) {
+                        case 'r' -> { col = null; neg = cur = sub = tac = false; }
+                        case 'l' -> neg = true;
+                        case 'o' -> cur = true;
+                        case 'n' -> sub = true;
+                        case 'm' -> tac = true;
+                        default -> { }
+                    }
+                    i += salto;
+                    continue;
+                }
+            }
+            tramo.append(c);
+        }
+        if (tramo.length() > 0) r = r.append(estilo(tramo.toString(), col, neg, cur, sub, tac));
+        return uso ? r : null;
+    }
+
+    private static Component estilo(String t, TextColor col, boolean neg, boolean cur, boolean sub, boolean tac) {
+        Component c = Component.text(t);
+        if (col != null) c = c.color(col);
+        if (neg) c = c.decoration(TextDecoration.BOLD, true);
+        if (cur) c = c.decoration(TextDecoration.ITALIC, true);
+        if (sub) c = c.decoration(TextDecoration.UNDERLINED, true);
+        if (tac) c = c.decoration(TextDecoration.STRIKETHROUGH, true);
+        return c;
+    }
+
     /** LPC arma el chat con el mensaje como texto plano: pintamos despues, buscando el mensaje en el resultado (la ultima aparicion). */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void alEscribir(AsyncChatEvent e) {
         Color.Preset x = actual(e.getPlayer());
-        if (x == null) return;
         String plano = PlainTextComponentSerializer.plainText().serialize(e.message());
         if (plano.isBlank()) return;
+        final Component conCodigos = codigos(plano, color.nivelChat(e.getPlayer()));
+        if (x == null && conCodigos == null) return;
         io.papermc.paper.chat.ChatRenderer viejo = e.renderer();
         e.renderer((fuente, nombre, mensaje, vista) -> {
             Component c = viejo.render(fuente, nombre, mensaje, vista);
@@ -166,7 +223,7 @@ final class ChatEstilo implements Listener {
                     .condition((r, cuenta, hechos) -> visto.incrementAndGet() == ultimo
                             ? net.kyori.adventure.text.PatternReplacementResult.REPLACE
                             : net.kyori.adventure.text.PatternReplacementResult.CONTINUE)
-                    .replacement((r, b) -> pintarPara(vista, plano, x)).build());
+                    .replacement((r, b) -> conCodigos != null ? conCodigos : pintarPara(vista, plano, x)).build());
         });
     }
 
