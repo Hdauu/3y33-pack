@@ -14,6 +14,16 @@ prompt:
 welcome:
   title: "&c&l3y33 SMP"
   subtitle: "&7¡Bienvenido, %3y33_insignia%%3y33_nombre_legacy%&7!"
+  # lineas que se muestran en el chat al loguearse (reemplazan al MOTD de Essentials). Soportan %placeholders%
+  chat:
+    - ""
+    - "&7  ¡Hola, %3y33_insignia%%3y33_nombre_legacy%&7! Bienvenido a &c&l3y33 SMP"
+    - ""
+    - "&c  ▪ &7Misiones del día: &f/misiones"
+    - "&c  ▪ &7Tu nivel y rango: &f/nivel"
+    - "&c  ▪ &7Proteger tu terreno: &f/tierras"
+    - "&c  ▪ &7Discord: &fds.3y33.com.ar"
+    - ""
   stay-ticks: 50
   sound: "entity.player.levelup"
 

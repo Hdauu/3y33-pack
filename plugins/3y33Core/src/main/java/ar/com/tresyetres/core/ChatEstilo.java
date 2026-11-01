@@ -120,6 +120,23 @@ final class ChatEstilo implements Listener {
         }
     }
 
+    /** El pack de server.properties se manda antes de entrar y Paper no avisa su estado; lo volvemos a mandar ya dentro para saber si lo cargaron. */
+    @EventHandler
+    public void alEntrar(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        if (p.getUniqueId().getMostSignificantBits() == 0) return; // Bedrock
+        String url = Bukkit.getResourcePack();
+        String hash = Bukkit.getResourcePackHash();
+        String id = core.getConfig().getString("pack.id", "");
+        if (url == null || url.isBlank() || hash == null || hash.length() != 40 || id.isBlank()) return;
+        Bukkit.getScheduler().runTaskLater(core, () -> {
+            if (!p.isOnline()) return;
+            try {
+                p.setResourcePack(UUID.fromString(id), url, hash, null, false);
+            } catch (Throwable t) { core.getLogger().warning("[pack] no pude reenviar el pack: " + t); }
+        }, 60L);
+    }
+
     @EventHandler
     public void alSalir(org.bukkit.event.player.PlayerQuitEvent e) { conPack.remove(e.getPlayer().getUniqueId()); }
 

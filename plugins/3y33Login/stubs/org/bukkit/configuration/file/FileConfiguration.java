@@ -1,1 +1,1 @@
-package org.bukkit.configuration.file; public abstract class FileConfiguration { public String getString(String p, String d){return d;} public int getInt(String p,int d){return d;} public boolean getBoolean(String p, boolean d){return d;} }
+package org.bukkit.configuration.file; public abstract class FileConfiguration { public String getString(String p, String d){return d;} public int getInt(String p,int d){return d;} public boolean getBoolean(String p, boolean d){return d;} public java.util.List<String> getStringList(String p){return new java.util.ArrayList<>();} }

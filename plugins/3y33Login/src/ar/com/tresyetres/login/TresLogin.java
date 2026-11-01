@@ -140,6 +140,9 @@ public final class TresLogin extends JavaPlugin implements Listener {
         if (sound != null && !sound.isEmpty()) {
             try { p.playSound(p.getLocation(), sound, 0.4f, 1.6f); } catch (Throwable ignored) { }
         }
+        for (String linea : cfg().getStringList("welcome.chat")) {
+            p.sendMessage(papi(p, color(linea).replace("%player%", p.getName())));
+        }
         if (automatic && cfg().getBoolean("auto-login-message.enabled", true)) {
             p.sendMessage(c("auto-login-message.text", "&4&l3y33 &8> &aEntraste automaticamente.").replace("%player%", p.getName()));
         }
