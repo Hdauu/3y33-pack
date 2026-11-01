@@ -145,22 +145,28 @@ final class ChatEstilo implements Listener {
         return x.id().equals("argentina") && puedeFranjas(v) ? franjas(texto) : pintar(texto, x);
     }
 
-    private static final String INI = "\uF8F0", FIN = "\uF8F1";
-
-    /** LPC arma el chat con el mensaje como texto plano, asi que pintamos despues de que el arme el formato. */
+    /** LPC arma el chat con el mensaje como texto plano: pintamos despues, buscando el mensaje en el resultado (la ultima aparicion). */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void alEscribir(AsyncChatEvent e) {
         Color.Preset x = actual(e.getPlayer());
         if (x == null) return;
         String plano = PlainTextComponentSerializer.plainText().serialize(e.message());
         if (plano.isBlank()) return;
-        final String marcado = INI + plano + FIN;
         io.papermc.paper.chat.ChatRenderer viejo = e.renderer();
         e.renderer((fuente, nombre, mensaje, vista) -> {
-            Component c = viejo.render(fuente, nombre, Component.text(marcado), vista);
+            Component c = viejo.render(fuente, nombre, mensaje, vista);
+            String total = PlainTextComponentSerializer.plainText().serialize(c);
+            int n = 0;
+            for (int i = total.indexOf(plano); i >= 0; i = total.indexOf(plano, i + plano.length())) n++;
+            if (n == 0) return c;
+            final int ultimo = n;
+            java.util.concurrent.atomic.AtomicInteger visto = new java.util.concurrent.atomic.AtomicInteger();
             return c.replaceText(net.kyori.adventure.text.TextReplacementConfig.builder()
-                    .match(java.util.regex.Pattern.compile(INI + "(?s)(.*?)" + FIN))
-                    .replacement((r, b) -> pintarPara(vista, r.group(1), x)).build());
+                    .matchLiteral(plano)
+                    .condition((r, cuenta, hechos) -> visto.incrementAndGet() == ultimo
+                            ? net.kyori.adventure.text.TextReplacementConfig.PatternReplacementResult.REPLACE
+                            : net.kyori.adventure.text.TextReplacementConfig.PatternReplacementResult.CONTINUE)
+                    .replacement((r, b) -> pintarPara(vista, plano, x)).build());
         });
     }
 
