@@ -112,6 +112,7 @@ final class ChatEstilo implements Listener {
 
     @EventHandler
     public void alPack(org.bukkit.event.player.PlayerResourcePackStatusEvent e) {
+        core.getLogger().info("[pack] " + e.getPlayer().getName() + " -> " + e.getStatus());
         switch (e.getStatus()) {
             case SUCCESSFULLY_LOADED -> conPack.add(e.getPlayer().getUniqueId());
             case DECLINED, FAILED_DOWNLOAD, FAILED_RELOAD, DISCARDED, INVALID_URL -> conPack.remove(e.getPlayer().getUniqueId());
@@ -142,7 +143,9 @@ final class ChatEstilo implements Listener {
     }
 
     private Component pintarPara(net.kyori.adventure.audience.Audience v, String texto, Color.Preset x) {
-        return x.id().equals("argentina") && puedeFranjas(v) ? franjas(texto) : pintar(texto, x);
+        boolean f = x.id().equals("argentina") && puedeFranjas(v);
+        if (x.id().equals("argentina") && v instanceof Player pl) core.getLogger().info("[franjas] " + pl.getName() + " pack=" + conPack.contains(pl.getUniqueId()) + " franjas=" + f);
+        return f ? franjas(texto) : pintar(texto, x);
     }
 
     private static final String COLORES = "0123456789abcdef";
