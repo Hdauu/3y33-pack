@@ -164,8 +164,8 @@ final class ChatEstilo implements Listener {
             return c.replaceText(net.kyori.adventure.text.TextReplacementConfig.builder()
                     .matchLiteral(plano)
                     .condition((r, cuenta, hechos) -> visto.incrementAndGet() == ultimo
-                            ? net.kyori.adventure.text.TextReplacementConfig.PatternReplacementResult.REPLACE
-                            : net.kyori.adventure.text.TextReplacementConfig.PatternReplacementResult.CONTINUE)
+                            ? net.kyori.adventure.text.PatternReplacementResult.REPLACE
+                            : net.kyori.adventure.text.PatternReplacementResult.CONTINUE)
                     .replacement((r, b) -> pintarPara(vista, plano, x)).build());
         });
     }
