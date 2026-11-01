@@ -84,7 +84,7 @@ def png(img):
     return b.getvalue()
 
 
-FASES = (-1, 0, 1)
+FASES = (0, 0, 0)  # franjas fijas: las tres variantes son iguales (el chat no se puede animar)
 imgs = [(hoja(rows, 8, 8, lambda c, f=f: glifo(c, f)), hoja(filas_acc, 9, 12, lambda c, f=f: glifo_acc(c, f))) for f in FASES]
 vista = Image.new('RGBA', (imgs[0][0].width, sum(a.height + b.height for a, b in imgs)), (40, 40, 48, 255))
 y0 = 0
