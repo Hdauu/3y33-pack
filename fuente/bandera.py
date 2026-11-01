@@ -1,6 +1,6 @@
 """Fuente de chat con la bandera argentina, hecha con las letras de Minecraft (fuentes/ascii.png y accented.png, no se suben al repo).
-Cada letra va en tres franjas horizontales (celeste, blanco, celeste). Genera tres variantes (3y33:bandera_0/1/2) que solo cambian
-el 'ascent', asi las letras suben y bajan formando una onda."""
+Cada letra va en tres franjas horizontales (celeste, blanco, celeste). Genera tres variantes (3y33:bandera_0/1/2): las letras quedan quietas en la misma linea
+base y lo que se corre 1 pixel es la franja blanca, asi el color ondea como una bandera."""
 import io, json, zipfile, hashlib, os
 from PIL import Image
 
@@ -28,7 +28,7 @@ def pos_acc(ch):
     raise KeyError(ch)
 
 
-def franjas(src, ancho, alto, base):
+def franjas(src, ancho, alto, base, fase=0):
     """Reparte el cuerpo de la letra (hasta la linea base 'base') en tres franjas: celeste, blanco, celeste.
     Lo que queda arriba (puntos, tildes) y abajo (colas) va en celeste."""
     sp = src.load()
@@ -42,8 +42,10 @@ def franjas(src, ancho, alto, base):
     azul = max(1, round(n / 3)) if n >= 3 else 0
     out = Image.new('RGBA', (ancho, alto), (0, 0, 0, 0))
     px = out.load()
+    w = n - 2 * azul
+    ini = min(max(top + azul + fase, top + 1), base - w + 1) if w > 0 else 0
     for y in range(alto):
-        if top <= y <= base and azul < n - azul and azul <= y - top < n - azul:
+        if w > 0 and ini <= y < ini + w:
             col = BLANCO
         else:
             col = CELESTE
@@ -53,18 +55,18 @@ def franjas(src, ancho, alto, base):
     return out
 
 
-def glifo(ch):
+def glifo(ch, fase=0):
     if ch == '\u0000':
         return Image.new('RGBA', (8, 8), (0, 0, 0, 0))
     cx, cy = (ord(ch) % 16) * 8, (ord(ch) // 16) * 8
-    return franjas(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8, 6)
+    return franjas(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8, 6, fase)
 
 
-def glifo_acc(ch):
+def glifo_acc(ch, fase=0):
     if ch == '\u0000':
         return Image.new('RGBA', (9, 12), (0, 0, 0, 0))
     r, c = pos_acc(ch)
-    return franjas(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12, 9)
+    return franjas(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12, 9, fase)
 
 
 def hoja(filas, ancho, alto, f):
@@ -82,24 +84,30 @@ def png(img):
     return b.getvalue()
 
 
-img1, img2 = hoja(rows, 8, 8, glifo), hoja(filas_acc, 9, 12, glifo_acc)
-vista = Image.new('RGBA', (img1.width, img1.height + img2.height), (40, 40, 48, 255))
-vista.alpha_composite(img1, (0, 0)); vista.alpha_composite(img2, (0, img1.height))
-vista.resize((vista.width * 6, vista.height * 6), Image.NEAREST).save(os.path.join(BASE, 'bandera_preview.png'))
+FASES = (-1, 0, 1)
+imgs = [(hoja(rows, 8, 8, lambda c, f=f: glifo(c, f)), hoja(filas_acc, 9, 12, lambda c, f=f: glifo_acc(c, f))) for f in FASES]
+vista = Image.new('RGBA', (imgs[0][0].width, sum(a.height + b.height for a, b in imgs)), (40, 40, 48, 255))
+y0 = 0
+for a, b in imgs:
+    vista.alpha_composite(a, (0, y0)); vista.alpha_composite(b, (0, y0 + a.height)); y0 += a.height + b.height
+vista.resize((vista.width * 4, vista.height * 4), Image.NEAREST).save(os.path.join(BASE, 'bandera_preview.png'))
 
-archivos = {'assets/3y33/textures/font/bandera.png': png(img1), 'assets/3y33/textures/font/bandera_acc.png': png(img2)}
-for n, asc in enumerate((8, 7, 6)):
+archivos = {}
+for n, (a, b) in enumerate(imgs):
+    archivos['assets/3y33/textures/font/bandera_%d.png' % n] = png(a)
+    archivos['assets/3y33/textures/font/bandera_acc_%d.png' % n] = png(b)
     archivos['assets/3y33/font/bandera_%d.json' % n] = json.dumps({"providers": [
         {"type": "space", "advances": {" ": 4}},
-        {"type": "bitmap", "file": "3y33:font/bandera.png", "height": 8, "ascent": asc, "chars": ["".join(f) for f in rows]},
-        {"type": "bitmap", "file": "3y33:font/bandera_acc.png", "height": 12, "ascent": asc + 3, "chars": ["".join(f) for f in filas_acc]},
+        {"type": "bitmap", "file": "3y33:font/bandera_%d.png" % n, "height": 8, "ascent": 8, "chars": ["".join(f) for f in rows]},
+        {"type": "bitmap", "file": "3y33:font/bandera_acc_%d.png" % n, "height": 12, "ascent": 11, "chars": ["".join(f) for f in filas_acc]},
         {"type": "reference", "id": "minecraft:default"}]}, ensure_ascii=False, indent=1).encode()
+VIEJOS = ('assets/3y33/textures/font/bandera.png', 'assets/3y33/textures/font/bandera_acc.png')
 
 viejo = zipfile.ZipFile(ZIP)
 mem = io.BytesIO()
 with zipfile.ZipFile(mem, 'w', zipfile.ZIP_DEFLATED) as z:
     for it in viejo.infolist():
-        if it.filename not in archivos:
+        if it.filename not in archivos and it.filename not in VIEJOS:
             z.writestr(it, viejo.read(it.filename))
     for n, d in archivos.items():
         z.writestr(n, d)
