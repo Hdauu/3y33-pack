@@ -1,5 +1,6 @@
 package ar.com.tresyetres.core;
 
+import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -25,6 +26,7 @@ final class Pvp implements Listener {
     private final Set<UUID> activado = new HashSet<>();
     private final Map<UUID, Long> combate = new HashMap<>();
     private final Map<UUID, Long> ultimoCambio = new HashMap<>();
+    private final Map<UUID, BossBar> barras = new HashMap<>();
 
     Pvp(Core core) {
         this.core = core;
@@ -135,14 +137,32 @@ final class Pvp implements Listener {
             Player p = Bukkit.getPlayer(en.getKey());
             if (en.getValue() <= ahora) {
                 it.remove();
-                if (p != null) {
-                    p.sendActionBar(core.mm("<green>⚔ Saliste de combate. Ya podés desconectarte."));
-                }
+                quitarBarra(en.getKey(), p);
+                if (p != null) p.sendActionBar(core.mm("<green>⚔ Saliste de combate. Ya podés desconectarte."));
             } else if (p != null) {
                 long s = (en.getValue() - ahora + 999) / 1000;
-                p.sendActionBar(core.mm("<red>⚔ En combate: <white>" + s + "s"));
+                BossBar b = barras.get(en.getKey());
+                float prog = Math.max(0f, Math.min(1f, (en.getValue() - ahora) / (segundos() * 1000f)));
+                net.kyori.adventure.text.Component t = core.mm("<red>⚔ En combate <dark_gray>· <white>" + s + "s <dark_gray>· <gray>no te desconectes");
+                if (b == null) {
+                    b = BossBar.bossBar(t, prog, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
+                    barras.put(en.getKey(), b);
+                    p.showBossBar(b);
+                } else {
+                    b.name(t);
+                    b.progress(prog);
+                }
             }
         }
+        // jugadores que se fueron con la barra puesta
+        for (UUID u : new ArrayList<>(barras.keySet())) {
+            if (!combate.containsKey(u)) quitarBarra(u, Bukkit.getPlayer(u));
+        }
+    }
+
+    private void quitarBarra(UUID u, Player p) {
+        BossBar b = barras.remove(u);
+        if (b != null && p != null) p.hideBossBar(b);
     }
 
     /** En combate no se puede teletransportar nadie (comandos, puntos, tpa...), salvo con perla de ender. */
@@ -163,6 +183,7 @@ final class Pvp implements Listener {
         Player p = e.getPlayer();
         boolean castigar = enCombate(p);
         combate.remove(p.getUniqueId());
+        quitarBarra(p.getUniqueId(), p);
         if (!castigar) return;
         PlayerQuitEvent.QuitReason r = e.getReason();
         if (r == PlayerQuitEvent.QuitReason.KICKED || r == PlayerQuitEvent.QuitReason.ERRONEOUS_STATE) return;
@@ -174,8 +195,9 @@ final class Pvp implements Listener {
     @EventHandler
     public void alMorir(PlayerDeathEvent e) {
         combate.remove(e.getEntity().getUniqueId());
+        quitarBarra(e.getEntity().getUniqueId(), e.getEntity());
         Player k = e.getEntity().getKiller();
-        if (k != null) combate.remove(k.getUniqueId());
+        if (k != null) { combate.remove(k.getUniqueId()); quitarBarra(k.getUniqueId(), k); }
     }
 
     List<String> sugerencias() { return List.of("on", "off"); }
