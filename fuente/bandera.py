@@ -55,18 +55,29 @@ def franjas(src, ancho, alto, base, fase=0):
     return out
 
 
+def negrita(img, ancho, alto):
+    """Engrosa el trazo 1 pixel a la derecha (como la negrita de Minecraft) para que las franjas se lean."""
+    out, p, o = img.copy(), img.load(), None
+    o = out.load()
+    for y in range(alto):
+        for x in range(ancho - 1):
+            if p[x, y][3] > 127:
+                o[x + 1, y] = p[x, y]
+    return out
+
+
 def glifo(ch, fase=0):
     if ch == '\u0000':
         return Image.new('RGBA', (8, 8), (0, 0, 0, 0))
     cx, cy = (ord(ch) % 16) * 8, (ord(ch) // 16) * 8
-    return franjas(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8, 6, fase)
+    return franjas(negrita(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8), 8, 8, 6, fase)
 
 
 def glifo_acc(ch, fase=0):
     if ch == '\u0000':
         return Image.new('RGBA', (9, 12), (0, 0, 0, 0))
     r, c = pos_acc(ch)
-    return franjas(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12, 9, fase)
+    return franjas(negrita(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12), 9, 12, 9, fase)
 
 
 def hoja(filas, ancho, alto, f):
