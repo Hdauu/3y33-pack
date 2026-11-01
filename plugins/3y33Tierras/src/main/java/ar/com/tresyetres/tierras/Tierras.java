@@ -287,7 +287,10 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
             }
             case "lista", "terrenos" -> menus.abrirHub(p);
             case "comprarmenu", "tienda" -> menus.abrirCompra(p);
-            case "borrar", "liberar" -> p.performCommand("unclaim");
+            case "borrar", "liberar" -> {
+                if (args.length > 1 && args[1].equalsIgnoreCase("confirmar")) confirmarLiberar(p);
+                else pedirLiberar(p);
+            }
             case "mapa" -> p.performCommand("claim map");
             case "ayuda", "help" -> ayuda(p);
             default -> {
@@ -664,6 +667,51 @@ public final class Tierras extends JavaPlugin implements Listener, TabCompleter 
     }
 
     // /tp X Z (sin altura): lleva a la superficie en esas coordenadas
+    private final Map<UUID, Long> liberarPendiente = new HashMap<>();
+
+    private void pedirLiberar(Player p) {
+        ClaimProfile c = api.getClaimAt(p.getLocation());
+        if (c == null) { msg(p, "&cNo estás dentro de ningún terreno."); return; }
+        if (!c.isOwner(p.getUniqueId())) { msg(p, "&cSolo el dueño puede liberar chunks de este terreno."); return; }
+        int chunks = c.getOwnedChunks().size();
+        liberarPendiente.put(p.getUniqueId(), System.currentTimeMillis() + 15_000L);
+        var mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+        String linea = "<dark_gray><strikethrough>                                                  ";
+        p.sendMessage(mm.deserialize(""));
+        p.sendMessage(mm.deserialize("  <dark_red><bold>LIBERAR CHUNK</bold>"));
+        p.sendMessage(mm.deserialize(linea));
+        p.sendMessage(mm.deserialize("  <gray>Vas a liberar el chunk donde estás parado de <white>" + c.getName().replace("<", "") + "<gray>."));
+        if (chunks <= 1) p.sendMessage(mm.deserialize("  <red>⚠ Es el último chunk: <white>el terreno se va a borrar completo<red>."));
+        else p.sendMessage(mm.deserialize("  <gray>Te quedan <white>" + (chunks - 1) + " <gray>chunk(s) en el terreno."));
+        p.sendMessage(mm.deserialize("  <gray>Lo que construiste ahí queda desprotegido."));
+        p.sendMessage(mm.deserialize(""));
+        p.sendMessage(mm.deserialize("  <click:run_command:'/tierra liberar confirmar'><hover:show_text:'<gray>Liberar este chunk'><red><bold>[ CONFIRMAR ]</bold></red></hover></click>   <click:run_command:'/tierra menu'><hover:show_text:'<gray>Cancelar'><gray><bold>[ CANCELAR ]</bold></gray></hover></click>"));
+        p.sendMessage(mm.deserialize("  <dark_gray>Tenés 15 segundos."));
+        p.sendMessage(mm.deserialize(linea));
+    }
+
+    private void confirmarLiberar(Player p) {
+        Long vence = liberarPendiente.remove(p.getUniqueId());
+        if (vence == null || vence < System.currentTimeMillis()) { msg(p, "&7La confirmación venció. Usá &f/tierra liberar &7de nuevo."); return; }
+        liberarPermitido.add(p.getUniqueId());
+        try { p.performCommand("unclaim"); } finally { liberarPermitido.remove(p.getUniqueId()); }
+    }
+
+    private final Set<UUID> liberarPermitido = new HashSet<>();
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void alLiberar(PlayerCommandPreprocessEvent e) {
+        String[] partes = e.getMessage().trim().split("\\s+");
+        String base = partes[0].toLowerCase(Locale.ROOT);
+        if (base.contains(":")) base = "/" + base.substring(base.indexOf(':') + 1);
+        if (!base.equals("/unclaim")) return;
+        if (partes.length > 1 && partes[1].equalsIgnoreCase("all")) return;
+        Player p = e.getPlayer();
+        if (liberarPermitido.contains(p.getUniqueId())) return;
+        e.setCancelled(true);
+        pedirLiberar(p);
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void alTpSinAltura(PlayerCommandPreprocessEvent e) {
         String[] partes = e.getMessage().trim().split("\\s+");
