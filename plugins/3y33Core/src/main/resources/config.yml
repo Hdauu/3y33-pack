@@ -120,3 +120,7 @@ rtp:
 pvp:
   combate-segundos: 20        # tiempo en combate después del último golpe
   espera-cambio-segundos: 10  # espera entre un /pvp y otro
+
+# Regalo por jugar la beta: estilo de nombre "Argentina"
+beta:
+  activa: true
