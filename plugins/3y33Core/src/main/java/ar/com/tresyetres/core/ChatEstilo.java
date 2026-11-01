@@ -36,6 +36,7 @@ final class ChatEstilo implements Listener {
     private final Color color;
     private final File archivo;
     private final Map<UUID, String> elegido = new HashMap<>();
+    private final Set<UUID> gruesa = new HashSet<>();   // quienes eligieron letras gruesas para el estilo Argentina (el resto: finas)
 
     ChatEstilo(Core core, Color color) {
         this.core = core;
@@ -43,6 +44,10 @@ final class ChatEstilo implements Listener {
         archivo = new File(core.getDataFolder(), "chat.yml");
         YamlConfiguration y = YamlConfiguration.loadConfiguration(archivo);
         for (String k : y.getKeys(false)) {
+            if (k.startsWith("grueso:")) {
+                try { if (y.getBoolean(k)) gruesa.add(UUID.fromString(k.substring(7))); } catch (IllegalArgumentException ignored) { }
+                continue;
+            }
             try { elegido.put(UUID.fromString(k), y.getString(k)); } catch (IllegalArgumentException ignored) { }
         }
     }
@@ -50,6 +55,7 @@ final class ChatEstilo implements Listener {
     private void guardar() {
         YamlConfiguration y = new YamlConfiguration();
         elegido.forEach((u, v) -> y.set(u.toString(), v));
+        gruesa.forEach(u -> y.set("grueso:" + u, true));
         try { y.save(archivo); } catch (IOException e) { core.getLogger().warning("No pude guardar chat.yml: " + e.getMessage()); }
     }
 
@@ -145,24 +151,21 @@ final class ChatEstilo implements Listener {
         return v instanceof Player p && conPack.contains(p.getUniqueId()) && p.getUniqueId().getMostSignificantBits() != 0;
     }
 
-    static Component franjas(String texto) {
+    static Component franjas(String texto, boolean grueso) {
+        net.kyori.adventure.key.Key fuente = net.kyori.adventure.key.Key.key("3y33", grueso ? "bandera_g" : "bandera");
         Component r = Component.empty();
-        int i = 0;
         for (int cp : texto.codePoints().toArray()) {
             String ch = new String(Character.toChars(cp));
-            if (cp == ' ') { r = r.append(Component.text(" ")); i++; continue; }
-            int nivel = (int) Math.round(1 + Math.sin(i * 0.4));
-            r = r.append(Component.text(ch, net.kyori.adventure.text.format.NamedTextColor.WHITE)
-                    .font(net.kyori.adventure.key.Key.key("3y33", "bandera_" + nivel)));
-            i++;
+            if (cp == ' ') { r = r.append(Component.text(" ")); continue; }
+            r = r.append(Component.text(ch, net.kyori.adventure.text.format.NamedTextColor.WHITE).font(fuente));
         }
         return r;
     }
 
-    private Component pintarPara(net.kyori.adventure.audience.Audience v, String texto, Color.Preset x) {
+    /** El grosor de las letras lo decide quien escribe (autor), no quien lee. */
+    private Component pintarPara(net.kyori.adventure.audience.Audience v, UUID autor, String texto, Color.Preset x) {
         boolean f = x.id().equals("argentina") && puedeFranjas(v);
-        if (x.id().equals("argentina") && v instanceof Player pl) core.getLogger().info("[franjas] " + pl.getName() + " pack=" + conPack.contains(pl.getUniqueId()) + " franjas=" + f);
-        return f ? franjas(texto) : pintar(texto, x);
+        return f ? franjas(texto, gruesa.contains(autor)) : pintar(texto, x);
     }
 
     private static final String COLORES = "0123456789abcdef";
@@ -243,7 +246,7 @@ final class ChatEstilo implements Listener {
                     .condition((r, cuenta, hechos) -> visto.incrementAndGet() == ultimo
                             ? net.kyori.adventure.text.PatternReplacementResult.REPLACE
                             : net.kyori.adventure.text.PatternReplacementResult.CONTINUE)
-                    .replacement((r, b) -> conCodigos != null ? conCodigos : pintarPara(vista, plano, x)).build());
+                    .replacement((r, b) -> conCodigos != null ? conCodigos : pintarPara(vista, fuente.getUniqueId(), plano, x)).build());
         });
     }
 
@@ -270,7 +273,7 @@ final class ChatEstilo implements Listener {
             ItemMeta m = it.getItemMeta();
             m.displayName(sin(core.mm("<gradient:" + x.grad() + "><bold>" + x.nombre() + "</bold></gradient>")));
             boolean on = x.id().equals(sel);
-            m.lore(List.of(sin(pintarPara(p, "Así se ven tus mensajes", x)), Component.empty(),
+            m.lore(List.of(sin(pintarPara(p, p.getUniqueId(), "Así se ven tus mensajes", x)), Component.empty(),
                     sin(core.mm(on ? "<green>✔ Elegido" : "<gray>Click para elegir"))));
             if (on) { m.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true); m.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS); }
             it.setItemMeta(m);
@@ -286,6 +289,17 @@ final class ChatEstilo implements Listener {
         vm.displayName(sin(core.mm("<white>Volver")));
         v.setItemMeta(vm);
         inv.setItem(30, v);
+        if (p.hasPermission("tresyetres.estilo.argentina")) {
+            boolean g = gruesa.contains(p.getUniqueId());
+            ItemStack gr = new ItemStack(Material.FEATHER);
+            ItemMeta gm = gr.getItemMeta();
+            gm.displayName(sin(core.mm("<white>Letras del estilo Argentina: <#74ACDF>" + (g ? "Gruesas" : "Finas"))));
+            gm.lore(List.of(sin(core.mm("<gray>Finas: las letras normales de Minecraft.")),
+                    sin(core.mm("<gray>Gruesas: más anchas, las franjas se leen más.")), Component.empty(),
+                    sin(core.mm("<gray>Click para pasar a <white>" + (g ? "finas" : "gruesas")))));
+            gr.setItemMeta(gm);
+            inv.setItem(32, gr);
+        }
         p.openInventory(inv);
     }
 
@@ -301,6 +315,13 @@ final class ChatEstilo implements Listener {
         if (!(e.getWhoClicked() instanceof Player p) || e.getClickedInventory() != e.getView().getTopInventory()) return;
         int s = e.getSlot();
         if (s == 30) { color.abrir(p); return; }
+        if (s == 32 && p.hasPermission("tresyetres.estilo.argentina")) {
+            if (!gruesa.remove(p.getUniqueId())) gruesa.add(p.getUniqueId());
+            guardar();
+            p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.6f, 1f);
+            abrir(p);
+            return;
+        }
         if (s == 31) {
             elegido.remove(p.getUniqueId());
             guardar();
@@ -316,7 +337,7 @@ final class ChatEstilo implements Listener {
             elegido.put(p.getUniqueId(), x.id());
             guardar();
             p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.4f);
-            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Tus mensajes ahora se ven así: ").append(pintarPara(p, "hola " + p.getName(), x)));
+            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Tus mensajes ahora se ven así: ").append(pintarPara(p, p.getUniqueId(), "hola " + p.getName(), x)));
             abrir(p);
             return;
         }
