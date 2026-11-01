@@ -151,7 +151,7 @@ final class ChatEstilo implements Listener {
         for (int cp : texto.codePoints().toArray()) {
             String ch = new String(Character.toChars(cp));
             if (cp == ' ') { r = r.append(Component.text(" ")); i++; continue; }
-            int nivel = (int) Math.round(1 + Math.sin(i * 0.9));
+            int nivel = (int) Math.round(1 + Math.sin(i * 0.4));
             r = r.append(Component.text(ch, net.kyori.adventure.text.format.NamedTextColor.WHITE)
                     .font(net.kyori.adventure.key.Key.key("3y33", "bandera_" + nivel)));
             i++;
