@@ -18,7 +18,7 @@ import java.util.*;
 final class HologramaClics implements Listener {
 
     private static final Map<String, String> COMANDOS = Map.of(
-            "terrenos", "tierras",
+            "terrenos", "lands",
             "misiones", "misiones",
             "niveles", "nivel",
             "reglas", "reglas",
