@@ -47,6 +47,16 @@ public final class TresLogin extends JavaPlugin implements Listener {
 
     private FileConfiguration cfg() { return getConfig(); }
 
+    /** Si esta PlaceholderAPI, resuelve los %...% (insignia y nombre con degradado). Sin ella devuelve el texto tal cual. */
+    private String papi(Player p, String t) {
+        try {
+            Class<?> k = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+            return (String) k.getMethod("setPlaceholders", org.bukkit.entity.Player.class, String.class).invoke(null, p, t);
+        } catch (Throwable ignored) {
+            return t;
+        }
+    }
+
     private String c(String path, String def) { return color(cfg().getString(path, def)); }
 
     static String color(String s) {
@@ -124,7 +134,7 @@ public final class TresLogin extends JavaPlugin implements Listener {
         boolean automatic = !typedAuthCommand.remove(p.getUniqueId());
         p.resetTitle();
         p.sendTitle(c("welcome.title", "&c&l3y33 SMP"),
-                c("welcome.subtitle", "&7Bienvenido, &f%player%&7!").replace("%player%", p.getName()),
+                papi(p, c("welcome.subtitle", "&7Bienvenido, &f%player%&7!").replace("%player%", p.getName())),
                 5, cfg().getInt("welcome.stay-ticks", 50), 15);
         String sound = cfg().getString("welcome.sound", "entity.player.levelup");
         if (sound != null && !sound.isEmpty()) {

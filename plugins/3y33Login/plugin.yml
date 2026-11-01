@@ -1,5 +1,5 @@
 name: 3y33Login
-version: 1.0.0
+version: 1.0.1
 main: ar.com.tresyetres.login.TresLogin
 api-version: '1.21'
 depend: [AuthMe]

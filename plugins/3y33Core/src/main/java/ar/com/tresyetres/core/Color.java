@@ -98,6 +98,38 @@ final class Color implements Listener {
         };
     }
 
+    /** Insignia de rango seguida de un espacio, o vacio si no tiene (para titulos). */
+    String insignia(Player p) {
+        String e = etiqueta(p);
+        return e.equals("Usuario") ? "" : e + " ";
+    }
+
+    /** Nombre con el degradado elegido, en codigos de color viejos (§x§r§r§g§g§b§b) para titulos que no entienden MiniMessage. */
+    String nombreLegacy(Player p) {
+        String[] g = grad(p).split(":");
+        int n = p.getName().length();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            double t = n == 1 ? 0 : (double) i / (n - 1);
+            double pos = t * (g.length - 1);
+            int k = Math.min((int) pos, g.length - 2 < 0 ? 0 : g.length - 2);
+            int[] a = rgb(g[k]), b = rgb(g[Math.min(k + 1, g.length - 1)]);
+            double f = g.length == 1 ? 0 : pos - k;
+            sb.append("§x");
+            for (int j = 0; j < 3; j++) {
+                String h = String.format("%02x", (int) (a[j] + (b[j] - a[j]) * f));
+                for (char ch : h.toCharArray()) sb.append('§').append(ch);
+            }
+            sb.append(p.getName().charAt(i));
+        }
+        return sb.toString();
+    }
+
+    private static int[] rgb(String h) {
+        h = h.replace("#", "");
+        return new int[]{Integer.parseInt(h.substring(0, 2), 16), Integer.parseInt(h.substring(2, 4), 16), Integer.parseInt(h.substring(4, 6), 16)};
+    }
+
     /** id del color que se ve: el elegido, el del rango o blanco. Los ids "r_<rango>" son los colores de rango. */
     String efectivo(Player p) {
         Preset pr = valido(p);
