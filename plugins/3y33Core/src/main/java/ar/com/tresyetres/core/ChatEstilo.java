@@ -148,7 +148,7 @@ final class ChatEstilo implements Listener {
     private static final String INI = "\uF8F0", FIN = "\uF8F1";
 
     /** LPC arma el chat con el mensaje como texto plano, asi que pintamos despues de que el arme el formato. */
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void alEscribir(AsyncChatEvent e) {
         Color.Preset x = actual(e.getPlayer());
         if (x == null) return;
