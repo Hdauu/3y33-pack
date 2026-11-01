@@ -28,12 +28,25 @@ def pos_acc(ch):
     raise KeyError(ch)
 
 
-def franjas(src, ancho, alto, arriba):
-    """arriba = fila donde empieza el cuerpo de la letra (7 filas): 2 celestes, 3 blancas, 2 celestes (y lo de abajo celeste)."""
+def franjas(src, ancho, alto, base):
+    """Reparte el cuerpo de la letra (hasta la linea base 'base') en tres franjas: celeste, blanco, celeste.
+    Lo que queda arriba (puntos, tildes) y abajo (colas) va en celeste."""
+    sp = src.load()
+    vacia = [all(sp[x, y][3] <= 127 for x in range(ancho)) for y in range(alto)]
+    top = base
+    while top - 1 >= 0 and not vacia[top - 1]:
+        top -= 1
+    if vacia[base]:  # letra sin pixeles en la linea base: busca el bloque mas cercano
+        top = base + 1
+    n = base - top + 1
+    azul = max(1, round(n / 3)) if n >= 3 else 0
     out = Image.new('RGBA', (ancho, alto), (0, 0, 0, 0))
-    sp, px = src.load(), out.load()
+    px = out.load()
     for y in range(alto):
-        col = BLANCO if (y - arriba) in (2, 3, 4) else CELESTE
+        if top <= y <= base and azul < n - azul and azul <= y - top < n - azul:
+            col = BLANCO
+        else:
+            col = CELESTE
         for x in range(ancho):
             if sp[x, y][3] > 127:
                 px[x, y] = col
@@ -44,14 +57,14 @@ def glifo(ch):
     if ch == '\u0000':
         return Image.new('RGBA', (8, 8), (0, 0, 0, 0))
     cx, cy = (ord(ch) % 16) * 8, (ord(ch) // 16) * 8
-    return franjas(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8, 0)
+    return franjas(HOJA.crop((cx, cy, cx + 8, cy + 8)), 8, 8, 6)
 
 
 def glifo_acc(ch):
     if ch == '\u0000':
         return Image.new('RGBA', (9, 12), (0, 0, 0, 0))
     r, c = pos_acc(ch)
-    return franjas(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12, 3)
+    return franjas(ACC.crop((c * 9, r * 12, c * 9 + 9, r * 12 + 12)), 9, 12, 9)
 
 
 def hoja(filas, ancho, alto, f):
