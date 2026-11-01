@@ -58,6 +58,8 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(color, this);
         getServer().getPluginManager().registerEvents(new HologramaClics(), this);
         getServer().getPluginManager().registerEvents(new Beta(this), this);
+        color.chat = new ChatEstilo(this, color);
+        getServer().getPluginManager().registerEvents(color.chat, this);
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PvpExpansion(this, pvp, color).register();
         for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp", "color")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
@@ -130,7 +132,7 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                 else msg(sender, "<red>Solo jugadores.");
             }
             case "color" -> {
-                if (sender instanceof Player jp) color.abrir(jp);
+                if (sender instanceof Player jp) { if (args.length > 0 && args[0].equalsIgnoreCase("chat")) color.chat.abrir(jp); else color.abrir(jp); }
                 else msg(sender, "<red>Solo jugadores.");
             }
             case "pvp" -> {
