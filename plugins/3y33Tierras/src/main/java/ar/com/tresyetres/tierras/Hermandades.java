@@ -164,6 +164,18 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
         s.sendMessage(MM.deserialize("<dark_red><bold>3y33</bold> <dark_gray>» <reset>" + t));
     }
 
+    private static final String LINEA = "<dark_gray><strikethrough>                                                  ";
+
+    private void raw(CommandSender s, String t) { s.sendMessage(MM.deserialize(t)); }
+
+    private void cabecera(CommandSender s, String titulo) {
+        raw(s, "");
+        raw(s, "  <dark_red><bold>" + titulo + "</bold>");
+        raw(s, LINEA);
+    }
+
+    private void pie(CommandSender s) { raw(s, LINEA); }
+
     private static String esc(String s) { return s.replace("<", "").replace(">", ""); }
 
     @Override
@@ -191,13 +203,13 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
     }
 
     private void ayuda(Player p) {
-        m(p, "<white>Hermandades <dark_gray>»");
-        m(p, "<gray>/hermandad crear <nombre> <dark_gray>- <white>creá la tuya");
-        m(p, "<gray>/hermandad invitar <jugador> <dark_gray>- <white>sumá gente");
-        m(p, "<gray>/hermandad aceptar <dark_gray>| <white>rechazar <dark_gray>| <white>salir");
-        m(p, "<gray>/hermandad terreno <dark_gray>- <white>el terreno donde estás pasa a ser de la hermandad");
-        m(p, "<gray>/hermandad info [nombre] <dark_gray>| <white>lista");
-        m(p, "<gray>Líder: <white>expulsar, ascender, degradar, lider, tag, disolver");
+        cabecera(p, "HERMANDADES");
+        raw(p, "  <red>/hermandad crear <nombre>  <gray>creá la tuya");
+        raw(p, "  <red>/hermandad invitar <jugador>  <gray>sumá gente");
+        raw(p, "  <red>/hermandad terreno  <gray>el terreno donde estás pasa a ser de todos");
+        raw(p, "  <red>/hermandad info  <dark_gray>·  <red>lista  <dark_gray>·  <red>salir");
+        raw(p, "  <gray>Líder: <white>expulsar, ascender, degradar, lider, tag, disolver");
+        pie(p);
     }
 
     private void crear(Player p, Her h, String[] a) {
@@ -229,7 +241,12 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
         invitaciones.put(t.getUniqueId(), h.nombre.toLowerCase(Locale.ROOT));
         venceInvitacion.put(t.getUniqueId(), System.currentTimeMillis() + 120_000L);
         m(p, "<gray>Invitaste a <white>" + esc(t.getName()) + "<gray>.");
-        m(t, "<white>" + esc(p.getName()) + " <gray>te invitó a la hermandad <red>" + esc(h.nombre) + "<gray>. Escribí <white>/hermandad aceptar <gray>o <white>/hermandad rechazar<gray> (vence en 2 minutos).");
+        cabecera(t, "INVITACIÓN");
+        raw(t, "  <white>" + esc(p.getName()) + " <gray>te invitó a la hermandad <red>" + esc(h.nombre) + "<gray>.");
+        raw(t, "");
+        raw(t, "  <click:run_command:'/hermandad aceptar'><hover:show_text:'<gray>Unirte a la hermandad'><green><bold>[ ACEPTAR ]</bold></green></hover></click>   <click:run_command:'/hermandad rechazar'><hover:show_text:'<gray>Rechazar la invitación'><red><bold>[ RECHAZAR ]</bold></red></hover></click>");
+        raw(t, "  <dark_gray>Vence en 2 minutos.");
+        pie(t);
     }
 
     private void aceptar(Player p, Her actual) {
@@ -325,7 +342,7 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
         if (h == null || !h.lider.equals(p.getUniqueId())) { m(p, "<red>Solo el líder puede disolver la hermandad."); return; }
         if (a.length < 2 || !a[1].equalsIgnoreCase("confirmar") || !confirmaDisolver.contains(p.getUniqueId())) {
             confirmaDisolver.add(p.getUniqueId());
-            m(p, "<red>Esto borra la hermandad y saca a todos de su terreno. Si estás seguro: <white>/hermandad disolver confirmar");
+            raw(p, "  <red>Esto borra la hermandad y saca a todos de su terreno."); raw(p, "  <click:run_command:'/hermandad disolver confirmar'><red><bold>[ CONFIRMAR DISOLUCIÓN ]</bold></red></click>");
             return;
         }
         confirmaDisolver.remove(p.getUniqueId());
@@ -337,15 +354,16 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
 
     private void lista(Player p) {
         if (porNombre.isEmpty()) { m(p, "<gray>Todavía no hay hermandades."); return; }
-        m(p, "<white>Hermandades <dark_gray>»");
+        cabecera(p, "HERMANDADES");
         for (Her h : porNombre.values())
-            m(p, "<red>" + h.tag + " <dark_gray>- <white>" + esc(h.nombre) + " <gray>(" + h.rango.size() + ")");
+            raw(p, "  <click:run_command:'/hermandad info " + esc(h.nombre) + "'><hover:show_text:'<gray>Ver detalles'><red>[" + h.tag + "] <white>" + esc(h.nombre) + " <dark_gray>· <gray>" + h.rango.size() + " integrantes</hover></click>");
+        pie(p);
     }
 
     private void info(Player p, Her ver, Her mia) {
         Her h = ver != null ? ver : mia;
         if (h == null) { m(p, "<gray>No estás en ninguna hermandad. Creá una con <white>/hermandad crear <nombre><gray> o mirá <white>/hermandad ayuda<gray>."); return; }
-        m(p, "<red>" + h.tag + " <dark_gray>» <white>" + esc(h.nombre));
+        cabecera(p, "[" + h.tag + "] " + esc(h.nombre).toUpperCase(Locale.ROOT));
         StringBuilder sb = new StringBuilder();
         for (var e : h.rango.entrySet()) {
             OfflinePlayer o = Bukkit.getOfflinePlayer(e.getKey());
@@ -354,9 +372,11 @@ final class Hermandades implements CommandExecutor, TabCompleter, Listener {
             if (sb.length() > 0) sb.append("<dark_gray>, ");
             sb.append(c).append(esc(n));
         }
-        m(p, "<gray>Integrantes (" + h.rango.size() + "): " + sb);
+        raw(p, "  <gray>Integrantes <dark_gray>(" + h.rango.size() + ")<gray>: " + sb);
+        raw(p, "  <dark_gray>Líder <gold>■ <dark_gray>Oficial <yellow>■ <dark_gray>Miembro <white>■");
         ClaimProfile c = perfil(h);
-        m(p, "<gray>Terreno: <white>" + (c == null ? "sin elegir" : esc(c.getName())));
+        raw(p, "  <gray>Terreno: <white>" + (c == null ? "sin elegir" : esc(c.getName())));
+        pie(p);
     }
 
     private void aviso(Her h, String texto) {
