@@ -13,7 +13,7 @@ prompt:
 # Titulo al iniciar sesion (con contraseña, premium o sesion)
 welcome:
   title: "&c&l3y33 SMP"
-  subtitle: "&7¡Bienvenido, &f%player%&7!"
+  subtitle: "&7¡Bienvenido, %3y33_insignia%%3y33_nombre_legacy%&7!"
   stay-ticks: 50
   sound: "entity.player.levelup"
 

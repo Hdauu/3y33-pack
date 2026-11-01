@@ -27,6 +27,8 @@ final class PvpExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("pvp_estado")) return pvp.tienePvp(p) ? "activado" : "desactivado";
         if (params.equalsIgnoreCase("rango")) return color.etiqueta(p);
         if (params.startsWith("n_")) return color.efectivo(p).equals(params.substring(2)) ? p.getName() : "";
+        if (params.equalsIgnoreCase("insignia")) return color.insignia(p);
+        if (params.equalsIgnoreCase("nombre_legacy")) return color.nombreLegacy(p);
         if (params.equalsIgnoreCase("grad")) return color.grad(p);
         if (params.equalsIgnoreCase("color_a")) return color.colores(p)[0];
         if (params.equalsIgnoreCase("color_b")) return color.colores(p)[1];
