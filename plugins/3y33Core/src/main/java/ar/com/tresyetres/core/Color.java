@@ -119,6 +119,15 @@ final class Color implements Listener {
         return x.perm() == null ? libre(p) : p.hasPermission(x.perm());
     }
 
+    /** 0 = sin color de chat, 1 = VIP (solidos), 2 = VIP+ y staff (degradados). */
+    int nivelChat(Player p) {
+        String[] r = rango(p);
+        if (r != null) return r[0].equals("vip") ? 1 : 2;
+        return p.hasPermission("tresyetres.color") ? 2 : 0;
+    }
+
+    ChatEstilo chat;
+
     boolean puede(Player p) {
         if (libre(p)) return true;
         for (Preset x : PRESETS) if (x.perm() != null && p.hasPermission(x.perm())) return true;
@@ -190,6 +199,12 @@ final class Color implements Listener {
         rm.lore(List.of(sin(core.mm("<gray>Saca el color que elegiste"))));
         r.setItemMeta(rm);
         inv.setItem(31, r);
+        ItemStack ch = new ItemStack(Material.WRITABLE_BOOK);
+        ItemMeta cm = ch.getItemMeta();
+        cm.displayName(sin(core.mm("<white><bold>Color del chat")));
+        cm.lore(List.of(sin(core.mm("<gray>Cambiá cómo se ven tus mensajes"))));
+        ch.setItemMeta(cm);
+        inv.setItem(34, ch);
         p.openInventory(inv);
     }
 
@@ -200,6 +215,7 @@ final class Color implements Listener {
         if (!(e.getWhoClicked() instanceof Player p) || e.getClickedInventory() != e.getView().getTopInventory()) return;
         if (!puede(p)) { p.closeInventory(); return; }
         int s = e.getSlot();
+        if (s == 34 && chat != null) { chat.abrir(p); return; }
         if (s == 31) {
             elegido.remove(p.getUniqueId());
             guardar();
