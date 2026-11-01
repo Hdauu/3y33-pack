@@ -108,13 +108,60 @@ final class ChatEstilo implements Listener {
         return r;
     }
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    private final Set<UUID> conPack = new HashSet<>();
+
+    @EventHandler
+    public void alPack(org.bukkit.event.player.PlayerResourcePackStatusEvent e) {
+        switch (e.getStatus()) {
+            case SUCCESSFULLY_LOADED -> conPack.add(e.getPlayer().getUniqueId());
+            case DECLINED, FAILED_DOWNLOAD, FAILED_RELOAD, DISCARDED, INVALID_URL -> conPack.remove(e.getPlayer().getUniqueId());
+            default -> { }
+        }
+    }
+
+    @EventHandler
+    public void alSalir(org.bukkit.event.player.PlayerQuitEvent e) { conPack.remove(e.getPlayer().getUniqueId()); }
+
+    /** Letras de la bandera en franjas: solo para Java con el pack cargado (Bedrock no soporta fuentes propias). */
+    private boolean puedeFranjas(net.kyori.adventure.audience.Audience v) {
+        return v instanceof Player p && conPack.contains(p.getUniqueId()) && p.getUniqueId().getMostSignificantBits() != 0;
+    }
+
+    static Component franjas(String texto) {
+        Component r = Component.empty();
+        int i = 0;
+        for (int cp : texto.codePoints().toArray()) {
+            String ch = new String(Character.toChars(cp));
+            if (cp == ' ') { r = r.append(Component.text(" ")); i++; continue; }
+            int nivel = (int) Math.round(1 + Math.sin(i * 0.9));
+            r = r.append(Component.text(ch, net.kyori.adventure.text.format.NamedTextColor.WHITE)
+                    .font(net.kyori.adventure.key.Key.key("3y33", "bandera_" + nivel)));
+            i++;
+        }
+        return r;
+    }
+
+    private Component pintarPara(net.kyori.adventure.audience.Audience v, String texto, Color.Preset x) {
+        return x.id().equals("argentina") && puedeFranjas(v) ? franjas(texto) : pintar(texto, x);
+    }
+
+    private static final String INI = "\uF8F0", FIN = "\uF8F1";
+
+    /** LPC arma el chat con el mensaje como texto plano, asi que pintamos despues de que el arme el formato. */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void alEscribir(AsyncChatEvent e) {
         Color.Preset x = actual(e.getPlayer());
         if (x == null) return;
         String plano = PlainTextComponentSerializer.plainText().serialize(e.message());
         if (plano.isBlank()) return;
-        e.message(pintar(plano, x));
+        final String marcado = INI + plano + FIN;
+        io.papermc.paper.chat.ChatRenderer viejo = e.renderer();
+        e.renderer((fuente, nombre, mensaje, vista) -> {
+            Component c = viejo.render(fuente, nombre, Component.text(marcado), vista);
+            return c.replaceText(net.kyori.adventure.text.TextReplacementConfig.builder()
+                    .match(java.util.regex.Pattern.compile(INI + "(?s)(.*?)" + FIN))
+                    .replacement((r, b) -> pintarPara(vista, r.group(1), x)).build());
+        });
     }
 
     // ------------------------------------------------------------- menu
@@ -140,7 +187,7 @@ final class ChatEstilo implements Listener {
             ItemMeta m = it.getItemMeta();
             m.displayName(sin(core.mm("<gradient:" + x.grad() + "><bold>" + x.nombre() + "</bold></gradient>")));
             boolean on = x.id().equals(sel);
-            m.lore(List.of(sin(pintar("Así se ven tus mensajes", x)), Component.empty(),
+            m.lore(List.of(sin(pintarPara(p, "Así se ven tus mensajes", x)), Component.empty(),
                     sin(core.mm(on ? "<green>✔ Elegido" : "<gray>Click para elegir"))));
             if (on) { m.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true); m.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS); }
             it.setItemMeta(m);
@@ -186,7 +233,7 @@ final class ChatEstilo implements Listener {
             elegido.put(p.getUniqueId(), x.id());
             guardar();
             p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.4f);
-            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Tus mensajes ahora se ven así: ").append(pintar("hola " + p.getName(), x)));
+            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Tus mensajes ahora se ven así: ").append(pintarPara(p, "hola " + p.getName(), x)));
             abrir(p);
             return;
         }
