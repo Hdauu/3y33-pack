@@ -85,4 +85,58 @@ final class Plantillas {
             return null;
         }
     }
+
+    /** Deja los carteles de spawn_ y beta_ fijos (sin girar) y mirando al centro del arco donde se para la gente. extra = grados de correccion. */
+    static int orientar(Core core, double extra) {
+        int n = 0;
+        try {
+            var manager = FancyHologramsPlugin.get().getHologramManager();
+            for (String pre : new String[]{"spawn_", "beta_"}) {
+                List<Hologram> hs = new ArrayList<>();
+                for (Hologram h : manager.getHolograms()) if (h.getData().getName().startsWith(pre)) hs.add(h);
+                List<Hologram> arco = new ArrayList<>();
+                for (Hologram h : hs) if (!h.getData().getName().endsWith("bienvenida")) arco.add(h);
+                if (arco.size() < 3) continue;
+                // circulo que pasa por los carteles del arco (minimos cuadrados): x2+z2+Dx+Ez+F=0
+                double sxx = 0, sxz = 0, szz = 0, sx = 0, sz = 0, b1 = 0, b2 = 0, b3 = 0;
+                int cnt = arco.size();
+                for (Hologram h : arco) {
+                    Location l = h.getData().getLocation();
+                    double x = l.getX(), z = l.getZ(), r = -(x * x + z * z);
+                    sxx += x * x; sxz += x * z; szz += z * z; sx += x; sz += z; b1 += x * r; b2 += z * r; b3 += r;
+                }
+                double[][] a = {{sxx, sxz, sx}, {sxz, szz, sz}, {sx, sz, cnt}};
+                double[] b = {b1, b2, b3};
+                double d = det(a);
+                if (Math.abs(d) < 1e-9) continue;
+                double dd = det(reem(a, b, 0)) / d, ee = det(reem(a, b, 1)) / d;
+                double cx = -dd / 2, cz = -ee / 2;
+                for (Hologram h : hs) {
+                    Location l = h.getData().getLocation().clone();
+                    double yaw = Math.toDegrees(Math.atan2(-(cx - l.getX()), cz - l.getZ())) + extra;
+                    l.setYaw((float) yaw);
+                    h.getData().setLocation(l);
+                    if (h.getData() instanceof TextHologramData td) td.setBillboard(Display.Billboard.FIXED);
+                    h.forceUpdate();
+                    h.refreshForViewers();
+                    n++;
+                }
+            }
+            manager.saveHolograms();
+        } catch (Throwable e) {
+            core.getLogger().warning("No pude orientar los carteles: " + e);
+        }
+        return n;
+    }
+
+    private static double det(double[][] m) {
+        return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+                + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    }
+
+    private static double[][] reem(double[][] a, double[] b, int col) {
+        double[][] r = new double[3][3];
+        for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) r[i][j] = j == col ? b[i] : a[i][j];
+        return r;
+    }
 }
