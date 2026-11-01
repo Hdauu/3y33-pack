@@ -6,7 +6,7 @@ from PIL import Image
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 ZIP = os.path.join(BASE, '..', 'java', '3y33-pack.zip')
-CELESTE = (116, 172, 223, 255)
+CELESTE = (58, 150, 235, 255)  # mas intenso que el #74ACDF oficial para que el blanco se note sobre el chat
 BLANCO = (255, 255, 255, 255)
 
 HOJA = Image.open(os.path.join(BASE, 'fuentes', 'ascii.png')).convert('RGBA')      # celdas de 8x8
