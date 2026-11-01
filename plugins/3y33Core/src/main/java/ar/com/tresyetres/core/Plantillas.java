@@ -38,7 +38,7 @@ final class Plantillas {
         seccion("niveles", "#B52BE0", "#E86BFF", "Niveles", "Mirá tu progreso", "Clic para abrir");
         seccion("reglas", "#1E8CFF", "#4FD0FF", "Reglas", "Leelas antes de jugar", "Clic para abrir");
         seccion("explorar", "#FF5A00", "#FFA040", "Explorar", "Viajá a un lugar nuevo", "Clic para viajar");
-        seccion("discord", "#4C5CFF", "#8A9BFF", "Discord", "ds.3y33.com.ar", "Sumate a la comunidad");
+        seccion("discord", "#4C5CFF", "#8A9BFF", "Discord", "Sumate a nuestro Discord", "Hacé clic acá");
     }
 
     static List<String> nombres() { return new ArrayList<>(TODAS.keySet()); }

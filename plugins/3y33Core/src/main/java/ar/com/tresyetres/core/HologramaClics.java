@@ -61,6 +61,12 @@ final class HologramaClics implements Listener {
         if (mejor == null) return;
         ultimo.put(p.getUniqueId(), ahora);
         e.setCancelled(true);
+        if (mejor.equals("discord")) {
+            var mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+            p.sendMessage(mm.deserialize("<dark_red><bold>3y33</bold> <dark_gray>» <white>Sumate a nuestro Discord haciendo clic "
+                    + "<click:open_url:'https://ds.3y33.com.ar'><hover:show_text:'<gray>ds.3y33.com.ar'><red><bold><underlined>aquí</underlined></bold></red></hover></click><white>."));
+            return;
+        }
         p.performCommand(COMANDOS.get(mejor));
     }
 }
