@@ -24,21 +24,21 @@ final class Plantillas {
     }
 
     private static void seccion(String id, String a, String b, String nombre, String sub, String accion) {
-        TODAS.put(id, new Plantilla(1.0f, List.of(titulo(a, b, nombre), "<gray>" + sub, "<dark_gray>" + accion)));
+        TODAS.put(id, new Plantilla(1.0f, List.of(titulo(a, b, nombre), "<white>" + sub, "<white>" + accion)));
     }
 
     static {
         TODAS.put("bienvenida", new Plantilla(1.5f, List.of(
-                titulo("#E03131", "#FF8787", "3y33 SMP"),
-                "<gray>Survival vanilla · Java y Bedrock",
+                titulo("#FF2020", "#FF6B6B", "3y33 SMP"),
+                "<white>Survival vanilla · Java y Bedrock",
                 " ",
-                "<#FF8787>ds.3y33.com.ar")));
-        seccion("terrenos", "#2F9E44", "#8CE99A", "Terrenos", "Protegé tu base", "Clic para abrir");
-        seccion("misiones", "#F08C00", "#FFE066", "Misiones", "Ganá plata y rangos", "Clic para abrir");
-        seccion("niveles", "#9C36B5", "#E599F7", "Niveles", "Mirá tu progreso", "Clic para abrir");
-        seccion("reglas", "#1971C2", "#74C0FC", "Reglas", "Leelas antes de jugar", "Clic para abrir");
-        seccion("explorar", "#E8590C", "#FFC078", "Explorar", "Viajá a un lugar nuevo", "Clic para viajar");
-        seccion("discord", "#4263EB", "#91A7FF", "Discord", "ds.3y33.com.ar", "Sumate a la comunidad");
+                "<#FF4D4D>ds.3y33.com.ar")));
+        seccion("terrenos", "#12B533", "#5CFF7A", "Terrenos", "Protegé tu base", "Clic para abrir");
+        seccion("misiones", "#FF9500", "#FFD21F", "Misiones", "Ganá plata y rangos", "Clic para abrir");
+        seccion("niveles", "#B52BE0", "#E86BFF", "Niveles", "Mirá tu progreso", "Clic para abrir");
+        seccion("reglas", "#1E8CFF", "#4FD0FF", "Reglas", "Leelas antes de jugar", "Clic para abrir");
+        seccion("explorar", "#FF5A00", "#FFA040", "Explorar", "Viajá a un lugar nuevo", "Clic para viajar");
+        seccion("discord", "#4C5CFF", "#8A9BFF", "Discord", "ds.3y33.com.ar", "Sumate a la comunidad");
     }
 
     static List<String> nombres() { return new ArrayList<>(TODAS.keySet()); }
