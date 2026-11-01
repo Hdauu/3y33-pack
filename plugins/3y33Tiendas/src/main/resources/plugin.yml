@@ -1,0 +1,7 @@
+name: 3y33Tiendas
+version: 1.0.0
+main: ar.com.tresyetres.tiendas.TiendasPlugin
+api-version: '1.21'
+author: 3y33 SMP
+description: Reglas de tiendas (QuickShop) para terrenos de Lands - solo en el terreno de tu hermandad y con el nombre del terreno
+depend: [QuickShop-Hikari, Lands]
