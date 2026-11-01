@@ -163,6 +163,11 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
                     if (args.length > 1 && mundo == null) { msg(sender, "<red>No existe ese mundo."); return true; }
                     int n = Spawn.armar(this, sender instanceof Player jp ? jp : null, mundo);
                     msg(sender, "<gray>Hologramas de spawn creados: <white>" + n + "</white>. Acomodalos con <white>/editor</white>.");
+                } else if (args.length > 0 && args[0].equalsIgnoreCase("orientar")) {
+                    if (!sender.hasPermission(STAFF)) { msg(sender, "<red>No tenés permiso."); return true; }
+                    double extra = 0;
+                    try { if (args.length > 1) extra = Double.parseDouble(args[1]); } catch (NumberFormatException ignored) { }
+                    msg(sender, "<gray>Carteles orientados: <white>" + Plantillas.orientar(this, extra));
                 } else if (args.length > 0 && args[0].equalsIgnoreCase("anuncio")) {
                     anunciar();
                 } else if (args.length > 1 && (args[0].equalsIgnoreCase("aceptar") || args[0].equalsIgnoreCase("rechazar"))) {
