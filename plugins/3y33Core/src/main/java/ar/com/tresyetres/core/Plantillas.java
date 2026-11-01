@@ -68,8 +68,8 @@ final class Plantillas {
             Location l = donde.clone();
             TextHologramData d = new TextHologramData(final_, l);
             d.setText(new ArrayList<>(t.lineas));
-            d.setBackground(Color.fromARGB(110, 0, 0, 0));
-            d.setTextShadow(true);
+            d.setBackground(Color.fromARGB(0, 0, 0, 0));
+            d.setTextShadow(false);
             d.setBrightness(new Display.Brightness(15, 15));
             d.setBillboard(Display.Billboard.CENTER);
             d.setScale(new Vector3f(t.escala, t.escala, t.escala));
