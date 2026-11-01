@@ -25,7 +25,11 @@ import java.util.*;
 
 /** Color del nombre (solo VIP, VIP+ y staff). El tag de rango es siempre el mismo; esto cambia solo el degradado del nombre. */
 final class Color implements Listener {
-    record Preset(String id, String nombre, String a, String b, Material mat) { }
+    record Preset(String id, String nombre, String a, String b, String c, Material mat, String perm) {
+        Preset(String id, String nombre, String a, String b, Material mat) { this(id, nombre, a, b, null, mat, null); }
+        /** colores del degradado separados por ":" (2 o 3). */
+        String grad() { return c == null ? a + ":" + b : a + ":" + b + ":" + c; }
+    }
 
     static final List<Preset> PRESETS = List.of(
             new Preset("blanco", "Blanco", "#FFFFFF", "#D8D8D8", Material.WHITE_DYE),
@@ -41,7 +45,9 @@ final class Color implements Listener {
             new Preset("atardecer", "Atardecer", "#FF512F", "#F09819", Material.ORANGE_DYE),
             new Preset("oceano", "Océano", "#00C6FF", "#0072FF", Material.CYAN_DYE),
             new Preset("aurora", "Aurora", "#00F5A0", "#7B3FE4", Material.GLOW_INK_SAC),
-            new Preset("fuego", "Fuego", "#F83600", "#FE8C00", Material.BLAZE_POWDER));
+            new Preset("fuego", "Fuego", "#F83600", "#FE8C00", Material.BLAZE_POWDER),
+            // cosmeticos: se ganan jugando (no dependen del rango)
+            new Preset("argentina", "Argentina", "#74ACDF", "#FFFFFF", "#74ACDF", Material.LIGHT_BLUE_BANNER, "tresyetres.estilo.argentina"));
 
     /** Color de rango por defecto (de mayor a menor), sale de un grupo de LuckPerms. */
     private static final String[][] RANGOS = {
@@ -94,14 +100,38 @@ final class Color implements Listener {
 
     /** id del color que se ve: el elegido, el del rango o blanco. Los ids "r_<rango>" son los colores de rango. */
     String efectivo(Player p) {
-        String[] r = rango(p);
-        if (r == null && !p.hasPermission("tresyetres.color")) return "blanco";
-        Preset pr = buscar(elegido.get(p.getUniqueId()));
+        Preset pr = valido(p);
         if (pr != null) return pr.id();
+        String[] r = rango(p);
         return r != null ? "r_" + r[0] : "blanco";
     }
 
-    boolean puede(Player p) { return rango(p) != null || p.hasPermission("tresyetres.color"); }
+    /** El preset elegido, solo si el jugador todavia puede usarlo. */
+    private Preset valido(Player p) {
+        Preset pr = buscar(elegido.get(p.getUniqueId()));
+        return pr != null && disponible(p, pr) ? pr : null;
+    }
+
+    private boolean libre(Player p) { return rango(p) != null || p.hasPermission("tresyetres.color"); }
+
+    /** Los colores normales son de VIP/staff; los cosmeticos, de quien tenga su permiso. */
+    private boolean disponible(Player p, Preset x) {
+        return x.perm() == null ? libre(p) : p.hasPermission(x.perm());
+    }
+
+    boolean puede(Player p) {
+        if (libre(p)) return true;
+        for (Preset x : PRESETS) if (x.perm() != null && p.hasPermission(x.perm())) return true;
+        return false;
+    }
+
+    /** Degradado para MiniMessage/TAB: "A:B" o "A:B:C". */
+    String grad(Player p) {
+        Preset pr = valido(p);
+        if (pr != null) return pr.grad();
+        String[] c = colores(p);
+        return c[0] + ":" + c[1];
+    }
 
     private Preset buscar(String id) {
         for (Preset x : PRESETS) if (x.id().equals(id)) return x;
@@ -111,9 +141,9 @@ final class Color implements Listener {
     /** {inicio, fin} en #RRGGBB para los placeholders. */
     String[] colores(Player p) {
         String[] r = rango(p);
-        if (r == null && !p.hasPermission("tresyetres.color")) return new String[]{"#FFFFFF", "#FFFFFF"};
-        Preset pr = buscar(elegido.get(p.getUniqueId()));
+        Preset pr = valido(p);
         if (pr != null) return new String[]{pr.a(), pr.b()};
+        if (r == null && !p.hasPermission("tresyetres.color")) return new String[]{"#FFFFFF", "#FFFFFF"};
         if (r != null) return new String[]{r[1], r[2]};
         return new String[]{"#FFFFFF", "#D8D8D8"};
     }
@@ -128,7 +158,7 @@ final class Color implements Listener {
 
     void abrir(Player p) {
         if (!puede(p)) {
-            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>El color del nombre es para <#00C8FF>VIP</#00C8FF> y <#F2A900>VIP+</#F2A900>. Preguntale al staff cómo conseguirlo."));
+            p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>El color del nombre es para <#00C8FF>VIP</#00C8FF> y <#F2A900>VIP+</#F2A900>, y los estilos de la beta para quienes jugaron la beta."));
             return;
         }
         Inventory inv = Bukkit.createInventory(new Menu(), 36, core.mm("<red>3y33</red> <dark_gray>»</dark_gray> <white>Color del nombre"));
@@ -138,15 +168,16 @@ final class Color implements Listener {
         fondo.setItemMeta(fm);
         for (int i = 0; i < 36; i++) inv.setItem(i, fondo);
         String actual = elegido.get(p.getUniqueId());
-        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28};
         for (int i = 0; i < PRESETS.size(); i++) {
             Preset x = PRESETS.get(i);
+            if (!disponible(p, x)) continue;
             ItemStack it = new ItemStack(x.mat());
             ItemMeta m = it.getItemMeta();
-            m.displayName(sin(core.mm("<gradient:" + x.a() + ":" + x.b() + "><bold>" + x.nombre() + "</bold></gradient>")));
+            m.displayName(sin(core.mm("<gradient:" + x.grad() + "><bold>" + x.nombre() + "</bold></gradient>")));
             boolean sel = x.id().equals(actual);
             m.lore(List.of(
-                    sin(core.mm("<gradient:" + x.a() + ":" + x.b() + ">" + p.getName() + "</gradient>")),
+                    sin(core.mm("<gradient:" + x.grad() + ">" + p.getName() + "</gradient>")),
                     Component.empty(),
                     sin(core.mm(sel ? "<green>✔ Elegido" : "<gray>Click para elegir"))));
             if (sel) { m.addEnchant(Enchantment.UNBREAKING, 1, true); m.addItemFlags(ItemFlag.HIDE_ENCHANTS); }
@@ -177,10 +208,11 @@ final class Color implements Listener {
             abrir(p);
             return;
         }
-        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28};
         for (int i = 0; i < slots.length && i < PRESETS.size(); i++) {
             if (slots[i] != s) continue;
             Preset x = PRESETS.get(i);
+            if (!disponible(p, x)) return;
             elegido.put(p.getUniqueId(), x.id());
             guardar();
             p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.4f);
