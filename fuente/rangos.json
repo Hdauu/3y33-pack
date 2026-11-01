@@ -1,36 +1,42 @@
 {
  "vip": {
   "char": "\ue300",
+  "chat": "\ue310",
   "texto": "VIP",
   "c1": "#00AEE0",
   "c2": "#12C4F5"
  },
  "vipplus": {
   "char": "\ue301",
+  "chat": "\ue311",
   "texto": "VIP+",
   "c1": "#F2A900",
   "c2": "#FFBE1F"
  },
  "mod": {
   "char": "\ue302",
+  "chat": "\ue312",
   "texto": "MOD",
   "c1": "#1670D9",
   "c2": "#2A86F0"
  },
  "dev": {
   "char": "\ue303",
+  "chat": "\ue313",
   "texto": "DEV",
   "c1": "#7B3FE4",
   "c2": "#9257F5"
  },
  "admin": {
   "char": "\ue304",
+  "chat": "\ue314",
   "texto": "ADMIN",
   "c1": "#E02B2B",
   "c2": "#F23D3D"
  },
  "owner": {
   "char": "\ue305",
+  "chat": "\ue315",
   "texto": "OWNER",
   "c1": "#A3123A",
   "c2": "#C21A4C"

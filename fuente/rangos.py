@@ -84,7 +84,9 @@ for i, (rid, txt, c1, c2) in enumerate(RANGOS):
     datos, _ = png(im, 2)  # igual que la version que se veia bien: imagen al doble, el font la baja con height
     archivos['assets/3y33/textures/font/rango_%s.png' % rid] = datos
     proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 10, "ascent": 8, "chars": [ch]})
-    mapa[rid] = {"char": ch, "texto": txt, "c1": c1, "c2": c2}
+    # variante para el chat: mismo dibujo, un pixel mas arriba para que quede centrado con el texto
+    proveedores.append({"type": "bitmap", "file": "3y33:font/rango_%s.png" % rid, "height": 10, "ascent": 9, "chars": [chr(0xE310 + i)]})
+    mapa[rid] = {"char": ch, "chat": chr(0xE310 + i), "texto": txt, "c1": c1, "c2": c2}
     vista.paste(im, (4, 2 + i * 17), im)
 vista.resize((vista.width * 4, vista.height * 4), Image.NEAREST).save(os.path.join(BASE, 'rangos_preview.png'))
 
