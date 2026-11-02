@@ -126,21 +126,14 @@ final class ChatEstilo implements Listener {
         }
     }
 
-    /** El pack de server.properties se manda antes de entrar y Paper no avisa su estado; lo volvemos a mandar ya dentro para saber si lo cargaron. */
+    /** El pack de server.properties se manda antes de entrar y Paper no avisa su estado. Antes lo reenviabamos ya dentro para saberlo,
+     *  pero eso hacia que el cliente recargara el pack una segunda vez. Ahora no se reenvia: damos por cargado el pack a todo Java
+     *  que entra, y si despues llega un estado DECLINED/FAILED lo sacamos (ver alPack). */
     @EventHandler
     public void alEntrar(org.bukkit.event.player.PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (p.getUniqueId().getMostSignificantBits() == 0) return; // Bedrock
-        String url = Bukkit.getResourcePack();
-        String hash = Bukkit.getResourcePackHash();
-        String id = core.getConfig().getString("pack.id", "");
-        if (url == null || url.isBlank() || hash == null || hash.length() != 40 || id.isBlank()) return;
-        Bukkit.getScheduler().runTaskLater(core, () -> {
-            if (!p.isOnline()) return;
-            try {
-                p.setResourcePack(UUID.fromString(id), url, hash, null, false);
-            } catch (Throwable t) { core.getLogger().warning("[pack] no pude reenviar el pack: " + t); }
-        }, 60L);
+        conPack.add(p.getUniqueId());
     }
 
     @EventHandler
