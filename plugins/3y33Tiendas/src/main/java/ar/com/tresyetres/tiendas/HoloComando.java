@@ -28,8 +28,14 @@ final class HoloComando implements CommandExecutor, TabCompleter {
     HoloComando(TiendasPlugin pl, Hologramas holos) { this.pl = pl; this.holos = holos; }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Shop<?, ?> tienda(Player p) {
+    private Shop<?, ?> tienda(Player p, String id) {
         var sm = QuickShopAPI.getInstance().getShopManager();
+        if (id != null) {
+            try {
+                Shop s = sm.getShop(Long.parseLong(id));
+                if (s != null) return s;
+            } catch (NumberFormatException ignored) { }
+        }
         Block b = p.getTargetBlockExact(6);
         if (b != null) {
             Shop s = sm.getShop(b.getLocation());
@@ -59,7 +65,7 @@ final class HoloComando implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] a) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Solo en el juego."); return true; }
         if (a.length == 0) { panel(p); return true; }
-        Shop<?, ?> s = tienda(p);
+        Shop<?, ?> s = tienda(p, a.length > 2 ? a[2] : null);
         if (s == null) { pl.msg(p, "Mirá tu tienda (o acercate) y volvé a usar el comando."); return true; }
         if (!esDueno(p, s)) { pl.msg(p, "Solo el dueño de la tienda puede mover su holograma."); return true; }
         int pasos = 1;
