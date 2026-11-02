@@ -24,6 +24,9 @@ public final class TiendasPlugin extends JavaPlugin {
         HoloComando hc = new HoloComando(this, holos);
         var cmd = getCommand("holo");
         if (cmd != null) { cmd.setExecutor(hc); cmd.setTabCompleter(hc); }
+        try {
+            com.ghostchu.quickshop.api.QuickShopAPI.getInstance().getShopControlPanelManager().addComponent(new PanelHolograma());
+        } catch (Throwable t) { getLogger().warning("No pude sumar el holograma al panel de la tienda: " + t); }
         // QuickShop carga las tiendas un poco despues de arrancar: sincronizamos seguido
         getServer().getScheduler().runTaskTimer(this, holos::sincronizar, 100L, 100L);
         getServer().getScheduler().runTaskTimer(this, holos::visibilidad, 40L, 20L);
