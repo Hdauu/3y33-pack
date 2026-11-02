@@ -1,0 +1,5 @@
+# Holograma de las tiendas (item flotante + texto = una sola pieza). Alturas en bloques sobre el cofre.
+altura-item: 1.3      # donde flota el item (sobre la parte de arriba del cofre)
+altura-precio: 0.1    # linea del precio, relativa al item
+altura-nombre: 0.4    # linea del nombre, relativa al item
+rango-texto: 6.0      # a cuantos bloques se ve el texto
