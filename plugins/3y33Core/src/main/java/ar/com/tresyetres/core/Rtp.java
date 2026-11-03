@@ -115,7 +115,7 @@ final class Rtp implements Listener {
                 p.showTitle(Title.title(core.mm("<#E03131><bold>¡A explorar!</bold></#E03131>"),
                         core.mm("<gray>Estás en <white>" + fx + "</white>, <white>" + fz + "</white>"),
                         Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(700))));
-                core.aviso(p, "<gray>Si te gusta el lugar, protegelo con <#FF6B6B><click:run_command:'/terrenos'>/terrenos</click></#FF6B6B>.");
+                core.aviso(p, "<gray>Si te gusta el lugar, protegelo con <#FF6B6B><click:run_command:'/lands'>/lands</click></#FF6B6B>.");
             });
         });
     }
