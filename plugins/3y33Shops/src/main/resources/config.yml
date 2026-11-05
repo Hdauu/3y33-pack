@@ -6,8 +6,8 @@ cantidad-maxima-personalizada: 2304
 pausa-clics-ms: 150
 
 holograma:
-  altura-item: 1.1
-  altura-texto: 0.35
+  separacion-tienda: 0.06
+  altura-texto: 0.25
   separacion-lineas: 0.26
   escala-item: 0.6
   rango-texto: 6.0
