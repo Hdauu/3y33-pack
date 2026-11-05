@@ -1,0 +1,16 @@
+name: Sondeo Paper API
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/paperapi.yml'
+jobs:
+  sondeo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Versiones de paper-api
+        run: |
+          curl -sSf https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/maven-metadata.xml | grep -o '<version>[^<]*' | sed 's/<version>//' | grep -E '^26|^1\.21\.(8|9|10|11)' | tail -25
+      - name: Floodgate API
+        run: |
+          curl -sSf https://repo.opencollab.dev/main/org/geysermc/floodgate/api/maven-metadata.xml | grep -o '<version>[^<]*' | sed 's/<version>//' | tail -5
