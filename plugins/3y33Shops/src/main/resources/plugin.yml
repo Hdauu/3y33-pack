@@ -1,10 +1,11 @@
 name: 3y33Shops
-version: 2.4.0
+version: 2.5.0
 main: ar.com.tresyetres.shops.ShopsPlugin
 api-version: '1.21'
 author: 3y33 SMP
 description: Tiendas de 3y33 SMP (motor propio, atadas a Lands)
 depend: [Vault, Lands]
+softdepend: [floodgate]
 commands:
   tienda:
     description: Tiendas de cofre

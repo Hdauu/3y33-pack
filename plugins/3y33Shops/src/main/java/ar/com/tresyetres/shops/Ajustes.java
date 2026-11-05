@@ -170,6 +170,11 @@ final class Ajustes implements Listener {
         inv.setItem(A_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))));
     }
 
+    /** Precio en centavos a texto editable: 1000 -> "10", 250 -> "2.5". */
+    private static String precioTexto(long centavos) {
+        return centavos < 0 ? "" : java.math.BigDecimal.valueOf(centavos, 2).stripTrailingZeros().toPlainString();
+    }
+
     private static String capitalizar(String s) { return s.charAt(0) + s.substring(1).toLowerCase(); }
 
     // ---------- administradores ----------
@@ -253,7 +258,7 @@ final class Ajustes implements Listener {
             case ADMINS -> {
                 if (slot == 26) { abrir(p, t); return; }
                 if (!esDueno(p, t)) return;
-                if (slot == 22) { pl.entrada().pedir(p, "Escribí en el chat el nombre del nuevo administrador", txt -> agregarAdmin(p, t, txt)); return; }
+                if (slot == 22) { pl.entrada().dialogo(p, "Agregar administrador", "Va a poder reponer, retirar y cambiar ajustes de esta tienda.", "Nombre del jugador", "", 20, () -> abrirAdmins(p, t), txt -> agregarAdmin(p, t, txt)); return; }
                 ItemStack it = e.getCurrentItem();
                 if (slot < 18 && it != null && it.getType() == Material.PLAYER_HEAD) {
                     List<UUID> orden = new ArrayList<>(t.admins);
@@ -283,7 +288,7 @@ final class Ajustes implements Listener {
                     cambio(p, t, inv);
                     return;
                 }
-                pl.entrada().pedir(p, "Escribí el nuevo precio de " + (esCompra ? "compra" : "venta") + " por unidad (ej: 10 o 2,5)", txt -> {
+                pl.entrada().dialogo(p, "Precio de " + (esCompra ? "compra" : "venta"), "Por cada unidad, en $. Podés usar hasta 2 decimales (ej: 2,5).", "Precio", precioTexto(esCompra ? t.compra : t.venta), 12, () -> abrir(p, t), txt -> {
                     long c = Msg.precio(txt, maxPesos);
                     if (c == -2 || c == -1) { Msg.error(p, "Tiene que ser un número (hasta 2 decimales)."); abrir(p, t); return; }
                     if (c == -3) { Msg.error(p, "El precio máximo es " + Msg.dinero((long) (maxPesos * 100)) + "."); abrir(p, t); return; }
@@ -321,7 +326,7 @@ final class Ajustes implements Listener {
                 cambio(p, t, inv);
                 Msg.ok(p, "Pegaste los ajustes en esta tienda.");
             }
-            case A_UMBRAL -> pl.entrada().pedir(p, "Escribí el nuevo umbral de bajo stock (número de unidades)", txt -> {
+            case A_UMBRAL -> pl.entrada().dialogo(p, "Umbral de bajo stock", "Te avisamos cuando queden esta cantidad de unidades o menos.", "Unidades", String.valueOf(t.bajoStock), 6, () -> abrir(p, t), txt -> {
                 try {
                     int v = Integer.parseInt(txt.replace(".", ""));
                     if (v < 0 || v > 100000) throw new NumberFormatException();
@@ -339,7 +344,7 @@ final class Ajustes implements Listener {
             }
             case A_MENSAJE -> {
                 if (derecho) { t.mensaje = ""; cambio(p, t, inv); return; }
-                pl.entrada().pedir(p, "Escribí el mensaje del holograma (hasta " + MAX_MENSAJE + " letras)", txt -> {
+                pl.entrada().dialogo(p, "Mensaje del holograma", "Aparece arriba de tu tienda. Podés usar colores con & (ej: &6Oferta). Dejalo vacío para borrarlo.", "Mensaje", t.mensaje, MAX_MENSAJE, () -> abrir(p, t), txt -> {
                     if (txt.length() > MAX_MENSAJE) { Msg.error(p, "Es muy largo: máximo " + MAX_MENSAJE + " letras."); abrir(p, t); return; }
                     t.mensaje = txt;
                     pl.almacen().guardar(t);
