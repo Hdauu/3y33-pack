@@ -26,11 +26,14 @@ final class Operaciones {
 
     // ---------- utilidades de inventario ----------
 
+    /** Solo se permiten tiendas en barril, cofre y cofre doble (el cofre trampa emite redstone). */
+    static boolean contenedorPermitido(org.bukkit.Material m) { return m == org.bukkit.Material.CHEST || m == org.bukkit.Material.BARREL; }
+
     /** El inventario real del contenedor de la tienda (null si el cofre ya no esta). */
     static Inventory inventario(Tienda t) {
         Block b = t.bloque();
         if (b == null) return null;
-        if (b.getState() instanceof Container c) return c.getInventory();
+        if (b.getState(false) instanceof Container c) return c.getInventory();     // sin copia de los items: se llama muy seguido
         return null;
     }
 
@@ -204,9 +207,11 @@ final class Operaciones {
                 Msg.info(dest, actor.getName() + " te vendió " + Msg.numero(n) + "x " + item + ". Se descontaron " + Msg.dinero(total) + " de tu cuenta.");
             }
             dest.playSound(dest.getLocation(), org.bukkit.Sound.ENTITY_ARROW_HIT_PLAYER, 0.6f, 1.4f);
+            // la alerta salta una sola vez, cuando el stock llega al minimo que puso el dueño en ESTA tienda (o se acaba)
             if (compro && esDueno) {
+                int antes = stock + n;
                 if (stock == 0) Msg.error(dest, "Tu tienda de " + item + " se quedó sin stock.");
-                else if (stock <= t.bajoStock) Msg.error(dest, "A tu tienda de " + item + " le quedan solo " + Msg.numero(stock) + " unidades.");
+                else if (stock <= t.bajoStock && antes > t.bajoStock) Msg.error(dest, "A tu tienda de " + item + " le quedan solo " + Msg.numero(stock) + " unidades (tu aviso está en " + Msg.numero(t.bajoStock) + ").");
             }
         }
     }

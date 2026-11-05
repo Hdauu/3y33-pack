@@ -95,20 +95,38 @@ final class Holograma implements Listener {
     private void ciclo() {
         ciclos++;
         try {
-            double aparece = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
-            double desaparece = Math.pow(pl.getConfig().getDouble("holograma.rango-desaparicion", 24.0), 2);
-            Set<Long> vivas = new HashSet<>();
-            for (Tienda t : pl.almacen().todas()) {
-                vivas.add(t.id);
+            double aparece2 = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
+            double desaparece = pl.getConfig().getDouble("holograma.rango-desaparicion", 24.0);
+            double desaparece2 = desaparece * desaparece;
+            int rc = (int) Math.ceil(desaparece / 16.0);
+            // solo se miran las tiendas de los chunks que rodean a cada jugador, no todas las del server
+            Map<Long, Double> distancia = new HashMap<>();
+            Map<Long, Tienda> cerca = new HashMap<>();
+            for (Player jug : Bukkit.getOnlinePlayers()) {
+                Location pos = jug.getLocation();
+                World w = pos.getWorld();
+                String mundo = w.getName();
+                int cx = pos.getBlockX() >> 4, cz = pos.getBlockZ() >> 4;
+                for (int dx = -rc; dx <= rc; dx++) {
+                    for (int dz = -rc; dz <= rc; dz++) {
+                        for (Tienda t : pl.almacen().enChunk(mundo, cx + dx, cz + dz)) {
+                            double tx = t.doble ? (t.x + t.x2) / 2.0 + 0.5 : t.x + 0.5, tz = t.doble ? (t.z + t.z2) / 2.0 + 0.5 : t.z + 0.5;
+                            double ddx = pos.getX() - tx, ddy = pos.getY() - t.y, ddz = pos.getZ() - tz;
+                            distancia.merge(t.id, ddx * ddx + ddy * ddy + ddz * ddz, Math::min);
+                            cerca.put(t.id, t);
+                        }
+                    }
+                }
+            }
+            for (Map.Entry<Long, Tienda> en : cerca.entrySet()) {
+                Tienda t = en.getValue();
                 World w = t.mundoObj();
                 if (w == null || !w.isChunkLoaded(t.x >> 4, t.z >> 4)) { quitar(t.id); continue; }
-                Location c = centro(t, w);
-                double min = Double.MAX_VALUE;
-                for (Player p : w.getPlayers()) min = Math.min(min, p.getLocation().distanceSquared(c));
-                if (min <= aparece) poner(t, w, c);
-                else if (min > desaparece) quitar(t.id);
+                double min = distancia.get(t.id);
+                if (min <= aparece2) poner(t, w, centro(t, w));
+                else if (min > desaparece2) quitar(t.id);
             }
-            for (Long id : new ArrayList<>(piezas.keySet())) if (!vivas.contains(id)) quitar(id);
+            for (Long id : new ArrayList<>(piezas.keySet())) if (!cerca.containsKey(id)) quitar(id);
             visibilidad();
         } catch (Throwable e) {
             pl.getLogger().warning("Holograma: " + e);
@@ -296,20 +314,32 @@ final class Holograma implements Listener {
 
     /** El texto solo lo ve quien esta cerca. El item: Java ve el ItemDisplay y Bedrock el item comun. */
     private void visibilidad() {
+        if (piezas.isEmpty()) return;
+        List<Player> jugs = new ArrayList<>(Bukkit.getOnlinePlayers());
+        if (jugs.isEmpty()) return;
         double r2 = Math.pow(pl.getConfig().getDouble("holograma.rango-texto", 6.0), 2);
         double rItem2 = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
+        Location[] locs = new Location[jugs.size()];
+        boolean[] bedrock = new boolean[jugs.size()];
+        for (int j = 0; j < jugs.size(); j++) { locs[j] = jugs.get(j).getLocation(); bedrock[j] = esBedrock(jugs.get(j)); }
         for (Pieza p : piezas.values()) {
+            // las entidades de la pieza se buscan una sola vez, no una por jugador
             Entity drop = p.item == null ? null : Bukkit.getEntity(p.item);
             Entity visor = p.visor == null ? null : Bukkit.getEntity(p.visor);
-            for (Player jug : Bukkit.getOnlinePlayers()) {
-                int idx = 0;
-                for (UUID u : p.lineas) {
-                    Entity t = Bukkit.getEntity(u);
-                    if (t == null || !t.isValid()) { idx++; continue; }
-                    boolean cerca = jug.getWorld().equals(t.getWorld()) && jug.getLocation().distanceSquared(t.getLocation()) <= r2;
+            List<Entity> lineas = new ArrayList<>(p.lineas.size());
+            for (UUID u : p.lineas) lineas.add(Bukkit.getEntity(u));
+            for (int j = 0; j < jugs.size(); j++) {
+                Player jug = jugs.get(j);
+                Location jl = locs[j];
+                for (int idx = 0; idx < lineas.size(); idx++) {
+                    Entity t = lineas.get(idx);
+                    if (t == null || !t.isValid()) continue;
+                    double dx = jl.getX() - t.getX(), dy = jl.getY() - t.getY(), dz = jl.getZ() - t.getZ();
+                    boolean cerca = jl.getWorld().equals(t.getWorld()) && dx * dx + dy * dy + dz * dz <= r2;
                     boolean ve = jug.canSee(t);
                     if (cerca && !ve) {
                         // las lineas aparecen una tras otra, de abajo hacia arriba
+                        final UUID u = p.lineas.get(idx);
                         String k = jug.getUniqueId() + ":" + u;
                         if (pendientes.add(k)) {
                             Bukkit.getScheduler().runTaskLater(pl, () -> {
@@ -321,11 +351,9 @@ final class Holograma implements Listener {
                     } else if (!cerca && ve) {
                         jug.hideEntity(pl, t);
                     }
-                    idx++;
                 }
-                boolean bedrock = esBedrock(jug);
-                mostrarItem(jug, drop, bedrock, rItem2);
-                mostrarItem(jug, visor, !bedrock, rItem2);
+                mostrarItem(jug, drop, bedrock[j], rItem2);
+                mostrarItem(jug, visor, !bedrock[j], rItem2);
             }
         }
     }

@@ -79,8 +79,8 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
 
     private static boolean valido(Block b) {
         Material m = b.getType();
-        if (m != Material.CHEST && m != Material.TRAPPED_CHEST && m != Material.BARREL && !m.name().contains("COPPER_CHEST")) return false;
-        return b.getState() instanceof Container;
+        if (!Operaciones.contenedorPermitido(m)) return false;
+        return b.getState(false) instanceof Container;
     }
 
     /** La otra mitad de un doble cofre, o null si el cofre es simple. */
@@ -108,7 +108,7 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         if (mano.getType().isAir()) { Msg.error(p, "Tenés que tener en la mano el ítem que querés vender o comprar."); return; }
         if (tieneContenido(mano)) { Msg.error(p, "No se pueden vender ítems con otros ítems adentro (shulkers, bundles, etc.)."); return; }
         Block b = p.getTargetBlockExact(6);
-        if (b == null || !valido(b)) { Msg.error(p, "Mirá el cofre (o barril) donde querés crear la tienda."); return; }
+        if (b == null || !valido(b)) { Msg.error(p, "Mirá un cofre, un cofre doble o un barril. No se pueden crear tiendas en otros contenedores (el cofre trampa emite redstone)."); return; }
         if (pl.almacen().en(b) != null) { Msg.error(p, "Ese cofre ya es una tienda."); return; }
         Block otra = otraMitad(b);
         if (otra != null && pl.almacen().en(otra) != null) { Msg.error(p, "Ese cofre ya es una tienda."); return; }

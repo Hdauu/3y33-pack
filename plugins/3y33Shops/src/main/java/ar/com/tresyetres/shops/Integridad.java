@@ -28,7 +28,9 @@ final class Integridad implements Listener {
 
     void iniciar() {
         long cada = pl.getConfig().getLong("integridad.revisar-cada-segundos", 120) * 20L;
-        Bukkit.getScheduler().runTaskTimer(pl, this::revisarTodas, 600L, Math.max(200L, cada));
+        Bukkit.getScheduler().runTaskTimer(pl, () -> {
+            try { revisarTodas(); } catch (Throwable e) { pl.getLogger().warning("Integridad: " + e); }
+        }, 600L, Math.max(200L, cada));
     }
 
     /** null si la tienda esta en regla; si no, el motivo de la suspension. No cambia nada. */
@@ -57,6 +59,14 @@ final class Integridad implements Listener {
             // el cofre ya no esta (solo se mira si el chunk esta cargado, para no cargar nada)
             if (w != null && w.isChunkLoaded(t.x >> 4, t.z >> 4) && Operaciones.inventario(t) == null) {
                 pl.getLogger().info("Tienda " + t.id + " eliminada: el cofre ya no existe (" + t.mundo + " " + t.x + "," + t.y + "," + t.z + ")");
+                pl.almacen().borrar(t);
+                eliminadas++;
+                continue;
+            }
+            if (w != null && w.isChunkLoaded(t.x >> 4, t.z >> 4) && !Operaciones.contenedorPermitido(t.bloque().getType())) {
+                pl.getLogger().info("Tienda " + t.id + " eliminada: el contenedor " + t.bloque().getType() + " no esta permitido (" + t.mundo + " " + t.x + "," + t.y + "," + t.z + ")");
+                Player dueno = Bukkit.getPlayer(t.dueno);
+                if (dueno != null) Msg.error(dueno, "Se borró tu tienda de " + VentanaTienda.nombreItem(t) + " (" + t.x + ", " + t.y + ", " + t.z + "): las tiendas solo pueden estar en cofres o barriles.");
                 pl.almacen().borrar(t);
                 eliminadas++;
                 continue;

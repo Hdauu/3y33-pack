@@ -31,7 +31,10 @@ final class Almacen {
         return t;
     });
     private final Map<Long, Tienda> porId = new HashMap<>();
-    private final Map<String, Tienda> porBloque = new HashMap<>();
+    /** Mundo -> (posicion empaquetada en un long -> tienda). Sin crear Strings: se consulta con cada tolva del server. */
+    private final Map<String, Map<Long, Tienda>> porBloque = new HashMap<>();
+    /** Mundo -> (chunk empaquetado -> tiendas), para que el holograma solo mire las tiendas cercanas a los jugadores. */
+    private final Map<String, Map<Long, List<Tienda>>> porChunk = new HashMap<>();
     private long ultimoId = 0;
     private final Map<String, Perfil> perfiles = new HashMap<>();
     private final Map<String, Punto> puntos = new java.util.concurrent.ConcurrentHashMap<>();
@@ -86,6 +89,7 @@ final class Almacen {
     private void cargar() throws SQLException {
         porId.clear();
         porBloque.clear();
+        porChunk.clear();
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT * FROM tiendas")) {
             while (rs.next()) {
                 Tienda t = new Tienda();
@@ -131,22 +135,51 @@ final class Almacen {
         }
     }
 
+    static long pos(int x, int y, int z) { return ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | (y & 0xFFFL); }
+    static long chunk(int cx, int cz) { return ((long) cx << 32) | (cz & 0xFFFFFFFFL); }
+
     private void indexar(Tienda t) {
         porId.put(t.id, t);
-        porBloque.put(clave(t.mundo, t.x, t.y, t.z), t);
-        if (t.doble) porBloque.put(clave(t.mundo, t.x2, t.y2, t.z2), t);
+        Map<Long, Tienda> m = porBloque.computeIfAbsent(t.mundo, k -> new HashMap<>());
+        m.put(pos(t.x, t.y, t.z), t);
+        if (t.doble) m.put(pos(t.x2, t.y2, t.z2), t);
+        porChunk.computeIfAbsent(t.mundo, k -> new HashMap<>()).computeIfAbsent(chunk(t.x >> 4, t.z >> 4), k -> new ArrayList<>()).add(t);
     }
 
     private void desindexar(Tienda t) {
         porId.remove(t.id);
-        porBloque.remove(clave(t.mundo, t.x, t.y, t.z));
-        if (t.doble) porBloque.remove(clave(t.mundo, t.x2, t.y2, t.z2));
+        Map<Long, Tienda> m = porBloque.get(t.mundo);
+        if (m != null) {
+            m.remove(pos(t.x, t.y, t.z));
+            if (t.doble) m.remove(pos(t.x2, t.y2, t.z2));
+        }
+        Map<Long, List<Tienda>> c = porChunk.get(t.mundo);
+        if (c != null) {
+            long k = chunk(t.x >> 4, t.z >> 4);
+            List<Tienda> l = c.get(k);
+            if (l != null) { l.remove(t); if (l.isEmpty()) c.remove(k); }
+        }
     }
 
     // ---------- consultas (hilo principal) ----------
 
-    Tienda en(Block b) { return b == null ? null : porBloque.get(clave(b)); }
-    Tienda en(Location l) { return l == null || l.getWorld() == null ? null : porBloque.get(clave(l)); }
+    Tienda en(Block b) {
+        if (b == null) return null;
+        Map<Long, Tienda> m = porBloque.get(b.getWorld().getName());
+        return m == null ? null : m.get(pos(b.getX(), b.getY(), b.getZ()));
+    }
+    Tienda en(Location l) {
+        if (l == null || l.getWorld() == null) return null;
+        Map<Long, Tienda> m = porBloque.get(l.getWorld().getName());
+        return m == null ? null : m.get(pos(l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+    }
+    /** Las tiendas de un chunk (lista interna: no modificar). */
+    List<Tienda> enChunk(String mundo, int cx, int cz) {
+        Map<Long, List<Tienda>> c = porChunk.get(mundo);
+        if (c == null) return List.of();
+        List<Tienda> l = c.get(chunk(cx, cz));
+        return l == null ? List.of() : l;
+    }
     Tienda porId(long id) { return porId.get(id); }
     Collection<Tienda> todas() { return new ArrayList<>(porId.values()); }
 
