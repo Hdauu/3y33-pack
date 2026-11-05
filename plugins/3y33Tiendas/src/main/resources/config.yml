@@ -3,3 +3,8 @@ altura-item: 1.3      # donde flota el item (sobre la parte de arriba del cofre)
 altura-precio: 0.1    # linea del precio, relativa al item
 altura-nombre: 0.4    # linea del nombre, relativa al item
 rango-texto: 6.0      # a cuantos bloques se ve el texto
+altura-mensaje: 0.7   # linea del mensaje del dueño, relativa al item
+rotacion-defecto: SUR # hacia donde mira el item si el dueño no eligio (ARRIBA, NORTE, ESTE, SUR, OESTE, ABAJO)
+giro-base-grados: 0   # si Norte y Sur salen al reves en el juego, poné 180
+escala-item: 0.6      # tamaño del item en Java
+mensaje-max-letras: 32
