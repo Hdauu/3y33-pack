@@ -33,6 +33,10 @@ final class Almacen {
     private final Map<Long, Tienda> porId = new HashMap<>();
     private final Map<String, Tienda> porBloque = new HashMap<>();
     private long ultimoId = 0;
+    private final Map<String, Perfil> perfiles = new HashMap<>();
+
+    /** Titulo y descripcion de la tierra que ven los jugadores en el buscador. */
+    record Perfil(String titulo, String descripcion) { }
 
     Almacen(ShopsPlugin pl) { this.pl = pl; }
 
@@ -58,6 +62,7 @@ final class Almacen {
             s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
                     + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
             s.execute("CREATE INDEX IF NOT EXISTS idx_hist ON historial(tienda, cuando)");
+            s.execute("CREATE TABLE IF NOT EXISTS perfiles(tierra TEXT PRIMARY KEY, titulo TEXT, descripcion TEXT)");
         }
         // una sola vez: antes "SUR" era el valor por defecto sin efecto; ahora la posicion por defecto es ARRIBA
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("PRAGMA user_version")) {
@@ -98,6 +103,10 @@ final class Almacen {
                 indexar(t);
                 ultimoId = Math.max(ultimoId, t.id);
             }
+        }
+        perfiles.clear();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT tierra, titulo, descripcion FROM perfiles")) {
+            while (rs.next()) perfiles.put(rs.getString(1), new Perfil(rs.getString(2) == null ? "" : rs.getString(2), rs.getString(3) == null ? "" : rs.getString(3)));
         }
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT tienda, uuid FROM admins")) {
             while (rs.next()) {
@@ -208,6 +217,22 @@ final class Almacen {
                 }
             } catch (SQLException e) { pl.getLogger().severe("No pude leer el historial de la tienda " + id + ": " + e); }
             org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
+        });
+    }
+
+    Perfil perfil(String tierra) {
+        Perfil p = perfiles.get(tierra.toLowerCase(java.util.Locale.ROOT));
+        return p == null ? new Perfil("", "") : p;
+    }
+
+    void guardarPerfil(String tierra, String titulo, String descripcion) {
+        final String k = tierra.toLowerCase(java.util.Locale.ROOT);
+        perfiles.put(k, new Perfil(titulo, descripcion));
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO perfiles(tierra,titulo,descripcion) VALUES(?,?,?)")) {
+                p.setString(1, k); p.setString(2, titulo); p.setString(3, descripcion);
+                p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude guardar el perfil de la tierra " + k + ": " + e); }
         });
     }
 

@@ -14,3 +14,9 @@ holograma:
   rango-aparicion: 14.0
   rango-desaparicion: 24.0
   vaiven: 0.12
+
+buscar-espera-segundos: 10
+
+mostrar:
+  radio: 40.0
+  segundos: 20
