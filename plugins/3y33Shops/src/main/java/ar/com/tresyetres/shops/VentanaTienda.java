@@ -141,8 +141,8 @@ final class VentanaTienda implements Listener {
 
     private ItemStack botonComprar(Tienda t, int n, int stock) {
         if (!t.puedeComprar()) {
-            return item(Material.GRAY_STAINED_GLASS_PANE, Component.text("No se puede comprar", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                    List.of(linea("Esta tienda no vende este ítem.", NamedTextColor.DARK_GRAY)));
+            return item(Material.BARRIER, Component.text("Compra bloqueada", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+                    List.of(linea(t.compra < 0 ? "Esta tienda no vende este ítem." : "El dueño bloqueó las compras.", NamedTextColor.GRAY)));
         }
         List<Component> l = new ArrayList<>();
         l.add(linea("Pagás: ", NamedTextColor.GRAY).append(Component.text(Msg.dinero(t.compra * n), NamedTextColor.WHITE)));
@@ -154,8 +154,8 @@ final class VentanaTienda implements Listener {
 
     private ItemStack botonVender(Tienda t, int n, int stock) {
         if (!t.puedeVender()) {
-            return item(Material.GRAY_STAINED_GLASS_PANE, Component.text("No se puede vender", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                    List.of(linea("Esta tienda no compra este ítem.", NamedTextColor.DARK_GRAY)));
+            return item(Material.BARRIER, Component.text("Venta bloqueada", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+                    List.of(linea(t.venta < 0 ? "Esta tienda no compra este ítem." : "El dueño bloqueó las ventas.", NamedTextColor.GRAY)));
         }
         return item(Material.RED_CONCRETE, Component.text("Vender " + n + "x", NamedTextColor.GOLD, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
                 List.of(linea("Recibís: ", NamedTextColor.GRAY).append(Component.text(Msg.dinero(t.venta * n), NamedTextColor.WHITE)), Component.empty(),
