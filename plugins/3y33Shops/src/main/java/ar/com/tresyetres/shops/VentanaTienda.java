@@ -90,7 +90,7 @@ final class VentanaTienda implements Listener {
     void abrir(Player p, Tienda t) {
         boolean banner = pl.banner().activo(p);
         // con banner el fondo (y los marcos de los slots) los dibuja el resource pack: no se rellena con vidrios
-        Component titulo = banner ? pl.banner().titulo() : Component.text("TIENDA", NamedTextColor.DARK_RED, TextDecoration.BOLD);
+        Component titulo = banner ? pl.banner().titulo(Banner.TIENDA) : Component.text("TIENDA", NamedTextColor.DARK_RED, TextDecoration.BOLD);
         Inventory inv = Bukkit.createInventory(new Titular(t.id), 27, titulo);
         if (!banner) {
             ItemStack relleno = item(Material.BLACK_STAINED_GLASS_PANE, Component.text(" "), List.of());

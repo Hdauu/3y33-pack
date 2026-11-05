@@ -89,7 +89,13 @@ final class Ajustes implements Listener {
 
     void abrir(Player p, Tienda t) {
         if (!t.administra(p)) { Msg.error(p, "Solo el dueño o los administradores pueden ver los ajustes."); return; }
-        Inventory inv = ventana(t.id, Pantalla.AJUSTES, 4, "Ajustes de la tienda");
+        Inventory inv;
+        if (pl.banner().activo(p)) {
+            // con banner el fondo lo dibuja el resource pack: sin vidrios de relleno
+            inv = Bukkit.createInventory(new Titular(t.id, Pantalla.AJUSTES), 36, pl.banner().titulo(Banner.AJUSTES));
+        } else {
+            inv = ventana(t.id, Pantalla.AJUSTES, 4, "Ajustes de la tienda");
+        }
         llenarAjustes(inv, p, t);
         p.openInventory(inv);
     }
