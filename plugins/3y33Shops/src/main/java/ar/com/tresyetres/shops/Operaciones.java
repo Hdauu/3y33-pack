@@ -199,7 +199,9 @@ final class Operaciones {
             Player dest = Bukkit.getPlayer(receptores.get(i));
             if (dest == null) continue;
             boolean esDueno = receptores.get(i).equals(t.dueno);
-            if (compro) {
+            if (compro && "TIERRA".equals(t.modoIngreso)) {
+                Msg.ok(dest, actor.getName() + " te compró " + Msg.numero(n) + "x " + item + ". Se depositaron " + Msg.dinero(total) + " en el banco de la tierra " + t.tierra + ".");
+            } else if (compro) {
                 long monto = parte + (i == 0 ? total - parte * receptores.size() : 0);
                 String extra = receptores.size() > 1 ? " Tu parte: " + Msg.dinero(monto) + " (repartido entre " + receptores.size() + ")." : "";
                 Msg.ok(dest, actor.getName() + " te compró " + Msg.numero(n) + "x " + item + ". Se depositaron " + Msg.dinero(total) + " en tu cuenta." + extra);
@@ -219,6 +221,11 @@ final class Operaciones {
     /** Paga lo que cobró la tienda: al dueño, o repartido entre dueño y administradores en modo COMPARTIDO. */
     private void pagarIngreso(Tienda t, long total, String comprador) {
         Economia eco = pl.economia();
+        if ("TIERRA".equals(t.modoIngreso)) {
+            if (pl.lands().depositarEnBanco(t.ubicacion(), total / 100.0)) return;
+            // el banco de la tierra no acepto el deposito: que no se pierda la plata, va al dueño
+            pl.getLogger().warning("El banco de la tierra " + t.tierra + " no acepto " + total + " centavos (tienda " + t.id + "): se le pago al dueño.");
+        }
         java.util.List<OfflinePlayer> receptores = new java.util.ArrayList<>();
         receptores.add(Bukkit.getOfflinePlayer(t.dueno));
         if ("COMPARTIDO".equals(t.modoIngreso)) for (java.util.UUID u : t.admins) receptores.add(Bukkit.getOfflinePlayer(u));

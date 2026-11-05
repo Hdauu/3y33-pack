@@ -12,7 +12,8 @@ final class LandsPuente {
     record Terreno(String nombre, UUID dueno, boolean miembro) { }
 
     private Object api;
-    private Method getArea, getLand, getName, getOwner, isTrusted, getSpawn;
+    private Method getArea, getLand, getName, getOwner, isTrusted, getSpawn, modifyBalance;
+    private boolean modifyConBandera;
 
     LandsPuente(Plugin plugin) {
         try {
@@ -26,6 +27,12 @@ final class LandsPuente {
             getName = land.getMethod("getName");
             getOwner = land.getMethod("getOwnerUID");
             try { getSpawn = land.getMethod("getSpawn"); } catch (Throwable ignored) { getSpawn = null; }
+            // banco de la tierra: viene de BalanceHolder, que Land hereda
+            try { modifyBalance = land.getMethod("modifyBalance", double.class); }
+            catch (Throwable e1) {
+                try { modifyBalance = land.getMethod("modifyBalance", double.class, boolean.class); modifyConBandera = true; }
+                catch (Throwable e2) { modifyBalance = null; }
+            }
         } catch (Throwable t) {
             plugin.getLogger().warning("Lands API: " + t);
             api = null;
@@ -63,6 +70,24 @@ final class LandsPuente {
             return sp instanceof Location l && l.getWorld() != null ? l : null;
         } catch (Throwable t) {
             return null;
+        }
+    }
+
+    /** Si se puede depositar en el banco de las tierras. */
+    boolean bancoDisponible() { return api != null && modifyBalance != null; }
+
+    /** Deposita {@code monto} (en plata normal, no centavos) en el banco de la tierra que contiene ese punto. false si no se pudo. */
+    boolean depositarEnBanco(Location loc, double monto) {
+        if (!bancoDisponible() || loc == null || loc.getWorld() == null || monto <= 0) return false;
+        try {
+            Object area = getArea.invoke(api, loc);
+            if (area == null) return false;
+            Object land = getLand.invoke(area);
+            if (land == null) return false;
+            Object r = modifyConBandera ? modifyBalance.invoke(land, monto, false) : modifyBalance.invoke(land, monto);
+            return !(r instanceof Boolean b) || b;
+        } catch (Throwable t) {
+            return false;
         }
     }
 }

@@ -15,6 +15,7 @@ public final class ShopsPlugin extends JavaPlugin {
     private Buscador buscador;
     private Mostrar mostrar;
     private Cabezas cabezas;
+    private Banner banner;
     private Puntos puntos;
     private Integridad integridad;
 
@@ -29,6 +30,7 @@ public final class ShopsPlugin extends JavaPlugin {
     Buscador buscador() { return buscador; }
     Mostrar mostrar() { return mostrar; }
     Cabezas cabezas() { return cabezas; }
+    Banner banner() { return banner; }
     Puntos puntos() { return puntos; }
     Integridad integridad() { return integridad; }
 
@@ -73,6 +75,8 @@ public final class ShopsPlugin extends JavaPlugin {
         puntos = new Puntos(this);
         getServer().getPluginManager().registerEvents(puntos, this);
         getServer().getPluginManager().registerEvents(new Resumen(this), this);
+        banner = new Banner(this);
+        getServer().getPluginManager().registerEvents(banner, this);
         cabezas = new Cabezas(this);
         getServer().getPluginManager().registerEvents(cabezas, this);
         cabezas.iniciar();
