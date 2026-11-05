@@ -265,5 +265,5 @@ final class Hologramas implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void alBorrar(ShopDeleteEvent e) { luego(); }
 
-    List<String> nombresAcciones() { return new ArrayList<>(List.of("izquierda", "derecha", "adelante", "atras", "subir", "bajar", "reiniciar")); }
+    List<String> nombresAcciones() { return new ArrayList<>(List.of("menu", "izquierda", "derecha", "adelante", "atras", "subir", "bajar", "reiniciar")); }
 }

@@ -64,7 +64,13 @@ final class HoloComando implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] a) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Solo en el juego."); return true; }
-        if (a.length == 0) { panel(p); return true; }
+        if (a.length == 0 || a[0].equalsIgnoreCase("menu")) {
+            Shop<?, ?> m = tienda(p, a.length > 1 ? a[1] : null);
+            if (m == null) { pl.msg(p, "Mirá tu tienda (o acercate) y volvé a usar /holo."); return true; }
+            if (!esDueno(p, m)) { pl.msg(p, "Solo el dueño de la tienda puede mover su holograma."); return true; }
+            MenuHolo.abrir(p, m);
+            return true;
+        }
         Shop<?, ?> s = tienda(p, a.length > 2 ? a[2] : null);
         if (s == null) { pl.msg(p, "Mirá tu tienda (o acercate) y volvé a usar el comando."); return true; }
         if (!esDueno(p, s)) { pl.msg(p, "Solo el dueño de la tienda puede mover su holograma."); return true; }
@@ -72,10 +78,17 @@ final class HoloComando implements CommandExecutor, TabCompleter {
         if (a.length > 1) {
             try { pasos = Math.max(1, Math.min(12, Integer.parseInt(a[1]))); } catch (NumberFormatException e) { pl.msg(p, "El segundo dato tiene que ser un número de pasos (1 a 12)."); return true; }
         }
+        if (!aplicar(p, s, a[0], pasos)) { panel(p); return true; }
+        pl.msg(p, "Listo, moviste el holograma de tu tienda.");
+        return true;
+    }
+
+    /** Mueve el holograma de una tienda segun hacia donde mira el jugador. Devuelve false si la accion no existe. */
+    boolean aplicar(Player p, Shop<?, ?> s, String accion, int pasos) {
         double d = PASO * pasos;
         BlockFace f = p.getFacing();
         BlockFace r = derecha(f);
-        switch (a[0].toLowerCase(Locale.ROOT)) {
+        switch (accion.toLowerCase(Locale.ROOT)) {
             case "izquierda", "izq" -> holos.mover(s, -r.getModX() * d, 0, -r.getModZ() * d);
             case "derecha", "der" -> holos.mover(s, r.getModX() * d, 0, r.getModZ() * d);
             case "adelante" -> holos.mover(s, f.getModX() * d, 0, f.getModZ() * d);
@@ -83,11 +96,12 @@ final class HoloComando implements CommandExecutor, TabCompleter {
             case "subir", "arriba" -> holos.mover(s, 0, d, 0);
             case "bajar", "abajo" -> holos.mover(s, 0, -d, 0);
             case "reiniciar", "reset" -> holos.reiniciar(s);
-            default -> { panel(p); return true; }
+            default -> { return false; }
         }
-        pl.msg(p, "Listo, moviste el holograma de tu tienda.");
         return true;
     }
+
+    boolean puedeEditar(Player p, Shop<?, ?> s) { return esDueno(p, s); }
 
     private Component boton(String texto, String accion) {
         return Component.text("[" + texto + "]", NamedTextColor.RED, TextDecoration.BOLD).clickEvent(ClickEvent.runCommand("/holo " + accion))
