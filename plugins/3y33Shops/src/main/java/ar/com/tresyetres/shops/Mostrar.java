@@ -52,8 +52,8 @@ final class Mostrar implements Listener {
             if (vacias ? stock == 0 : (stock > 0 && stock <= t.bajoStock)) encontradas.add(t);
         }
         String que = vacias ? "vacías" : "con bajo stock";
-        if (encontradas.isEmpty()) { Msg.info(p, "No tenés tiendas " + que + " cerca tuyo (a menos de " + (int) radio + " bloques)."); return; }
-        Msg.ok(p, "Tiendas " + que + " cerca tuyo: " + encontradas.size() + ". Las resalté por un rato.");
+        if (encontradas.isEmpty()) { Msg.info(p, "No hay tiendas " + que + " a menos de " + (int) radio + " bloques."); return; }
+        Msg.ok(p, "Resaltado activado: " + encontradas.size() + (encontradas.size() == 1 ? " tienda " : " tiendas ") + que + ".");
 
         Color color = vacias ? Color.fromRGB(255, 40, 40) : Color.fromRGB(255, 160, 0);
         Activo a = new Activo();
@@ -90,14 +90,16 @@ final class Mostrar implements Listener {
         activos.put(p.getUniqueId(), a);
     }
 
-    void apagar(UUID jugador) {
+    /** Apaga el resaltado de ese jugador. true si habia uno prendido. */
+    boolean apagar(UUID jugador) {
         Activo a = activos.remove(jugador);
-        if (a == null) return;
+        if (a == null) return false;
         if (a.tarea != null) a.tarea.cancel();
         for (UUID u : a.entidades) {
             Entity e = Bukkit.getEntity(u);
             if (e != null) e.remove();
         }
+        return true;
     }
 
     void detener() { for (UUID u : new ArrayList<>(activos.keySet())) apagar(u); }

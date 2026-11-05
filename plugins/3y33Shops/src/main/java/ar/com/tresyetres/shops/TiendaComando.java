@@ -35,7 +35,7 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
             case "buscar", "search", "browse" -> pl.buscador().abrir(p, a.length > 1 ? String.join(" ", java.util.Arrays.copyOfRange(a, 1, a.length)) : "", 0);
             case "mostrar", "show" -> {
                 String modo = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "";
-                if (modo.equals("apagar") || modo.equals("off")) { pl.mostrar().apagar(p.getUniqueId()); Msg.info(p, "Listo, apagué el resaltado."); }
+                if (modo.equals("apagar") || modo.equals("off")) { if (pl.mostrar().apagar(p.getUniqueId())) Msg.ok(p, "Resaltado apagado."); else Msg.info(p, "No hay ningún resaltado activo."); }
                 else if (modo.startsWith("vac")) pl.mostrar().iniciar(p, true);
                 else if (modo.startsWith("bajo") || modo.equals("lowstock")) pl.mostrar().iniciar(p, false);
                 else Msg.error(p, "Uso: /tienda mostrar <vacias|bajostock|apagar>");
