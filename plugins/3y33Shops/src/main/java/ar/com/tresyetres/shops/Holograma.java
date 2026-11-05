@@ -88,6 +88,8 @@ final class Holograma implements Listener {
 
     // ---------- ciclo ----------
 
+    private float vaiven() { return (float) pl.getConfig().getDouble("holograma.vaiven", 0.12); }
+
     /** Fase del vaiven suave del item: cambia cada 2 segundos. */
     private int fase() { return (ciclos / 2) % 2; }
 
@@ -210,7 +212,7 @@ final class Holograma implements Listener {
             Bukkit.getScheduler().runTaskLater(pl, () -> {
                 if (Bukkit.getEntity(idv) instanceof ItemDisplay d2 && d2.isValid()) {
                     int f = fase();
-                    d2.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -0.05f : 0.05f, 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
+                    d2.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -vaiven() : vaiven(), 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
                     d2.setInterpolationDelay(0);
                     p.fase = f;
                     p.listo = true;
@@ -224,7 +226,7 @@ final class Holograma implements Listener {
             if (p.listo && p.fase != f) {
                 // vaiven suave: sube y baja unos centimetros, interpolado por el cliente
                 idp.setInterpolationDuration(40);
-                idp.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -0.05f : 0.05f, 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
+                idp.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -vaiven() : vaiven(), 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
                 idp.setInterpolationDelay(0);
                 p.fase = f;
             }
