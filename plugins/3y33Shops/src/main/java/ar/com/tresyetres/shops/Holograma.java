@@ -135,23 +135,34 @@ final class Holograma implements Listener {
 
     // ---------- armado ----------
 
-    /** Donde queda el holograma segun la posicion elegida: arriba del cofre, pegado a un costado, o abajo. */
-    private Location anclaje(Tienda t, Location centro) {
-        double h = pl.getConfig().getDouble("holograma.altura-item", 1.1);
-        double margen = pl.getConfig().getDouble("holograma.distancia-lateral", 0.6);
+    /**
+     * Donde queda el holograma segun la posicion elegida: arriba del cofre, pegado a un costado, o abajo.
+     * Se calcula con el tamaño real del item para que quede casi tocando la tienda en todas las direcciones.
+     */
+    private Location anclaje(Tienda t, Location centro, int lineas) {
+        double escala = pl.getConfig().getDouble("holograma.escala-item", 0.6);
+        double mitad = (t.item.getType().isBlock() ? 0.25 : 0.5) * escala;      // medio ancho del item mostrado
+        double hueco = pl.getConfig().getDouble("holograma.separacion-tienda", 0.06);
+        double vaiven = pl.getConfig().getDouble("holograma.vaiven", 0.12);
         double altoLado = pl.getConfig().getDouble("holograma.altura-lateral", 0.15);
-        double abajo = pl.getConfig().getDouble("holograma.altura-abajo", -1.7);
+        double sep = pl.getConfig().getDouble("holograma.separacion-lineas", 0.26);
+        double arranque = pl.getConfig().getDouble("holograma.altura-texto", 0.25);
         // un cofre doble es mas ancho en su eje: el holograma tiene que quedar fuera del cofre entero
         double ex = t.doble && t.x != t.x2 ? (Math.abs(t.x - t.x2) + 1) / 2.0 : 0.5;
         double ez = t.doble && t.z != t.z2 ? (Math.abs(t.z - t.z2) + 1) / 2.0 : 0.5;
+        double lado = mitad + hueco;
         String r = t.rotacion == null ? "ARRIBA" : t.rotacion;
         return switch (r) {
-            case "NORTE" -> centro.clone().add(0, altoLado, -(ez + margen));
-            case "SUR" -> centro.clone().add(0, altoLado, ez + margen);
-            case "ESTE" -> centro.clone().add(ex + margen, altoLado, 0);
-            case "OESTE" -> centro.clone().add(-(ex + margen), altoLado, 0);
-            case "ABAJO" -> centro.clone().add(0, abajo, 0);
-            default -> centro.clone().add(0, h, 0);
+            case "NORTE" -> centro.clone().add(0, altoLado, -(ez + lado));
+            case "SUR" -> centro.clone().add(0, altoLado, ez + lado);
+            case "ESTE" -> centro.clone().add(ex + lado, altoLado, 0);
+            case "OESTE" -> centro.clone().add(-(ex + lado), altoLado, 0);
+            case "ABAJO" -> {
+                // el texto queda entre el item y el cofre: la linea de arriba termina justo debajo del cofre
+                double techoTexto = arranque + (Math.max(1, lineas) - 1) * sep + 0.32;
+                yield centro.clone().add(0, -hueco - techoTexto, 0);
+            }
+            default -> centro.clone().add(0, 1.0 + mitad + hueco + vaiven - 0.15, 0);   // el item (en base + 0.15) apenas toca la tapa al bajar
         };
     }
 
@@ -159,7 +170,14 @@ final class Holograma implements Listener {
         org.bukkit.inventory.Inventory inv = Operaciones.inventario(t);
         if (inv == null) return;
         int stock = Operaciones.contar(inv, t.item);
-        Location base = anclaje(t, bloque);
+        // texto, de abajo hacia arriba
+        List<Component> textos = new ArrayList<>();
+        textos.add(t.item.effectiveName().color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, true).decoration(TextDecoration.ITALIC, false));
+        textos.add(precios(t));
+        if (stock == 0 && t.puedeComprar()) textos.add(Component.text("Esta tienda está vacía!", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false));
+        if (!t.mensaje.isBlank()) textos.add(LegacyComponentSerializer.legacyAmpersand().deserialize(t.mensaje).decoration(TextDecoration.ITALIC, false));
+
+        Location base = anclaje(t, bloque, textos.size());
         Pieza p = piezas.computeIfAbsent(t.id, x -> new Pieza());
         ItemStack uno = t.item.clone();
         uno.setAmount(1);
@@ -222,15 +240,8 @@ final class Holograma implements Listener {
             }
         }
 
-        // texto, de abajo hacia arriba
-        List<Component> textos = new ArrayList<>();
-        textos.add(t.item.effectiveName().color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, true).decoration(TextDecoration.ITALIC, false));
-        textos.add(precios(t));
-        if (stock == 0 && t.puedeComprar()) textos.add(Component.text("Esta tienda está vacía!", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false));
-        if (!t.mensaje.isBlank()) textos.add(LegacyComponentSerializer.legacyAmpersand().deserialize(t.mensaje).decoration(TextDecoration.ITALIC, false));
-
         double sep = pl.getConfig().getDouble("holograma.separacion-lineas", 0.26);
-        double arranque = pl.getConfig().getDouble("holograma.altura-texto", 0.35);
+        double arranque = pl.getConfig().getDouble("holograma.altura-texto", 0.25);
         while (p.lineas.size() > textos.size()) {
             UUID u = p.lineas.remove(p.lineas.size() - 1);
             p.textos.remove(p.textos.size() - 1);
