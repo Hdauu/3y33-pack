@@ -41,6 +41,7 @@ final class Almacen {
 
     /** Punto de viaje guardado (de una tierra: clave T:nombre; los viejos S:id se borran al iniciar). */
     record Punto(String mundo, double x, double y, double z, float yaw, float pitch) { }
+    private final Map<UUID, Long> vistos = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<UUID, String[]> skins = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Titulo y descripcion de la tierra que ven los jugadores en el buscador. */
@@ -73,6 +74,7 @@ final class Almacen {
             s.execute("CREATE TABLE IF NOT EXISTS puntos(clave TEXT PRIMARY KEY, mundo TEXT, x REAL, y REAL, z REAL, yaw REAL, pitch REAL)");
             s.execute("CREATE TABLE IF NOT EXISTS skins(uuid TEXT PRIMARY KEY, valor TEXT, firma TEXT)");
             s.execute("CREATE TABLE IF NOT EXISTS perfiles(tierra TEXT PRIMARY KEY, titulo TEXT, descripcion TEXT)");
+            s.execute("CREATE TABLE IF NOT EXISTS visto(uuid TEXT PRIMARY KEY, cuando INT)");
         }
         // una sola vez: antes "SUR" era el valor por defecto sin efecto; ahora la posicion por defecto es ARRIBA
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("PRAGMA user_version")) {
@@ -118,6 +120,10 @@ final class Almacen {
         puntos.clear();
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT clave, mundo, x, y, z, yaw, pitch FROM puntos")) {
             while (rs.next()) puntos.put(rs.getString(1), new Punto(rs.getString(2), rs.getDouble(3), rs.getDouble(4), rs.getDouble(5), (float) rs.getDouble(6), (float) rs.getDouble(7)));
+        }
+        vistos.clear();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT uuid, cuando FROM visto")) {
+            while (rs.next()) vistos.put(UUID.fromString(rs.getString(1)), rs.getLong(2));
         }
         skins.clear();
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT uuid, valor, firma FROM skins")) {
@@ -264,6 +270,42 @@ final class Almacen {
                     while (rs.next()) lista.add(new Registro(rs.getLong(1), UUID.fromString(rs.getString(2)), rs.getString(3), rs.getInt(4), rs.getLong(5)));
                 }
             } catch (SQLException e) { pl.getLogger().severe("No pude leer el historial de la tienda " + id + ": " + e); }
+            org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
+        });
+    }
+
+    // ---------- ultima vez que se vio a cada jugador (para el resumen de ventas al entrar) ----------
+
+    /** Cuando se desconecto por ultima vez (0 si nunca se registro). */
+    long visto(UUID u) { return vistos.getOrDefault(u, 0L); }
+
+    void guardarVisto(UUID u, long cuando) {
+        vistos.put(u, cuando);
+        final String s = u.toString();
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO visto(uuid,cuando) VALUES(?,?)")) {
+                p.setString(1, s); p.setLong(2, cuando); p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude guardar la ultima conexion de " + s + ": " + e); }
+        });
+    }
+
+    record Movimiento(long tienda, String tipo, int cantidad, long total) { }
+
+    /** Operaciones de esas tiendas desde {@code desde}. Lee en el hilo de la base y devuelve el resultado en el hilo principal. */
+    void movimientos(java.util.Collection<Long> tiendas, long desde, java.util.function.Consumer<List<Movimiento>> alTerminar) {
+        final List<Long> ids = new ArrayList<>(tiendas);
+        io.execute(() -> {
+            List<Movimiento> lista = new ArrayList<>();
+            if (!ids.isEmpty()) {
+                StringBuilder in = new StringBuilder();
+                for (Long id : ids) in.append(in.length() == 0 ? "" : ",").append(id.longValue());     // son numeros nuestros, no texto del usuario
+                try (PreparedStatement p = con.prepareStatement("SELECT tienda,tipo,cantidad,total FROM historial WHERE cuando>? AND tienda IN (" + in + ")")) {
+                    p.setLong(1, desde);
+                    try (ResultSet rs = p.executeQuery()) {
+                        while (rs.next()) lista.add(new Movimiento(rs.getLong(1), rs.getString(2), rs.getInt(3), rs.getLong(4)));
+                    }
+                } catch (SQLException e) { pl.getLogger().severe("No pude leer los movimientos para el resumen: " + e); }
+            }
             org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
         });
     }

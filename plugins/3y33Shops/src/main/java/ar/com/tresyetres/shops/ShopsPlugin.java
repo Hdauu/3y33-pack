@@ -72,6 +72,7 @@ public final class ShopsPlugin extends JavaPlugin {
         integridad.iniciar();
         puntos = new Puntos(this);
         getServer().getPluginManager().registerEvents(puntos, this);
+        getServer().getPluginManager().registerEvents(new Resumen(this), this);
         cabezas = new Cabezas(this);
         getServer().getPluginManager().registerEvents(cabezas, this);
         cabezas.iniciar();
