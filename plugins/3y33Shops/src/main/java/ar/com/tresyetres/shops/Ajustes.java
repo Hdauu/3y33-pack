@@ -146,7 +146,8 @@ final class Ajustes implements Listener {
                 Component.empty(), l("Clic: cambiar.", NamedTextColor.YELLOW))));
 
         List<Component> lr = new ArrayList<>();
-        lr.add(l("Hacia dónde mira el ítem del holograma.", NamedTextColor.GRAY));
+        lr.add(l("Dónde queda el holograma alrededor", NamedTextColor.GRAY));
+        lr.add(l("de la tienda (arriba, un costado o abajo).", NamedTextColor.GRAY));
         lr.add(Component.empty());
         for (String r : ROTACIONES) {
             boolean act = r.equals(t.rotacion);
@@ -155,7 +156,7 @@ final class Ajustes implements Listener {
         lr.add(Component.empty());
         lr.add(l("Clic izquierdo: siguiente.", NamedTextColor.YELLOW));
         lr.add(l("Clic derecho: anterior.", NamedTextColor.YELLOW));
-        inv.setItem(A_ROTACION, item(Material.COMPASS, n("Rotación del holograma", NamedTextColor.AQUA), lr));
+        inv.setItem(A_ROTACION, item(Material.COMPASS, n("Posición del holograma", NamedTextColor.AQUA), lr));
 
         inv.setItem(A_MENSAJE, item(Material.OAK_SIGN, n("Mensaje del holograma", NamedTextColor.AQUA), List.of(
                 l("Texto que aparece arriba de la tienda.", NamedTextColor.GRAY),

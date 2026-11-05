@@ -125,25 +125,31 @@ final class Holograma implements Listener {
 
     // ---------- armado ----------
 
-    private static Quaternionf giro(String rot) {
-        Quaternionf q = new Quaternionf();
-        switch (rot == null ? "SUR" : rot) {
-            case "NORTE" -> q.rotateY((float) Math.toRadians(180));
-            case "ESTE" -> q.rotateY((float) Math.toRadians(90));
-            case "OESTE" -> q.rotateY((float) Math.toRadians(-90));
-            case "ARRIBA" -> q.rotateX((float) Math.toRadians(-90));
-            case "ABAJO" -> q.rotateX((float) Math.toRadians(90));
-            default -> { }
-        }
-        return q;
+    /** Donde queda el holograma segun la posicion elegida: arriba del cofre, pegado a un costado, o abajo. */
+    private Location anclaje(Tienda t, Location centro) {
+        double h = pl.getConfig().getDouble("holograma.altura-item", 1.3);
+        double margen = pl.getConfig().getDouble("holograma.distancia-lateral", 0.75);
+        double altoLado = pl.getConfig().getDouble("holograma.altura-lateral", 0.15);
+        double abajo = pl.getConfig().getDouble("holograma.altura-abajo", -1.7);
+        // un cofre doble es mas ancho en su eje: el holograma tiene que quedar fuera del cofre entero
+        double ex = t.doble && t.x != t.x2 ? (Math.abs(t.x - t.x2) + 1) / 2.0 : 0.5;
+        double ez = t.doble && t.z != t.z2 ? (Math.abs(t.z - t.z2) + 1) / 2.0 : 0.5;
+        String r = t.rotacion == null ? "ARRIBA" : t.rotacion;
+        return switch (r) {
+            case "NORTE" -> centro.clone().add(0, altoLado, -(ez + margen));
+            case "SUR" -> centro.clone().add(0, altoLado, ez + margen);
+            case "ESTE" -> centro.clone().add(ex + margen, altoLado, 0);
+            case "OESTE" -> centro.clone().add(-(ex + margen), altoLado, 0);
+            case "ABAJO" -> centro.clone().add(0, abajo, 0);
+            default -> centro.clone().add(0, h, 0);
+        };
     }
 
     private void poner(Tienda t, World w, Location bloque) {
         org.bukkit.inventory.Inventory inv = Operaciones.inventario(t);
         if (inv == null) return;
         int stock = Operaciones.contar(inv, t.item);
-        double h = pl.getConfig().getDouble("holograma.altura-item", 1.3);
-        Location base = bloque.clone().add(0, h, 0);
+        Location base = anclaje(t, bloque);
         Pieza p = piezas.computeIfAbsent(t.id, x -> new Pieza());
         ItemStack uno = t.item.clone();
         uno.setAmount(1);
@@ -178,6 +184,7 @@ final class Holograma implements Listener {
             ItemDisplay nuevo = w.spawn(destino, ItemDisplay.class, d -> {
                 d.setItemStack(uno);
                 d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+                d.setBillboard(Display.Billboard.VERTICAL);
                 d.setBrightness(new Display.Brightness(15, 15));
                 d.setPersistent(false);
                 d.setVisibleByDefault(false);
@@ -190,7 +197,7 @@ final class Holograma implements Listener {
         if (ev instanceof ItemDisplay idp) {
             if (idp.getLocation().distanceSquared(destino) > 0.0004) idp.teleport(destino);
             if (!idp.getItemStack().isSimilar(uno)) idp.setItemStack(uno);
-            idp.setTransformation(new Transformation(new Vector3f(), giro(t.rotacion), new Vector3f(escala, escala, escala), new Quaternionf()));
+            idp.setTransformation(new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
         }
 
         // texto, de abajo hacia arriba
