@@ -187,7 +187,7 @@ final class Ajustes implements Listener {
             ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta sm = (SkullMeta) cabeza.getItemMeta();
             OfflinePlayer op = Bukkit.getOfflinePlayer(u);
-            try { sm.setOwningPlayer(op); } catch (Throwable ignored) { }
+            pl.cabezas().aplicar(sm, u);
             sm.displayName(n(nombre(u), NamedTextColor.WHITE));
             sm.lore(List.of(l("Clic: quitar administrador.", NamedTextColor.YELLOW)));
             sm.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES, org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);

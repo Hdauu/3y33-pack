@@ -34,6 +34,7 @@ final class Almacen {
     private final Map<String, Tienda> porBloque = new HashMap<>();
     private long ultimoId = 0;
     private final Map<String, Perfil> perfiles = new HashMap<>();
+    private final Map<UUID, String[]> skins = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Titulo y descripcion de la tierra que ven los jugadores en el buscador. */
     record Perfil(String titulo, String descripcion) { }
@@ -62,6 +63,7 @@ final class Almacen {
             s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
                     + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
             s.execute("CREATE INDEX IF NOT EXISTS idx_hist ON historial(tienda, cuando)");
+            s.execute("CREATE TABLE IF NOT EXISTS skins(uuid TEXT PRIMARY KEY, valor TEXT, firma TEXT)");
             s.execute("CREATE TABLE IF NOT EXISTS perfiles(tierra TEXT PRIMARY KEY, titulo TEXT, descripcion TEXT)");
         }
         // una sola vez: antes "SUR" era el valor por defecto sin efecto; ahora la posicion por defecto es ARRIBA
@@ -103,6 +105,10 @@ final class Almacen {
                 indexar(t);
                 ultimoId = Math.max(ultimoId, t.id);
             }
+        }
+        skins.clear();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT uuid, valor, firma FROM skins")) {
+            while (rs.next()) skins.put(UUID.fromString(rs.getString(1)), new String[]{rs.getString(2), rs.getString(3) == null ? "" : rs.getString(3)});
         }
         perfiles.clear();
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT tierra, titulo, descripcion FROM perfiles")) {
@@ -217,6 +223,21 @@ final class Almacen {
                 }
             } catch (SQLException e) { pl.getLogger().severe("No pude leer el historial de la tienda " + id + ": " + e); }
             org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
+        });
+    }
+
+    String[] skin(UUID u) { return skins.get(u); }
+
+    void guardarSkin(UUID u, String valor, String firma) {
+        String[] ant = skins.get(u);
+        if (ant != null && ant[0].equals(valor)) return;
+        final String f = firma == null ? "" : firma;
+        skins.put(u, new String[]{valor, f});
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO skins(uuid,valor,firma) VALUES(?,?,?)")) {
+                p.setString(1, u.toString()); p.setString(2, valor); p.setString(3, f);
+                p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude guardar la skin de " + u + ": " + e); }
         });
     }
 
