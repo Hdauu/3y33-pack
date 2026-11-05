@@ -15,7 +15,7 @@ def vgrad(w, h, top, bot):
     a = (np.array(top)[None, None, :] * (1 - t) + np.array(bot)[None, None, :] * t)
     return Image.fromarray(np.repeat(a, w, axis=1).astype('uint8'), 'RGB').convert('RGBA')
 
-def generar(filas, texto, botones, salida):
+def generar(filas, texto, botones, salida, grupos=()):
     """filas: filas de la ventana (3 o 4). botones: set de (fila, columna) que llevan marco. Las filas se cuentan desde 0 (la 0 es el banner)."""
     H = 114 + 18 * filas
     img = Image.new('RGBA', (W * S, H * S), (0, 0, 0, 0))
@@ -55,6 +55,10 @@ def generar(filas, texto, botones, salida):
     d.rounded_rectangle(box(6, top, 170, bot), radius=px(2), fill=(34, 18, 22, 255), outline=(70, 36, 42, 255), width=px(1))
     for y in range(int(top) + 3, int(bot) - 1, 6):          # rayado muy suave
         d.line([px(7), px(y), px(169), px(y)], fill=(38, 20, 25, 255), width=px(1))
+    # recuadros de grupo: (fila0, col0, fila1, col1) inclusive
+    for (r0, c0, r1, c1) in grupos:
+        d.rounded_rectangle(box(7 + 18 * c0 - 1.5, 17 + 18 * r0 - 1.5, 7 + 18 * (c1 + 1) + 1.5, 17 + 18 * (r1 + 1) + 1.5), radius=px(3),
+                            fill=(52, 28, 34, 255), outline=(150, 96, 52, 255), width=px(1))
     def marco(x, y):
         d.rounded_rectangle(box(x, y, x + 18, y + 18), radius=px(1.4), fill=(15, 8, 10, 255), outline=(96, 50, 58, 255), width=px(1))
         d.line([px(x + 1), px(y + 1.5), px(x + 17), px(y + 1.5)], fill=(6, 3, 4, 255), width=px(1))
@@ -111,6 +115,10 @@ if __name__ == '__main__':
     carpeta = sys.argv[1] if len(sys.argv) > 1 else '.'
     # botones de cada ventana (fila, columna): fila 0 = banner
     tienda = {(1, c) for c in range(1, 8)} | {(2, 0), (2, 4), (2, 6), (2, 8)}
-    ajustes = {(1, 1), (1, 2), (1, 4), (1, 6), (1, 7)} | {(2, c) for c in range(1, 8)} | {(3, 2), (3, 4), (3, 6)}
+    ajustes = ({(1, 1), (1, 2), (2, 1), (2, 2)}                                   # precios y bloqueos (arriba compra, abajo venta)
+               | {(1, 4), (2, 4), (3, 4), (4, 4)}                                  # alertas y holograma
+               | {(1, 6), (1, 7), (2, 6), (2, 7), (3, 6), (3, 7)}                  # gestion y copiar/pegar
+               | {(4, 0)})                                                         # volver
+    grupos = [(1, 1, 2, 2), (1, 4, 4, 4), (1, 6, 2, 7), (3, 6, 3, 7)]
     print(generar(3, 'TIENDA', tienda, os.path.join(carpeta, 'tienda_gui.png')))
-    print(generar(4, 'AJUSTES', ajustes, os.path.join(carpeta, 'ajustes_gui.png')))
+    print(generar(5, 'AJUSTES', ajustes, os.path.join(carpeta, 'ajustes_gui.png'), grupos))
