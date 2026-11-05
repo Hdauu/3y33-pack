@@ -47,7 +47,7 @@ final class Banner implements Listener {
     }
 
     /** Fondos disponibles: cada uno es un caracter de la fuente 3y33:tienda del pack. */
-    static final char TIENDA = (char) 0xE300, AJUSTES = (char) 0xE301;
+    static final char TIENDA = (char) 0xE300, AJUSTES = (char) 0xE301, ADMINS = (char) 0xE302, HISTORIAL = (char) 0xE303;
     private static final char CORRER_8 = (char) 0xF808;
 
     /** El titulo: un solo caracter (corrido 8 a la izquierda para quedar pegado al borde) que dibuja todo el fondo. En blanco para que no lo tiña. */
