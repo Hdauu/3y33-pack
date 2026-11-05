@@ -24,6 +24,7 @@ public final class TiendasPlugin extends JavaPlugin {
         HoloComando hc = new HoloComando(this, holos);
         var cmd = getCommand("holo");
         if (cmd != null) { cmd.setExecutor(hc); cmd.setTabCompleter(hc); }
+        getServer().getPluginManager().registerEvents(new MenuHolo(this, hc), this);
         try {
             com.ghostchu.quickshop.api.QuickShopAPI.getInstance().getShopControlPanelManager().addComponent(new PanelHolograma());
         } catch (Throwable t) { getLogger().warning("No pude sumar el holograma al panel de la tienda: " + t); }
