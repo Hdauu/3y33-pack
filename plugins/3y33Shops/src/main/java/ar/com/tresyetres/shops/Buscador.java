@@ -35,7 +35,7 @@ import java.util.UUID;
 /** /tienda buscar [item]: lista las tierras con tiendas (o con ese item) y, al hacer clic, te lleva al spawn de la tierra. */
 final class Buscador implements Listener {
     private static final int POR_PAGINA = 45;
-    private static final int S_ANTERIOR = 45, S_INFO = 49, S_SIGUIENTE = 53;
+    private static final int S_ANTERIOR = 45, S_VOLVER = 48, S_INFO = 49, S_SIGUIENTE = 53;
 
     record Grupo(String tierra, List<Tienda> tiendas, UUID dueno) { }
 
@@ -128,6 +128,7 @@ final class Buscador implements Listener {
                 l(Msg.numero(grupos.size()) + " tierras con tiendas.", NamedTextColor.GRAY),
                 l("Clic en una tierra para ir hasta ahí.", NamedTextColor.GRAY),
                 l("Tip: /tienda buscar <ítem>", NamedTextColor.DARK_GRAY))));
+        inv.setItem(S_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver al menú de tu tienda.", NamedTextColor.GRAY))));
         if (pagina > 0) inv.setItem(S_ANTERIOR, item(Material.ARROW, n("Anterior", NamedTextColor.RED), List.of()));
         if (pagina < paginas - 1) inv.setItem(S_SIGUIENTE, item(Material.ARROW, n("Siguiente", NamedTextColor.RED), List.of()));
         p.openInventory(inv);
@@ -211,6 +212,11 @@ final class Buscador implements Listener {
         if (ahora - ultimoClic.getOrDefault(p.getUniqueId(), 0L) < pl.getConfig().getLong("pausa-clics-ms", 150)) return;
         ultimoClic.put(p.getUniqueId(), ahora);
         int slot = e.getSlot();
+        if (slot == S_VOLVER) {
+            p.closeInventory();
+            Bukkit.getScheduler().runTask(pl, () -> { if (p.isOnline()) p.performCommand("mitienda"); });
+            return;
+        }
         if (slot == S_ANTERIOR && h.pagina > 0) { abrir(p, h.filtro, h.pagina - 1); return; }
         if (slot == S_SIGUIENTE) { abrir(p, h.filtro, h.pagina + 1); return; }
         if (slot >= POR_PAGINA) return;
