@@ -36,7 +36,7 @@ final class Almacen {
     private final Map<String, Perfil> perfiles = new HashMap<>();
     private final Map<String, Punto> puntos = new java.util.concurrent.ConcurrentHashMap<>();
 
-    /** Punto de viaje guardado (de una tienda: clave S:id; de una tierra: T:nombre). */
+    /** Punto de viaje guardado (de una tierra: clave T:nombre; los viejos S:id se borran al iniciar). */
     record Punto(String mundo, double x, double y, double z, float yaw, float pitch) { }
     private final Map<UUID, String[]> skins = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -168,7 +168,6 @@ final class Almacen {
     void borrar(Tienda t) {
         desindexar(t);
         if (pl.holograma() != null) pl.holograma().quitar(t.id);
-        borrarPunto(Puntos.claveTienda(t.id));
         final long id = t.id;
         io.execute(() -> {
             try (PreparedStatement p = con.prepareStatement("DELETE FROM tiendas WHERE id=?")) { p.setLong(1, id); p.executeUpdate(); }

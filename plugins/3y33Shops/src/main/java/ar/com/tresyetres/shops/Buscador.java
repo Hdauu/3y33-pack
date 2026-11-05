@@ -232,14 +232,10 @@ final class Buscador implements Listener {
             else if (hayFiltro && x.puedeComprar() && (!t.puedeComprar() || x.compra < t.compra)) t = x;
         }
         if (t == null || t.mundoObj() == null) { Msg.error(p, "Esa tierra ya no tiene tiendas."); p.closeInventory(); return; }
-        // 1) punto de la tienda, 2) punto de la tierra, 3) spawn de Lands, 4) al lado de la tienda
+        // 1) punto de la tierra, 2) spawn de Lands, 3) al lado de la tienda
         if (pl.integridad().motivo(t) != null) { Msg.error(p, "Esa tienda ya no está disponible."); p.closeInventory(); return; }
-        Location destino = pl.puntos().ubicacion(Puntos.claveTienda(t.id));
+        Location destino = pl.puntos().ubicacion(Puntos.claveTierra(g.tierra()));
         if (destino != null && !pl.integridad().puntoValido(destino, g.tierra())) destino = null;
-        if (destino == null) {
-            destino = pl.puntos().ubicacion(Puntos.claveTierra(g.tierra()));
-            if (destino != null && !pl.integridad().puntoValido(destino, g.tierra())) destino = null;
-        }
         if (destino == null) destino = pl.lands().spawn(t.ubicacion());
         final boolean conPunto = destino != null;
         if (destino == null) destino = cercaDe(t);
