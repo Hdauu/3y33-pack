@@ -84,6 +84,19 @@ final class Ajustes implements Listener {
         return inv;
     }
 
+    /** Ventana con banner (sin vidrios de relleno) si el jugador lo ve; si no, la comun. */
+    private Inventory ventanaB(Player p, Tienda t, Pantalla pantalla, int filas, String titulo, char fondo) {
+        if (pl.banner().activo(p)) return Bukkit.createInventory(new Titular(t.id, pantalla), filas * 9, pl.banner().titulo(fondo));
+        return ventana(t.id, pantalla, filas, titulo);
+    }
+
+    // administradores: 2 filas de 7 (la fila 0 es del cartel), agregar abajo al medio, volver abajo a la izquierda
+    private static final int[] ADM_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+    private static final int ADM_AGREGAR = 31, ADM_VOLVER = 27, ADM_FILAS = 4;
+    // historial: 3 filas de 7, volver abajo a la izquierda
+    private static final int[] HIS_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+    private static final int HIS_VOLVER = 36, HIS_FILAS = 5;
+
     private static boolean esDueno(Player p, Tienda t) { return p.getUniqueId().equals(t.dueno) || p.hasPermission("tresyetres.staff"); }
 
     private static String nombre(UUID u) {
@@ -208,10 +221,10 @@ final class Ajustes implements Listener {
     // ---------- administradores ----------
 
     private void abrirAdmins(Player p, Tienda t) {
-        Inventory inv = ventana(t.id, Pantalla.ADMINS, 3, "Administradores");
+        Inventory inv = ventanaB(p, t, Pantalla.ADMINS, ADM_FILAS, "Administradores", Banner.ADMINS);
         int i = 0;
         for (UUID u : t.admins) {
-            if (i >= 18) break;
+            if (i >= ADM_SLOTS.length) break;
             ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta sm = (SkullMeta) cabeza.getItemMeta();
             OfflinePlayer op = Bukkit.getOfflinePlayer(u);
@@ -220,12 +233,12 @@ final class Ajustes implements Listener {
             sm.lore(List.of(l("Clic: quitar administrador.", NamedTextColor.YELLOW)));
             sm.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES, org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             cabeza.setItemMeta(sm);
-            inv.setItem(i++, cabeza);
+            inv.setItem(ADM_SLOTS[i++], cabeza);
         }
-        if (t.admins.isEmpty()) inv.setItem(4, item(Material.BARRIER, n("Sin administradores", NamedTextColor.GRAY), List.of(l("Agregá a alguien con el botón de abajo.", NamedTextColor.DARK_GRAY))));
-        inv.setItem(22, item(Material.LIME_DYE, n("Agregar administrador", NamedTextColor.GREEN), List.of(
+        if (t.admins.isEmpty()) inv.setItem(13, item(Material.BARRIER, n("Sin administradores", NamedTextColor.GRAY), List.of(l("Agregá a alguien con el botón de abajo.", NamedTextColor.DARK_GRAY))));
+        inv.setItem(ADM_AGREGAR, item(Material.LIME_DYE, n("Agregar administrador", NamedTextColor.GREEN), List.of(
                 l("Escribís su nombre en el chat.", NamedTextColor.GRAY), l("Máximo " + MAX_ADMINS + ".", NamedTextColor.GRAY), Component.empty(), l("Clic: agregar.", NamedTextColor.YELLOW))));
-        inv.setItem(26, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
+        inv.setItem(ADM_VOLVER, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
         p.openInventory(inv);
     }
 
@@ -248,20 +261,21 @@ final class Ajustes implements Listener {
     private void abrirHistorial(Player p, Tienda t) {
         pl.almacen().ultimas(t.id, 21, lista -> {
             if (!p.isOnline()) return;
-            Inventory inv = ventana(t.id, Pantalla.HISTORIAL, 4, "Últimas transacciones");
-            if (lista.isEmpty()) inv.setItem(13, item(Material.BARRIER, n("Todavía no hubo operaciones", NamedTextColor.GRAY), List.of()));
+            Inventory inv = ventanaB(p, t, Pantalla.HISTORIAL, HIS_FILAS, "Últimas transacciones", Banner.HISTORIAL);
+            if (lista.isEmpty()) inv.setItem(22, item(Material.BARRIER, n("Todavía no hubo operaciones", NamedTextColor.GRAY), List.of()));
             int i = 0;
             for (Almacen.Registro r : lista) {
+                if (i >= HIS_SLOTS.length) break;
                 boolean compro = r.tipo().equals("COMPRA");
                 String fecha;
                 synchronized (FECHA) { fecha = FECHA.format(new Date(r.cuando())); }
-                inv.setItem(i++, item(compro ? Material.LIME_DYE : Material.ORANGE_DYE,
+                inv.setItem(HIS_SLOTS[i++], item(compro ? Material.LIME_DYE : Material.ORANGE_DYE,
                         n((compro ? "Compró " : "Vendió ") + Msg.numero(r.cantidad()) + "x", compro ? NamedTextColor.GREEN : NamedTextColor.GOLD),
                         List.of(l("Jugador: ", NamedTextColor.GRAY).append(Component.text(nombre(r.jugador()), NamedTextColor.WHITE)),
                                 l((compro ? "Pagó: " : "Cobró: "), NamedTextColor.GRAY).append(Component.text(Msg.dinero(r.total()), NamedTextColor.WHITE)),
                                 l(fecha, NamedTextColor.DARK_GRAY))));
             }
-            inv.setItem(31, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
+            inv.setItem(HIS_VOLVER, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
             p.openInventory(inv);
         });
     }
@@ -285,14 +299,16 @@ final class Ajustes implements Listener {
         switch (h.pantalla) {
             case AJUSTES -> clicAjustes(p, t, slot, e.isRightClick(), top);
             case ADMINS -> {
-                if (slot == 26) { abrir(p, t); return; }
+                if (slot == ADM_VOLVER) { abrir(p, t); return; }
                 if (!esDueno(p, t)) return;
-                if (slot == 22) { pl.entrada().dialogo(p, "Agregar administrador", "Va a poder reponer, retirar y cambiar ajustes de esta tienda.", "Nombre del jugador", "", 20, () -> abrirAdmins(p, t), txt -> agregarAdmin(p, t, txt)); return; }
+                if (slot == ADM_AGREGAR) { pl.entrada().dialogo(p, "Agregar administrador", "Va a poder reponer, retirar y cambiar ajustes de esta tienda.", "Nombre del jugador", "", 20, () -> abrirAdmins(p, t), txt -> agregarAdmin(p, t, txt)); return; }
                 ItemStack it = e.getCurrentItem();
-                if (slot < 18 && it != null && it.getType() == Material.PLAYER_HEAD) {
+                int idx = -1;
+                for (int k = 0; k < ADM_SLOTS.length; k++) if (ADM_SLOTS[k] == slot) idx = k;
+                if (idx >= 0 && it != null && it.getType() == Material.PLAYER_HEAD) {
                     List<UUID> orden = new ArrayList<>(t.admins);
-                    if (slot < orden.size()) {
-                        UUID quitar = orden.get(slot);
+                    if (idx < orden.size()) {
+                        UUID quitar = orden.get(idx);
                         t.admins.remove(quitar);
                         pl.almacen().guardar(t);
                         Msg.ok(p, nombre(quitar) + " ya no es administrador.");
@@ -300,7 +316,7 @@ final class Ajustes implements Listener {
                     }
                 }
             }
-            case HISTORIAL -> { if (slot == 31) abrir(p, t); }
+            case HISTORIAL -> { if (slot == HIS_VOLVER) abrir(p, t); }
         }
     }
 
