@@ -62,8 +62,8 @@ final class MenuHolo implements Listener {
         muestra.setAmount(1);
         ItemMeta m = muestra.getItemMeta();
         if (m != null) {
-            m.lore(List.of(Component.text("Este es tu holograma.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                    Component.text("Mirá hacia donde querés moverlo.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+            m.lore(List.of(Component.text("Tienda en " + shop.bukkitLocation().getBlockX() + ", " + shop.bukkitLocation().getBlockY() + ", " + shop.bukkitLocation().getBlockZ(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
+                    Component.text("Solo mueve el holograma de ESTA tienda.", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             muestra.setItemMeta(m);
         }
         inv.setItem(13, muestra);
