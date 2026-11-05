@@ -17,6 +17,7 @@ public final class TiendasPlugin extends JavaPlugin {
             getLogger().severe("No pude conectar con la API de Lands: las reglas de tiendas quedan apagadas.");
         } else {
             getServer().getPluginManager().registerEvents(new Tiendas(this, lands), this);
+            getServer().getPluginManager().registerEvents(new BrowseLand(this, lands), this);
             getLogger().info("Reglas de tiendas conectadas con Lands.");
         }
         holos = new Hologramas(this);

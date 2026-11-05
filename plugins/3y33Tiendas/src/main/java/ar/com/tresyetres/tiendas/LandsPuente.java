@@ -12,7 +12,7 @@ final class LandsPuente {
     record Terreno(String nombre, UUID dueno, boolean miembro) { }
 
     private Object api;
-    private Method getArea, getLand, getName, getOwner, isTrusted;
+    private Method getArea, getLand, getName, getOwner, isTrusted, getSpawn;
 
     LandsPuente(Plugin plugin) {
         try {
@@ -25,6 +25,7 @@ final class LandsPuente {
             isTrusted = area.getMethod("isTrusted", UUID.class);
             getName = land.getMethod("getName");
             getOwner = land.getMethod("getOwnerUID");
+            try { getSpawn = land.getMethod("getSpawn"); } catch (Throwable ignored) { getSpawn = null; }
         } catch (Throwable t) {
             plugin.getLogger().warning("Lands API: " + t);
             api = null;
@@ -32,6 +33,21 @@ final class LandsPuente {
     }
 
     boolean disponible() { return api != null; }
+
+    /** El spawn (punto de teletransporte) de la tierra que contiene ese punto, o null si no tiene. */
+    Location spawn(Location loc) {
+        if (api == null || getSpawn == null || loc == null || loc.getWorld() == null) return null;
+        try {
+            Object area = getArea.invoke(api, loc);
+            if (area == null) return null;
+            Object land = getLand.invoke(area);
+            if (land == null) return null;
+            Object sp = getSpawn.invoke(land);
+            return sp instanceof Location l && l.getWorld() != null ? l : null;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
 
     /** El terreno de Lands que hay en ese punto (null si es zona libre). {@code jugador} sirve para saber si es miembro. */
     Terreno en(Location loc, UUID jugador) {
