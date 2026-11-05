@@ -236,6 +236,29 @@ final class Almacen {
         });
     }
 
+    java.util.List<Map.Entry<String, Punto>> todosPuntos() { return new ArrayList<>(puntos.entrySet()); }
+
+    /** La tierra cambio de nombre: el perfil y el punto de la tierra pasan al nombre nuevo. */
+    void renombrarTierra(String viejo, String nuevo) {
+        String kv = viejo.toLowerCase(java.util.Locale.ROOT), kn = nuevo.toLowerCase(java.util.Locale.ROOT);
+        if (kv.equals(kn)) return;
+        Perfil pf = perfiles.get(kv);
+        if (pf != null && !perfiles.containsKey(kn)) {
+            guardarPerfil(nuevo, pf.titulo(), pf.descripcion());
+            perfiles.remove(kv);
+            io.execute(() -> {
+                try (PreparedStatement p = con.prepareStatement("DELETE FROM perfiles WHERE tierra=?")) { p.setString(1, kv); p.executeUpdate(); }
+                catch (SQLException e) { pl.getLogger().severe("No pude mover el perfil de " + kv + ": " + e); }
+            });
+        }
+        Punto pt = puntos.get("T:" + kv);
+        if (pt != null && !puntos.containsKey("T:" + kn)) {
+            org.bukkit.World w = org.bukkit.Bukkit.getWorld(pt.mundo());
+            if (w != null) guardarPunto("T:" + kn, new org.bukkit.Location(w, pt.x(), pt.y(), pt.z(), pt.yaw(), pt.pitch()));
+            borrarPunto("T:" + kv);
+        }
+    }
+
     Punto punto(String clave) { return puntos.get(clave); }
 
     void guardarPunto(String clave, org.bukkit.Location l) {

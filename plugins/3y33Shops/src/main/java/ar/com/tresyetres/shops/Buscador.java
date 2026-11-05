@@ -73,6 +73,7 @@ final class Buscador implements Listener {
         Map<String, List<Tienda>> por = new LinkedHashMap<>();
         for (Tienda t : pl.almacen().todas()) {
             if (t.tierra.isBlank() || !coincide(t, filtro)) continue;
+            if (!(t.puedeComprar() || t.puedeVender()) || pl.integridad().motivo(t) != null) continue;   // solo tiendas en regla
             por.computeIfAbsent(t.tierra.toLowerCase(Locale.ROOT), k -> new ArrayList<>()).add(t);
         }
         List<Grupo> out = new ArrayList<>();
@@ -232,11 +233,21 @@ final class Buscador implements Listener {
         }
         if (t == null || t.mundoObj() == null) { Msg.error(p, "Esa tierra ya no tiene tiendas."); p.closeInventory(); return; }
         // 1) punto de la tienda, 2) punto de la tierra, 3) spawn de Lands, 4) al lado de la tienda
+        if (pl.integridad().motivo(t) != null) { Msg.error(p, "Esa tienda ya no está disponible."); p.closeInventory(); return; }
         Location destino = pl.puntos().ubicacion(Puntos.claveTienda(t.id));
-        if (destino == null) destino = pl.puntos().ubicacion(Puntos.claveTierra(g.tierra()));
+        if (destino != null && !pl.integridad().puntoValido(destino, g.tierra())) destino = null;
+        if (destino == null) {
+            destino = pl.puntos().ubicacion(Puntos.claveTierra(g.tierra()));
+            if (destino != null && !pl.integridad().puntoValido(destino, g.tierra())) destino = null;
+        }
         if (destino == null) destino = pl.lands().spawn(t.ubicacion());
         final boolean conPunto = destino != null;
         if (destino == null) destino = cercaDe(t);
+        final long costo = p.hasPermission("tresyetres.staff") ? 0 : (long) (pl.getConfig().getDouble("buscar-costo", 0) * 100);
+        if (costo > 0) {
+            if (!pl.economia().tiene(p, costo)) { Msg.error(p, "Viajar cuesta " + Msg.dinero(costo) + " y no te alcanza."); return; }
+            if (!pl.economia().retirar(p, costo)) { Msg.error(p, "No pude cobrarte el viaje."); return; }
+        }
         ultimoViaje.put(p.getUniqueId(), System.currentTimeMillis());
         final String nombre = g.tierra();
         p.closeInventory();
@@ -244,8 +255,10 @@ final class Buscador implements Listener {
             if (!p.isOnline()) return;
             if (ok) {
                 p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.6f, 1.2f);
+                if (costo > 0) Msg.info(p, "El viaje costó " + Msg.dinero(costo) + ".");
                 Msg.ok(p, conPunto ? "Te llevé a la tierra " + nombre + "." : "La tierra " + nombre + " no tiene punto de viaje ni spawn: te dejé al lado de una de sus tiendas.");
             } else {
+                if (costo > 0) pl.economia().depositar(p, costo);
                 Msg.error(p, "No pude teletransportarte.");
             }
         }));

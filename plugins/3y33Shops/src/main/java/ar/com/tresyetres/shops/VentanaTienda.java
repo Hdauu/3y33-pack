@@ -64,6 +64,11 @@ final class VentanaTienda implements Listener {
             pl.almacen().borrar(t);
             return;
         }
+        String sus = pl.integridad().motivo(t);
+        if (sus != null) {
+            if (!t.administra(p)) { Msg.error(p, "Esta tienda está cerrada por ahora."); return; }
+            Msg.error(p, "Tu tienda está suspendida: " + sus + ". Nadie puede comprar ni vender hasta que se arregle.");
+        }
         abrir(p, t);
     }
 
