@@ -7,6 +7,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.BlockState;
@@ -46,6 +47,8 @@ import java.util.UUID;
 final class Holograma implements Listener {
     private static final class Pieza {
         UUID item, visor;
+        boolean listo;
+        int fase;
         final List<UUID> lineas = new ArrayList<>();
         final List<Component> textos = new ArrayList<>();
     }
@@ -54,6 +57,8 @@ final class Holograma implements Listener {
     private final NamespacedKey clave;
     private final Map<Long, Pieza> piezas = new HashMap<>();
     private BukkitTask tarea;
+    private int ciclos;
+    private final Set<String> pendientes = new HashSet<>();
 
     Holograma(ShopsPlugin pl) {
         this.pl = pl;
@@ -83,10 +88,14 @@ final class Holograma implements Listener {
 
     // ---------- ciclo ----------
 
+    /** Fase del vaiven suave del item: cambia cada 2 segundos. */
+    private int fase() { return (ciclos / 2) % 2; }
+
     private void ciclo() {
+        ciclos++;
         try {
-            double aparece = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 24.0), 2);
-            double desaparece = Math.pow(pl.getConfig().getDouble("holograma.rango-desaparicion", 40.0), 2);
+            double aparece = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
+            double desaparece = Math.pow(pl.getConfig().getDouble("holograma.rango-desaparicion", 24.0), 2);
             Set<Long> vivas = new HashSet<>();
             for (Tienda t : pl.almacen().todas()) {
                 vivas.add(t.id);
@@ -127,8 +136,8 @@ final class Holograma implements Listener {
 
     /** Donde queda el holograma segun la posicion elegida: arriba del cofre, pegado a un costado, o abajo. */
     private Location anclaje(Tienda t, Location centro) {
-        double h = pl.getConfig().getDouble("holograma.altura-item", 1.3);
-        double margen = pl.getConfig().getDouble("holograma.distancia-lateral", 0.75);
+        double h = pl.getConfig().getDouble("holograma.altura-item", 1.1);
+        double margen = pl.getConfig().getDouble("holograma.distancia-lateral", 0.6);
         double altoLado = pl.getConfig().getDouble("holograma.altura-lateral", 0.15);
         double abajo = pl.getConfig().getDouble("holograma.altura-abajo", -1.7);
         // un cofre doble es mas ancho en su eje: el holograma tiene que quedar fuera del cofre entero
@@ -189,15 +198,36 @@ final class Holograma implements Listener {
                 d.setPersistent(false);
                 d.setVisibleByDefault(false);
                 d.setViewRange(0.6f);
+                d.setInterpolationDuration(10);
+                d.setTransformation(new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(0f, 0f, 0f), new Quaternionf()));
                 d.getPersistentDataContainer().set(clave, PersistentDataType.LONG, t.id);
             });
             p.visor = nuevo.getUniqueId();
+            p.listo = false;
             ev = nuevo;
+            final UUID idv = nuevo.getUniqueId();
+            // un instante despues crece hasta su tamaño: asi no aparece de golpe
+            Bukkit.getScheduler().runTaskLater(pl, () -> {
+                if (Bukkit.getEntity(idv) instanceof ItemDisplay d2 && d2.isValid()) {
+                    int f = fase();
+                    d2.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -0.05f : 0.05f, 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
+                    d2.setInterpolationDelay(0);
+                    p.fase = f;
+                    p.listo = true;
+                }
+            }, 3L);
         }
         if (ev instanceof ItemDisplay idp) {
             if (idp.getLocation().distanceSquared(destino) > 0.0004) idp.teleport(destino);
             if (!idp.getItemStack().isSimilar(uno)) idp.setItemStack(uno);
-            idp.setTransformation(new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
+            int f = fase();
+            if (p.listo && p.fase != f) {
+                // vaiven suave: sube y baja unos centimetros, interpolado por el cliente
+                idp.setInterpolationDuration(40);
+                idp.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -0.05f : 0.05f, 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
+                idp.setInterpolationDelay(0);
+                p.fase = f;
+            }
         }
 
         // texto, de abajo hacia arriba
@@ -263,28 +293,51 @@ final class Holograma implements Listener {
     /** El texto solo lo ve quien esta cerca. El item: Java ve el ItemDisplay y Bedrock el item comun. */
     private void visibilidad() {
         double r2 = Math.pow(pl.getConfig().getDouble("holograma.rango-texto", 6.0), 2);
+        double rItem2 = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
         for (Pieza p : piezas.values()) {
             Entity drop = p.item == null ? null : Bukkit.getEntity(p.item);
             Entity visor = p.visor == null ? null : Bukkit.getEntity(p.visor);
             for (Player jug : Bukkit.getOnlinePlayers()) {
+                int idx = 0;
                 for (UUID u : p.lineas) {
                     Entity t = Bukkit.getEntity(u);
-                    if (t == null || !t.isValid()) continue;
+                    if (t == null || !t.isValid()) { idx++; continue; }
                     boolean cerca = jug.getWorld().equals(t.getWorld()) && jug.getLocation().distanceSquared(t.getLocation()) <= r2;
-                    mostrar(jug, t, cerca);
+                    boolean ve = jug.canSee(t);
+                    if (cerca && !ve) {
+                        // las lineas aparecen una tras otra, de abajo hacia arriba
+                        String k = jug.getUniqueId() + ":" + u;
+                        if (pendientes.add(k)) {
+                            Bukkit.getScheduler().runTaskLater(pl, () -> {
+                                pendientes.remove(k);
+                                Entity e2 = Bukkit.getEntity(u);
+                                if (e2 != null && e2.isValid() && jug.isOnline()) jug.showEntity(pl, e2);
+                            }, 1L + idx * 3L);
+                        }
+                    } else if (!cerca && ve) {
+                        jug.hideEntity(pl, t);
+                    }
+                    idx++;
                 }
                 boolean bedrock = esBedrock(jug);
-                mostrar(jug, drop, bedrock);
-                mostrar(jug, visor, !bedrock);
+                mostrarItem(jug, drop, bedrock, rItem2);
+                mostrarItem(jug, visor, !bedrock, rItem2);
             }
         }
     }
 
-    private void mostrar(Player jugador, Entity e, boolean debe) {
+    /** Muestra u oculta el item; al aparecerle a alguien cerca suelta unas chispitas para que no sea tan brusco. */
+    private void mostrarItem(Player jugador, Entity e, boolean debe, double rChispas2) {
         if (e == null || !e.isValid()) return;
         boolean ve = jugador.canSee(e);
-        if (debe && !ve) jugador.showEntity(pl, e);
-        else if (!debe && ve) jugador.hideEntity(pl, e);
+        if (debe && !ve) {
+            jugador.showEntity(pl, e);
+            if (jugador.getWorld().equals(e.getWorld()) && jugador.getLocation().distanceSquared(e.getLocation()) <= rChispas2) {
+                jugador.spawnParticle(Particle.END_ROD, e.getLocation().add(0, 0.1, 0), 6, 0.18, 0.18, 0.18, 0.01);
+            }
+        } else if (!debe && ve) {
+            jugador.hideEntity(pl, e);
+        }
     }
 
     // ---------- limpieza ----------
