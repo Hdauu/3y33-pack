@@ -49,7 +49,7 @@ final class Ajustes implements Listener {
 
     // slots de la pantalla de ajustes
     static final int A_BLOQ_COMPRA = 10, A_BLOQ_VENTA = 11, A_PRECIO_COMPRA = 12, A_PRECIO_VENTA = 13, A_MODO = 14, A_ADMINS = 15, A_HISTORIAL = 16;
-    static final int A_COPIAR = 19, A_PEGAR = 20, A_UMBRAL = 21, A_ROTACION = 22, A_MENSAJE = 23, A_AVISOS = 24, A_VOLVER = 31;
+    static final int A_COPIAR = 19, A_PEGAR = 20, A_UMBRAL = 21, A_ROTACION = 22, A_MENSAJE = 23, A_AVISOS = 24, A_PUNTO = 25, A_VOLVER = 31;
 
     private final ShopsPlugin pl;
     private final Map<UUID, Copia> portapapeles = new HashMap<>();
@@ -166,6 +166,15 @@ final class Ajustes implements Listener {
         inv.setItem(A_AVISOS, item(Material.BELL, n(t.avisos ? "Avisos activados" : "Avisos desactivados", t.avisos ? NamedTextColor.GREEN : NamedTextColor.GRAY), List.of(
                 l("Mensajes en el chat cuando alguien", NamedTextColor.GRAY), l("compra o vende, y de bajo stock.", NamedTextColor.GRAY), Component.empty(),
                 l(t.avisos ? "Clic: desactivar avisos." : "Clic: activar avisos.", NamedTextColor.YELLOW))));
+
+        String pto = pl.puntos().texto(Puntos.claveTienda(t.id));
+        List<Component> lp = new ArrayList<>();
+        lp.add(l("Adónde te lleva /tienda buscar al elegir esta tienda.", NamedTextColor.GRAY));
+        lp.add(l("Actual: ", NamedTextColor.GRAY).append(Component.text(pto == null ? "ninguno (usa el de la tierra o su spawn)" : pto, NamedTextColor.WHITE)));
+        lp.add(Component.empty());
+        lp.add(l("Clic izquierdo: elegir punto.", NamedTextColor.YELLOW));
+        if (pto != null) lp.add(l("Clic derecho: borrar punto.", NamedTextColor.YELLOW));
+        inv.setItem(A_PUNTO, item(Material.ENDER_PEARL, n("Punto de viaje", NamedTextColor.AQUA), lp));
 
         inv.setItem(A_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))));
     }
@@ -352,6 +361,10 @@ final class Ajustes implements Listener {
                     Msg.ok(p, "Mensaje del holograma actualizado.");
                     abrir(p, t);
                 });
+            }
+            case A_PUNTO -> {
+                if (derecho) { pl.puntos().borrarDeTienda(p, t); llenarAjustes(inv, p, t); }
+                else pl.puntos().iniciarTienda(p, t);
             }
             case A_AVISOS -> { t.avisos = !t.avisos; cambio(p, t, inv); }
             case A_VOLVER -> pl.ventana().abrir(p, t);

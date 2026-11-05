@@ -124,6 +124,9 @@ final class VentanaTienda implements Listener {
             lore.add(Component.empty());
             lore.add(linea("Clic izquierdo: editar título.", NamedTextColor.YELLOW));
             lore.add(linea("Clic derecho: editar descripción.", NamedTextColor.YELLOW));
+            String pto = pl.puntos().texto(Puntos.claveTierra(t.tierra));
+            lore.add(linea("Punto de viaje: " + (pto == null ? "ninguno" : pto), NamedTextColor.GRAY));
+            lore.add(linea("Shift + clic: elegir punto de viaje de la tierra.", NamedTextColor.YELLOW));
         }
         return item(Material.CHEST, Component.text("Perfil de la tienda de tierra", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false), lore);
     }
@@ -218,6 +221,7 @@ final class VentanaTienda implements Listener {
                 if (t.tierra.isBlank() || !puedeEditarPerfil(p, t)) return;
                 final String tierra = t.tierra;
                 final long id = t.id;
+                if (e.isShiftClick()) { pl.puntos().iniciarTierra(p, t); return; }
                 if (e.isLeftClick()) {
                     pl.entrada().dialogo(p, "Título de la tierra", "Aparece en /tienda buscar. Dejalo vacío para borrarlo.", "Título", pl.almacen().perfil(tierra).titulo(), 32, () -> reabrir(p, id), txt -> {
                         String titulo = txt.equals("-") ? "" : txt;

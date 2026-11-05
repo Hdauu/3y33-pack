@@ -1,5 +1,5 @@
 name: 3y33Shops
-version: 2.5.2
+version: 2.6.0
 main: ar.com.tresyetres.shops.ShopsPlugin
 api-version: '1.21'
 author: 3y33 SMP
@@ -9,7 +9,7 @@ softdepend: [floodgate]
 commands:
   tienda:
     description: Tiendas de cofre
-    usage: /tienda [crear|eliminar|buscar|mostrar]
+    usage: /tienda [crear|eliminar|buscar|mostrar|punto]
     aliases: [tiendas]
   tiendaadmin:
     description: Herramientas de staff para las tiendas

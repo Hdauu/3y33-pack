@@ -15,6 +15,7 @@ public final class ShopsPlugin extends JavaPlugin {
     private Buscador buscador;
     private Mostrar mostrar;
     private Cabezas cabezas;
+    private Puntos puntos;
 
     Almacen almacen() { return almacen; }
     Economia economia() { return economia; }
@@ -27,6 +28,7 @@ public final class ShopsPlugin extends JavaPlugin {
     Buscador buscador() { return buscador; }
     Mostrar mostrar() { return mostrar; }
     Cabezas cabezas() { return cabezas; }
+    Puntos puntos() { return puntos; }
 
     @Override
     public void onEnable() {
@@ -63,6 +65,8 @@ public final class ShopsPlugin extends JavaPlugin {
         holograma.iniciar();
         buscador = new Buscador(this);
         mostrar = new Mostrar(this);
+        puntos = new Puntos(this);
+        getServer().getPluginManager().registerEvents(puntos, this);
         cabezas = new Cabezas(this);
         getServer().getPluginManager().registerEvents(cabezas, this);
         cabezas.iniciar();
