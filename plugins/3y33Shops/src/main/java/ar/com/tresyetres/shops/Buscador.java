@@ -150,7 +150,7 @@ final class Buscador implements Listener {
         OfflinePlayer dueno = g.dueno() == null ? null : Bukkit.getOfflinePlayer(g.dueno());
         ItemStack it = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta sm = (SkullMeta) it.getItemMeta();
-        if (dueno != null) { try { sm.setOwningPlayer(dueno); } catch (Throwable ignored) { } }
+        pl.cabezas().aplicar(sm, g.dueno());
         sm.displayName(n(titulo, NamedTextColor.RED));
         List<Component> lore = new ArrayList<>();
         if (!perfil.titulo().isBlank()) lore.add(l("Tierra: ", NamedTextColor.GRAY).append(Component.text(g.tierra(), NamedTextColor.WHITE)));
