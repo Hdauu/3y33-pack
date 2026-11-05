@@ -48,8 +48,11 @@ final class Ajustes implements Listener {
     private record Copia(boolean avisos, boolean bloqCompra, boolean bloqVenta, String modo, int bajoStock, String rotacion, String mensaje, Set<UUID> admins) { }
 
     // slots de la pantalla de ajustes
-    static final int A_BLOQ_COMPRA = 10, A_BLOQ_VENTA = 11, A_PRECIO_COMPRA = 12, A_PRECIO_VENTA = 13, A_MODO = 14, A_ADMINS = 15, A_HISTORIAL = 16;
-    static final int A_COPIAR = 19, A_PEGAR = 20, A_UMBRAL = 21, A_ROTACION = 22, A_MENSAJE = 23, A_AVISOS = 24, A_PUNTO = 25, A_VOLVER = 31;
+    // fila 1: compras a la izquierda, ingresos al centro, ventas a la derecha
+    static final int A_PRECIO_COMPRA = 10, A_BLOQ_COMPRA = 11, A_MODO = 13, A_PRECIO_VENTA = 15, A_BLOQ_VENTA = 16;
+    // fila 2: avisos, holograma, viaje y equipo, en ese orden; fila 3: copiar / volver / pegar
+    static final int A_UMBRAL = 19, A_AVISOS = 20, A_MENSAJE = 21, A_ROTACION = 22, A_PUNTO = 23, A_ADMINS = 24, A_HISTORIAL = 25;
+    static final int A_COPIAR = 29, A_VOLVER = 31, A_PEGAR = 33;
 
     private final ShopsPlugin pl;
     private final Map<UUID, Copia> portapapeles = new HashMap<>();
