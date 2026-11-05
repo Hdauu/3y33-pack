@@ -32,6 +32,14 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         switch (a[0].toLowerCase(Locale.ROOT)) {
             case "crear", "create" -> crear(p, a);
             case "eliminar", "borrar", "delete", "remove" -> eliminar(p);
+            case "buscar", "search", "browse" -> pl.buscador().abrir(p, a.length > 1 ? String.join(" ", java.util.Arrays.copyOfRange(a, 1, a.length)) : "", 0);
+            case "mostrar", "show" -> {
+                String modo = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "";
+                if (modo.equals("apagar") || modo.equals("off")) { pl.mostrar().apagar(p.getUniqueId()); Msg.info(p, "Listo, apagué el resaltado."); }
+                else if (modo.startsWith("vac")) pl.mostrar().iniciar(p, true);
+                else if (modo.startsWith("bajo") || modo.equals("lowstock")) pl.mostrar().iniciar(p, false);
+                else Msg.error(p, "Uso: /tienda mostrar <vacias|bajostock|apagar>");
+            }
             case "reload", "recargar" -> {
                 if (!p.hasPermission("tresyetres.staff")) { Msg.error(p, "No tenés permiso."); return true; }
                 pl.reloadConfig();
@@ -47,6 +55,8 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         Msg.info(p, "Tiendas de cofre:");
         linea(p, "/tienda crear (precio de compra) (precio de venta)", "Crea una tienda en un cofre que estés mirando con el ítem que querés vender en la mano. Usá - para desactivar compra o venta.");
         linea(p, "/tienda eliminar", "Elimina la tienda del cofre que estás mirando.");
+        linea(p, "/tienda buscar [ítem]", "Mirá las tierras con tiendas y andá a su spawn con un clic.");
+        linea(p, "/tienda mostrar <vacias|bajostock>", "Resalta tus tiendas cercanas vacías o con poco stock.");
         Msg.info(p, "Después hacé clic derecho al cofre para abrir la tienda.");
     }
 
@@ -138,7 +148,9 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (a.length == 1) return (s.hasPermission("tresyetres.staff") ? List.of("crear", "eliminar", "reload") : List.of("crear", "eliminar")).stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 2 && a[0].equalsIgnoreCase("mostrar")) return List.of("vacias", "bajostock", "apagar").stream().filter(x -> x.startsWith(a[1].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 2 && a[0].equalsIgnoreCase("buscar")) return pl.buscador().itemsConTienda().stream().filter(x -> x.startsWith(a[1].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 1) return (s.hasPermission("tresyetres.staff") ? List.of("crear", "eliminar", "buscar", "mostrar", "reload") : List.of("crear", "eliminar", "buscar", "mostrar")).stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
         if (a.length >= 2 && a[0].equalsIgnoreCase("crear")) return List.of("-", "1", "10", "100");
         return List.of();
     }

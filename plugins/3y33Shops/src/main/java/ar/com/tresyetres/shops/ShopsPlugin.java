@@ -12,6 +12,8 @@ public final class ShopsPlugin extends JavaPlugin {
     private Ajustes ajustes;
     private Entrada entrada;
     private Holograma holograma;
+    private Buscador buscador;
+    private Mostrar mostrar;
 
     Almacen almacen() { return almacen; }
     Economia economia() { return economia; }
@@ -21,6 +23,8 @@ public final class ShopsPlugin extends JavaPlugin {
     Ajustes ajustes() { return ajustes; }
     Entrada entrada() { return entrada; }
     Holograma holograma() { return holograma; }
+    Buscador buscador() { return buscador; }
+    Mostrar mostrar() { return mostrar; }
 
     @Override
     public void onEnable() {
@@ -55,6 +59,10 @@ public final class ShopsPlugin extends JavaPlugin {
         holograma = new Holograma(this);
         getServer().getPluginManager().registerEvents(holograma, this);
         holograma.iniciar();
+        buscador = new Buscador(this);
+        mostrar = new Mostrar(this);
+        getServer().getPluginManager().registerEvents(buscador, this);
+        getServer().getPluginManager().registerEvents(mostrar, this);
         getServer().getPluginManager().registerEvents(new Proteccion(this), this);
         TiendaComando tc = new TiendaComando(this);
         var cmd = getCommand("tienda");
@@ -67,6 +75,7 @@ public final class ShopsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (mostrar != null) mostrar.detener();
         if (holograma != null) holograma.detener();
         if (almacen != null) almacen.cerrar();
     }

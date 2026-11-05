@@ -32,7 +32,7 @@ import java.util.UUID;
 /** La ventana "TIENDA" que se abre con clic derecho al cofre: comprar, vender, cantidad personalizada y almacenamiento. */
 final class VentanaTienda implements Listener {
     static final int S_MENOS64 = 10, S_MENOS32 = 11, S_MENOS1 = 12, S_ITEM = 13, S_MAS1 = 14, S_MAS32 = 15, S_MAS64 = 16;
-    static final int S_ALMACEN = 18, S_PERSONAL = 22, S_AJUSTES = 26;
+    static final int S_ALMACEN = 18, S_PERSONAL = 22, S_PERFIL = 24, S_AJUSTES = 26;
 
     private static final class Titular implements InventoryHolder {
         final long tienda;
@@ -103,12 +103,35 @@ final class VentanaTienda implements Listener {
         lp.add(linea("Clic derecho: comprar.", NamedTextColor.GREEN));
         inv.setItem(S_PERSONAL, item(Material.NAME_TAG, Component.text("Cantidad personalizada", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false), lp));
 
+        if (!t.tierra.isBlank()) inv.setItem(S_PERFIL, perfilTierra(p, t));
         if (t.administra(p)) {
             inv.setItem(S_AJUSTES, item(Material.CRAFTING_TABLE, Component.text("Ajustes de la tienda", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
                     List.of(linea("Precios, administradores, holograma y más.", NamedTextColor.GRAY), Component.empty(), linea("Clic izquierdo: abrir.", NamedTextColor.YELLOW))));
             inv.setItem(S_ALMACEN, item(Material.CHEST, Component.text("Almacenamiento", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
                     List.of(linea("Abrí el cofre de la tienda para reponer o retirar.", NamedTextColor.GRAY), Component.empty(), linea("Clic izquierdo: abrir.", NamedTextColor.YELLOW))));
         }
+    }
+
+    /** Tarjeta con el titulo y la descripcion de la tierra (lo que se ve en /tienda buscar). */
+    private ItemStack perfilTierra(Player p, Tienda t) {
+        Almacen.Perfil perfil = pl.almacen().perfil(t.tierra);
+        List<Component> lore = new ArrayList<>();
+        lore.add(linea("Tierra: ", NamedTextColor.GRAY).append(Component.text(t.tierra, NamedTextColor.WHITE)));
+        lore.add(linea("Título: ", NamedTextColor.GRAY).append(Component.text(perfil.titulo().isBlank() ? "(sin título)" : perfil.titulo(), NamedTextColor.WHITE)));
+        for (String s : Buscador.partir(perfil.descripcion(), 34, 4)) lore.add(linea(s, NamedTextColor.DARK_GRAY));
+        if (perfil.descripcion().isBlank()) lore.add(linea("Sin descripción.", NamedTextColor.DARK_GRAY));
+        if (puedeEditarPerfil(p, t)) {
+            lore.add(Component.empty());
+            lore.add(linea("Clic izquierdo: editar título.", NamedTextColor.YELLOW));
+            lore.add(linea("Clic derecho: editar descripción.", NamedTextColor.YELLOW));
+        }
+        return item(Material.CHEST, Component.text("Perfil de la tienda de tierra", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false), lore);
+    }
+
+    private boolean puedeEditarPerfil(Player p, Tienda t) {
+        if (p.hasPermission("tresyetres.staff")) return true;
+        LandsPuente.Terreno ter = pl.lands().en(t.ubicacion(), p.getUniqueId());
+        return ter != null && p.getUniqueId().equals(ter.dueno());
     }
 
     private static Component linea(String texto, NamedTextColor color) { return Component.text(texto, color).decoration(TextDecoration.ITALIC, false); }
@@ -191,6 +214,28 @@ final class VentanaTienda implements Listener {
                 Inventory inv = Operaciones.inventario(t);
                 if (inv != null) p.openInventory(inv);
             }
+            case S_PERFIL -> {
+                if (t.tierra.isBlank() || !puedeEditarPerfil(p, t)) return;
+                final String tierra = t.tierra;
+                final long id = t.id;
+                if (e.isLeftClick()) {
+                    pl.entrada().pedir(p, "Escribí el título de tu tierra (hasta 32 letras, - para borrarlo)", txt -> {
+                        String titulo = txt.equals("-") ? "" : txt;
+                        if (titulo.length() > 32) { Msg.error(p, "Es muy largo: máximo 32 letras."); reabrir(p, id); return; }
+                        pl.almacen().guardarPerfil(tierra, titulo, pl.almacen().perfil(tierra).descripcion());
+                        Msg.ok(p, "Título de la tierra actualizado.");
+                        reabrir(p, id);
+                    });
+                } else {
+                    pl.entrada().pedir(p, "Escribí la descripción de tu tierra (hasta 120 letras, - para borrarla)", txt -> {
+                        String desc = txt.equals("-") ? "" : txt;
+                        if (desc.length() > 120) { Msg.error(p, "Es muy larga: máximo 120 letras."); reabrir(p, id); return; }
+                        pl.almacen().guardarPerfil(tierra, pl.almacen().perfil(tierra).titulo(), desc);
+                        Msg.ok(p, "Descripción de la tierra actualizada.");
+                        reabrir(p, id);
+                    });
+                }
+            }
             case S_AJUSTES -> { if (t.administra(p)) pl.ajustes().abrir(p, t); }
             case S_PERSONAL -> {
                 final boolean venta = e.isLeftClick();
@@ -199,6 +244,11 @@ final class VentanaTienda implements Listener {
             }
             default -> { }
         }
+    }
+
+    private void reabrir(Player p, long id) {
+        Tienda t = pl.almacen().porId(id);
+        if (t != null) abrir(p, t);
     }
 
     private void comprar(Player p, Tienda t, int n, Inventory ventana) {
