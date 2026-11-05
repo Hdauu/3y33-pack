@@ -129,11 +129,8 @@ final class Operaciones {
             eco.depositar(p, total);
             return Resultado.error("No tenés lugar en el inventario. No se hizo nada.");
         }
-        // 4) pagarle al dueño
-        if (!eco.depositar(dueno, total)) {
-            pl.getLogger().severe("NO PUDE PAGAR a " + dueno.getName() + " (" + t.dueno + ") " + total + " centavos por una compra de "
-                    + p.getName() + " en la tienda " + t.id + ". Revisar a mano.");
-        }
+        // 4) pagarle al dueño (o repartir entre los administradores)
+        pagarIngreso(t, total, p.getName());
         pl.almacen().registrar(t, p.getUniqueId(), "COMPRA", n, total);
         return new Resultado(true, "", total);
     }
@@ -177,5 +174,22 @@ final class Operaciones {
         }
         pl.almacen().registrar(t, p.getUniqueId(), "VENTA", n, total);
         return new Resultado(true, "", total);
+    }
+
+    /** Paga lo que cobró la tienda: al dueño, o repartido entre dueño y administradores en modo COMPARTIDO. */
+    private void pagarIngreso(Tienda t, long total, String comprador) {
+        Economia eco = pl.economia();
+        java.util.List<OfflinePlayer> receptores = new java.util.ArrayList<>();
+        receptores.add(Bukkit.getOfflinePlayer(t.dueno));
+        if ("COMPARTIDO".equals(t.modoIngreso)) for (java.util.UUID u : t.admins) receptores.add(Bukkit.getOfflinePlayer(u));
+        long parte = total / receptores.size();
+        long resto = total - parte * receptores.size();
+        for (int i = 0; i < receptores.size(); i++) {
+            long monto = parte + (i == 0 ? resto : 0);
+            if (!eco.depositar(receptores.get(i), monto)) {
+                pl.getLogger().severe("NO PUDE PAGAR a " + receptores.get(i).getName() + " " + monto + " centavos por una compra de "
+                        + comprador + " en la tienda " + t.id + ". Revisar a mano.");
+            }
+        }
     }
 }

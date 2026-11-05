@@ -182,6 +182,22 @@ final class Almacen {
         });
     }
 
+    record Registro(long cuando, UUID jugador, String tipo, int cantidad, long total) { }
+
+    /** Ultimas operaciones de una tienda. Lee en el hilo de la base y devuelve el resultado en el hilo principal. */
+    void ultimas(long id, int max, java.util.function.Consumer<List<Registro>> alTerminar) {
+        io.execute(() -> {
+            List<Registro> lista = new ArrayList<>();
+            try (PreparedStatement p = con.prepareStatement("SELECT cuando,jugador,tipo,cantidad,total FROM historial WHERE tienda=? ORDER BY cuando DESC LIMIT ?")) {
+                p.setLong(1, id); p.setInt(2, max);
+                try (ResultSet rs = p.executeQuery()) {
+                    while (rs.next()) lista.add(new Registro(rs.getLong(1), UUID.fromString(rs.getString(2)), rs.getString(3), rs.getInt(4), rs.getLong(5)));
+                }
+            } catch (SQLException e) { pl.getLogger().severe("No pude leer el historial de la tienda " + id + ": " + e); }
+            org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
+        });
+    }
+
     void cerrar() {
         io.shutdown();
         try { io.awaitTermination(10, TimeUnit.SECONDS); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }

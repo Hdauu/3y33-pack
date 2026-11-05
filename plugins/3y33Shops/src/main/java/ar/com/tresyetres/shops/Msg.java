@@ -28,4 +28,16 @@ final class Msg {
     }
 
     static String numero(long n) { return NumberFormat.getIntegerInstance(new Locale("es", "AR")).format(n); }
+
+    /** Precio escrito por el jugador a centavos. "-" o "no" = -1 (desactivado). -2 = no es un numero valido, -3 = supera el maximo. */
+    static long precio(String s, double maxPesos) {
+        if (s.equals("-") || s.equalsIgnoreCase("no")) return -1;
+        try {
+            java.math.BigDecimal v = new java.math.BigDecimal(s.replace(',', '.'));
+            if (v.signum() < 0) return -2;
+            if (v.stripTrailingZeros().scale() > 2) return -2;
+            long c = v.setScale(2, java.math.RoundingMode.DOWN).movePointRight(2).longValueExact();
+            return c > (long) (maxPesos * 100) ? -3 : c;
+        } catch (NumberFormatException | ArithmeticException e) { return -2; }
+    }
 }

@@ -8,11 +8,17 @@ public final class ShopsPlugin extends JavaPlugin {
     private Economia economia;
     private LandsPuente lands;
     private Operaciones operaciones;
+    private VentanaTienda ventana;
+    private Ajustes ajustes;
+    private Entrada entrada;
 
     Almacen almacen() { return almacen; }
     Economia economia() { return economia; }
     LandsPuente lands() { return lands; }
     Operaciones operaciones() { return operaciones; }
+    VentanaTienda ventana() { return ventana; }
+    Ajustes ajustes() { return ajustes; }
+    Entrada entrada() { return entrada; }
 
     @Override
     public void onEnable() {
@@ -38,7 +44,12 @@ public final class ShopsPlugin extends JavaPlugin {
             return;
         }
         operaciones = new Operaciones(this);
-        getServer().getPluginManager().registerEvents(new VentanaTienda(this), this);
+        ventana = new VentanaTienda(this);
+        ajustes = new Ajustes(this);
+        entrada = new Entrada(this);
+        getServer().getPluginManager().registerEvents(ventana, this);
+        getServer().getPluginManager().registerEvents(ajustes, this);
+        getServer().getPluginManager().registerEvents(entrada, this);
         getServer().getPluginManager().registerEvents(new Proteccion(this), this);
         TiendaComando tc = new TiendaComando(this);
         var cmd = getCommand("tienda");
