@@ -1,0 +1,48 @@
+name: Compilar 3y33Shops
+
+on:
+  push:
+    paths:
+      - 'plugins/3y33Shops/src/**'
+      - 'plugins/3y33Shops/pom.xml'
+      - '.github/workflows/shops.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Bajar Vault
+        working-directory: plugins/3y33Shops
+        run: |
+          mkdir -p libs
+          curl -sSfL -o libs/Vault.jar "https://github.com/MilkBowl/Vault/releases/download/1.7.3/Vault.jar"
+      - name: Compilar
+        working-directory: plugins/3y33Shops
+        run: mvn -B -q package 2>&1 | tee ../../build-log.txt; test ${PIPESTATUS[0]} -eq 0
+      - name: Guardar el error de compilacion
+        if: failure()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -f build-log.txt
+          git commit -m "build-log: error de compilacion Shops" || true
+          git pull --rebase -q || true
+          git push || true
+      - name: Guardar el jar en el repo
+        run: |
+          cp plugins/3y33Shops/target/3y33Shops-*.jar plugins/3y33Shops/
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add plugins/3y33Shops/*.jar
+          git commit -m "3y33Shops: jar compilado" || echo "sin cambios"
+          git push

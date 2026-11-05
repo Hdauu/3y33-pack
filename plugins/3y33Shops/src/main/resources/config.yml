@@ -1,0 +1,6 @@
+# 3y33Shops - tiendas de cofre atadas a Lands
+maximo-tiendas-por-tierra: 30
+precio-maximo: 1000000
+cantidad-maxima-personalizada: 2304
+# segundos entre clics en la ventana (evita spam de clics)
+pausa-clics-ms: 150

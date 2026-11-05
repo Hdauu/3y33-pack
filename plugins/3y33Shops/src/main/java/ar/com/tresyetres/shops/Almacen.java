@@ -1,0 +1,190 @@
+package ar.com.tresyetres.shops;
+
+import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+/** Guarda las tiendas en SQLite y las mantiene en memoria para consultarlas rapido. Todo el acceso a la base va por un solo hilo. */
+final class Almacen {
+    private final ShopsPlugin pl;
+    private Connection con;
+    private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "3y33Shops-db");
+        t.setDaemon(true);
+        return t;
+    });
+    private final Map<Long, Tienda> porId = new HashMap<>();
+    private final Map<String, Tienda> porBloque = new HashMap<>();
+    private long ultimoId = 0;
+
+    Almacen(ShopsPlugin pl) { this.pl = pl; }
+
+    static String clave(String mundo, int x, int y, int z) { return mundo + ";" + x + ";" + y + ";" + z; }
+    static String clave(Block b) { return clave(b.getWorld().getName(), b.getX(), b.getY(), b.getZ()); }
+    static String clave(Location l) { return clave(l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ()); }
+
+    void abrir() throws SQLException {
+        pl.getDataFolder().mkdirs();
+        File f = new File(pl.getDataFolder(), "tiendas.db");
+        try { Class.forName("org.sqlite.JDBC"); } catch (ClassNotFoundException ignored) { }
+        con = DriverManager.getConnection("jdbc:sqlite:" + f.getAbsolutePath());
+        try (Statement s = con.createStatement()) {
+            s.execute("PRAGMA journal_mode=WAL");
+            s.execute("PRAGMA synchronous=NORMAL");
+            s.execute("CREATE TABLE IF NOT EXISTS tiendas(id INTEGER PRIMARY KEY, mundo TEXT NOT NULL, x INT, y INT, z INT,"
+                    + " doble INT DEFAULT 0, x2 INT, y2 INT, z2 INT, tierra TEXT, dueno TEXT NOT NULL, item BLOB NOT NULL,"
+                    + " compra INT NOT NULL, venta INT NOT NULL, bloq_compra INT DEFAULT 0, bloq_venta INT DEFAULT 0,"
+                    + " modo_ingreso TEXT DEFAULT 'DUENO', bajo_stock INT DEFAULT 10, mensaje TEXT DEFAULT '',"
+                    + " rotacion TEXT DEFAULT 'SUR', creada INT)");
+            s.execute("CREATE TABLE IF NOT EXISTS admins(tienda INT, uuid TEXT, PRIMARY KEY(tienda, uuid))");
+            s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
+                    + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
+            s.execute("CREATE INDEX IF NOT EXISTS idx_hist ON historial(tienda, cuando)");
+        }
+        cargar();
+    }
+
+    private void cargar() throws SQLException {
+        porId.clear();
+        porBloque.clear();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT * FROM tiendas")) {
+            while (rs.next()) {
+                Tienda t = new Tienda();
+                t.id = rs.getLong("id");
+                t.mundo = rs.getString("mundo");
+                t.x = rs.getInt("x"); t.y = rs.getInt("y"); t.z = rs.getInt("z");
+                t.doble = rs.getInt("doble") != 0;
+                t.x2 = rs.getInt("x2"); t.y2 = rs.getInt("y2"); t.z2 = rs.getInt("z2");
+                t.tierra = rs.getString("tierra") == null ? "" : rs.getString("tierra");
+                t.dueno = UUID.fromString(rs.getString("dueno"));
+                t.item = ItemStack.deserializeBytes(rs.getBytes("item"));
+                t.compra = rs.getLong("compra");
+                t.venta = rs.getLong("venta");
+                t.bloqCompra = rs.getInt("bloq_compra") != 0;
+                t.bloqVenta = rs.getInt("bloq_venta") != 0;
+                t.modoIngreso = rs.getString("modo_ingreso");
+                t.bajoStock = rs.getInt("bajo_stock");
+                t.mensaje = rs.getString("mensaje") == null ? "" : rs.getString("mensaje");
+                t.rotacion = rs.getString("rotacion");
+                t.creada = rs.getLong("creada");
+                indexar(t);
+                ultimoId = Math.max(ultimoId, t.id);
+            }
+        }
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT tienda, uuid FROM admins")) {
+            while (rs.next()) {
+                Tienda t = porId.get(rs.getLong("tienda"));
+                if (t != null) t.admins.add(UUID.fromString(rs.getString("uuid")));
+            }
+        }
+    }
+
+    private void indexar(Tienda t) {
+        porId.put(t.id, t);
+        porBloque.put(clave(t.mundo, t.x, t.y, t.z), t);
+        if (t.doble) porBloque.put(clave(t.mundo, t.x2, t.y2, t.z2), t);
+    }
+
+    private void desindexar(Tienda t) {
+        porId.remove(t.id);
+        porBloque.remove(clave(t.mundo, t.x, t.y, t.z));
+        if (t.doble) porBloque.remove(clave(t.mundo, t.x2, t.y2, t.z2));
+    }
+
+    // ---------- consultas (hilo principal) ----------
+
+    Tienda en(Block b) { return b == null ? null : porBloque.get(clave(b)); }
+    Tienda en(Location l) { return l == null || l.getWorld() == null ? null : porBloque.get(clave(l)); }
+    Tienda porId(long id) { return porId.get(id); }
+    Collection<Tienda> todas() { return new ArrayList<>(porId.values()); }
+
+    int cantidadEnTierra(String nombre) {
+        int n = 0;
+        for (Tienda t : porId.values()) if (t.tierra.equalsIgnoreCase(nombre)) n++;
+        return n;
+    }
+
+    // ---------- cambios ----------
+
+    long nuevoId() { return ++ultimoId; }
+
+    void agregar(Tienda t) {
+        indexar(t);
+        guardar(t);
+    }
+
+    void borrar(Tienda t) {
+        desindexar(t);
+        final long id = t.id;
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("DELETE FROM tiendas WHERE id=?")) { p.setLong(1, id); p.executeUpdate(); }
+            catch (SQLException e) { pl.getLogger().severe("No pude borrar la tienda " + id + ": " + e); }
+            try (PreparedStatement p = con.prepareStatement("DELETE FROM admins WHERE tienda=?")) { p.setLong(1, id); p.executeUpdate(); }
+            catch (SQLException e) { pl.getLogger().severe("No pude borrar los admins de la tienda " + id + ": " + e); }
+        });
+    }
+
+    /** Guarda (o actualiza) una tienda. Copia los datos en el hilo principal y escribe en el hilo de la base. */
+    void guardar(Tienda t) {
+        final Tienda c = t;
+        final byte[] item = t.item.serializeAsBytes();
+        final long id = c.id; final String mundo = c.mundo; final int x = c.x, y = c.y, z = c.z; final boolean doble = c.doble;
+        final int x2 = c.x2, y2 = c.y2, z2 = c.z2; final String tierra = c.tierra; final String dueno = c.dueno.toString();
+        final long compra = c.compra, venta = c.venta; final boolean bc = c.bloqCompra, bv = c.bloqVenta;
+        final String modo = c.modoIngreso; final int bajo = c.bajoStock; final String msj = c.mensaje; final String rot = c.rotacion;
+        final long creada = c.creada;
+        final List<String> admins = new ArrayList<>();
+        for (UUID u : c.admins) admins.add(u.toString());
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO tiendas(id,mundo,x,y,z,doble,x2,y2,z2,tierra,dueno,item,"
+                    + "compra,venta,bloq_compra,bloq_venta,modo_ingreso,bajo_stock,mensaje,rotacion,creada) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                int i = 1;
+                p.setLong(i++, id); p.setString(i++, mundo); p.setInt(i++, x); p.setInt(i++, y); p.setInt(i++, z);
+                p.setInt(i++, doble ? 1 : 0); p.setInt(i++, x2); p.setInt(i++, y2); p.setInt(i++, z2);
+                p.setString(i++, tierra); p.setString(i++, dueno); p.setBytes(i++, item);
+                p.setLong(i++, compra); p.setLong(i++, venta); p.setInt(i++, bc ? 1 : 0); p.setInt(i++, bv ? 1 : 0);
+                p.setString(i++, modo); p.setInt(i++, bajo); p.setString(i++, msj); p.setString(i++, rot); p.setLong(i, creada);
+                p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude guardar la tienda " + id + ": " + e); }
+            try (PreparedStatement p = con.prepareStatement("DELETE FROM admins WHERE tienda=?")) { p.setLong(1, id); p.executeUpdate(); }
+            catch (SQLException e) { pl.getLogger().severe("No pude actualizar los admins de la tienda " + id + ": " + e); }
+            for (String u : admins) {
+                try (PreparedStatement p = con.prepareStatement("INSERT OR IGNORE INTO admins(tienda,uuid) VALUES(?,?)")) { p.setLong(1, id); p.setString(2, u); p.executeUpdate(); }
+                catch (SQLException e) { pl.getLogger().severe("No pude guardar un admin de la tienda " + id + ": " + e); }
+            }
+        });
+    }
+
+    void registrar(Tienda t, UUID jugador, String tipo, int cantidad, long totalCentavos) {
+        final long id = t.id; final long ahora = System.currentTimeMillis(); final String j = jugador.toString();
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT INTO historial(tienda,cuando,jugador,tipo,cantidad,total) VALUES(?,?,?,?,?,?)")) {
+                p.setLong(1, id); p.setLong(2, ahora); p.setString(3, j); p.setString(4, tipo); p.setInt(5, cantidad); p.setLong(6, totalCentavos);
+                p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude registrar la operacion de la tienda " + id + ": " + e); }
+        });
+    }
+
+    void cerrar() {
+        io.shutdown();
+        try { io.awaitTermination(10, TimeUnit.SECONDS); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+        try { if (con != null) con.close(); } catch (SQLException ignored) { }
+    }
+}
