@@ -60,6 +60,8 @@ public final class Core extends JavaPlugin implements Listener, TabCompleter {
         getServer().getPluginManager().registerEvents(new Beta(this), this);
         color.chat = new ChatEstilo(this, color);
         getServer().getPluginManager().registerEvents(color.chat, this);
+        color.nombre = new Nombre(this, color);
+        getServer().getPluginManager().registerEvents(color.nombre, this);
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PvpExpansion(this, pvp, color).register();
         for (String c : List.of("reglas", "report", "reportes", "3y33core", "rtp", "editor", "pvp", "color")) {
             Objects.requireNonNull(getCommand(c)).setExecutor(this);
