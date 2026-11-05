@@ -85,26 +85,51 @@ final class KeeperAjustes implements Listener {
     /** El panel del dueño de QuickShop: 4 filas con el cofre en el slot 22, la TNT en el 25 y la puerta en el 31 (ver gui.yml). */
     private static boolean esPanelDelDueno(Inventory inv) {
         if (inv.getSize() != 36) return false;
+        int coincide = 0;
         ItemStack a = inv.getItem(22), b = inv.getItem(25), c = inv.getItem(31);
-        return a != null && a.getType() == Material.CHEST && b != null && b.getType() == Material.TNT && c != null && c.getType() == Material.OAK_DOOR;
+        if (a != null && a.getType() == Material.CHEST) coincide++;
+        if (b != null && b.getType() == Material.TNT) coincide++;
+        if (c != null && c.getType() == Material.OAK_DOOR) coincide++;
+        return coincide >= 2;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @EventHandler(priority = EventPriority.MONITOR)
     public void alAbrir(InventoryOpenEvent e) {
         if (!(e.getPlayer() instanceof Player p)) return;
-        Bukkit.getScheduler().runTask(pl, () -> {
-            Inventory inv = p.getOpenInventory().getTopInventory();
-            if (!esPanelDelDueno(inv)) return;
-            Long id = ultima.get(p.getUniqueId());
-            Long t = ultimaTiempo.get(p.getUniqueId());
-            if (id == null || t == null || System.currentTimeMillis() - t > 4000) return;
-            Shop s;
-            try { s = QuickShopAPI.getInstance().getShopManager().getShop(id); } catch (Throwable x) { return; }
-            if (s == null || !cmd.puedeEditar(p, s)) return;
-            ventanas.put(inv, id);
-            poner(inv, s);
-        });
+        Long t = ultimaTiempo.get(p.getUniqueId());
+        if (t == null || System.currentTimeMillis() - t > 4000) return;
+        // QuickShop puede llenar la ventana unos ticks despues de abrirla: probamos varias veces
+        for (int espera : new int[]{1, 2, 4, 8, 16}) {
+            Bukkit.getScheduler().runTaskLater(pl, () -> intentar(p, espera == 16), espera);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void intentar(Player p, boolean ultimoIntento) {
+        if (!p.isOnline()) return;
+        Inventory inv = p.getOpenInventory().getTopInventory();
+        if (ventanas.containsKey(inv)) return;
+        if (!esPanelDelDueno(inv)) {
+            if (ultimoIntento && inv.getSize() != 0 && inv.getType() == org.bukkit.event.inventory.InventoryType.CHEST) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < inv.getSize(); i++) {
+                    ItemStack it = inv.getItem(i);
+                    if (it != null && it.getType() != Material.BLACK_STAINED_GLASS_PANE) sb.append(i).append('=').append(it.getType()).append(' ');
+                }
+                pl.getLogger().info("Ventana no reconocida como panel del dueño (" + p.getName() + "): size=" + inv.getSize()
+                        + " titulo=" + PlainTextComponentSerializer.plainText().serialize(p.getOpenInventory().title()) + " items: " + sb);
+            }
+            return;
+        }
+        Long id = ultima.get(p.getUniqueId());
+        if (id == null) return;
+        Shop s;
+        try { s = QuickShopAPI.getInstance().getShopManager().getShop(id); } catch (Throwable x) { return; }
+        if (s == null) { pl.getLogger().info("Panel del dueño: no encontré la tienda " + id); return; }
+        if (!cmd.puedeEditar(p, s)) return;
+        ventanas.put(inv, id);
+        poner(inv, s);
+        pl.getLogger().info("Botones de holograma puestos en el panel de " + p.getName() + " (tienda " + id + ")");
     }
 
     private void poner(Inventory inv, Shop<?, ?> s) {
