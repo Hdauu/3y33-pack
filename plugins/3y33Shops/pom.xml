@@ -6,7 +6,7 @@
 
     <groupId>ar.com.tresyetres</groupId>
     <artifactId>3y33Shops</artifactId>
-    <version>2.10.3</version>
+    <version>2.10.4</version>
     <packaging>jar</packaging>
 
     <properties>
