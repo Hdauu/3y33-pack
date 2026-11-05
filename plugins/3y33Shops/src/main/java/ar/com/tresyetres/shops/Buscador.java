@@ -175,6 +175,7 @@ final class Buscador implements Listener {
         lore.add(Component.empty());
         lore.add(l("Clic: ir al spawn de la tierra.", NamedTextColor.YELLOW));
         sm.lore(lore);
+        sm.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES, org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
         it.setItemMeta(sm);
         return it;
     }

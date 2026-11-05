@@ -190,6 +190,7 @@ final class Ajustes implements Listener {
             try { sm.setOwningPlayer(op); } catch (Throwable ignored) { }
             sm.displayName(n(nombre(u), NamedTextColor.WHITE));
             sm.lore(List.of(l("Clic: quitar administrador.", NamedTextColor.YELLOW)));
+            sm.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES, org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
             cabeza.setItemMeta(sm);
             inv.setItem(i++, cabeza);
         }
