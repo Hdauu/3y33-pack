@@ -111,6 +111,6 @@ if __name__ == '__main__':
     carpeta = sys.argv[1] if len(sys.argv) > 1 else '.'
     # botones de cada ventana (fila, columna): fila 0 = banner
     tienda = {(1, c) for c in range(1, 8)} | {(2, 0), (2, 4), (2, 6), (2, 8)}
-    ajustes = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, 4)}
+    ajustes = {(1, 1), (1, 2), (1, 4), (1, 6), (1, 7)} | {(2, c) for c in range(1, 8)} | {(3, 2), (3, 4), (3, 6)}
     print(generar(3, 'TIENDA', tienda, os.path.join(carpeta, 'tienda_gui.png')))
     print(generar(4, 'AJUSTES', ajustes, os.path.join(carpeta, 'ajustes_gui.png')))
