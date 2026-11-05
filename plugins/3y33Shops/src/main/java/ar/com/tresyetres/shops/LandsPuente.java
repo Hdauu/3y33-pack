@@ -39,10 +39,19 @@ final class LandsPuente {
         }
     }
 
+    /** Marca: Lands fallo al contestar (no es lo mismo que zona libre). */
+    static final Terreno DESCONOCIDO = new Terreno("", null, false);
+
     boolean disponible() { return api != null; }
 
     /** El terreno de Lands que hay en ese punto (null si es zona libre). {@code jugador} sirve para saber si es miembro. */
     Terreno en(Location loc, UUID jugador) {
+        Terreno t = enONoSe(loc, jugador);
+        return t == DESCONOCIDO ? null : t;
+    }
+
+    /** Igual que en(), pero si Lands falla devuelve DESCONOCIDO en vez de null (para no confundirlo con zona libre). */
+    Terreno enONoSe(Location loc, UUID jugador) {
         if (api == null || loc == null || loc.getWorld() == null) return null;
         try {
             Object area = getArea.invoke(api, loc);
@@ -54,7 +63,7 @@ final class LandsPuente {
             boolean miembro = jugador != null && (jugador.equals(dueno) || (boolean) isTrusted.invoke(area, jugador));
             return new Terreno(nombre, dueno, miembro);
         } catch (Throwable t) {
-            return null;
+            return DESCONOCIDO;
         }
     }
 
