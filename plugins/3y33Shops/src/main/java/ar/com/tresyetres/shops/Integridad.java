@@ -43,6 +43,8 @@ final class Integridad implements Listener {
         // justo despues de arrancar Lands todavia esta cargando las tierras: no se decide nada (se mantiene lo que ya habia)
         if (System.currentTimeMillis() - inicio < 90_000L) return t.suspension;
         if (t.mundoObj() == null) return "el mundo de la tienda no está disponible";
+        // con el chunk descargado Lands puede no tener cargada esa tierra: no se decide, se mantiene el estado
+        if (!t.mundoObj().isChunkLoaded(t.x >> 4, t.z >> 4)) return t.suspension;
         LandsPuente.Terreno ter = pl.lands().enONoSe(t.ubicacion(), t.dueno);
         if (ter == LandsPuente.DESCONOCIDO) return t.suspension;     // Lands fallo al contestar: no se cambia el estado
         if (ter == null) return "ya no está dentro de ninguna tierra";
@@ -95,7 +97,7 @@ final class Integridad implements Listener {
             if (m == null || estabaSuspendida) dudas.remove(t.id);
             t.suspension = m;
             if (estabaSuspendida != (m != null)) {
-                pl.getLogger().info("Tienda " + t.id + (m != null ? " suspendida: " + m : " rehabilitada") + " (" + t.mundo + " " + t.x + "," + t.y + "," + t.z + ")");
+                pl.getLogger().info("Tienda " + t.id + (m != null ? " suspendida: " + m : " rehabilitada") + " (" + t.mundo + " " + t.x + "," + t.y + "," + t.z + ") dueño en linea: " + (Bukkit.getPlayer(t.dueno) != null));
                 cambioDeEstado(t, m);
             }
         }
@@ -128,8 +130,14 @@ final class Integridad implements Listener {
         Player dueno = Bukkit.getPlayer(t.dueno);
         if (dueno == null) return;
         String item = VentanaTienda.nombreItem(t);
-        if (motivo != null) Msg.error(dueno, "Tu tienda de " + item + " (" + t.x + ", " + t.y + ", " + t.z + ") quedó suspendida: " + motivo + ".");
-        else Msg.ok(dueno, "Tu tienda de " + item + " (" + t.x + ", " + t.y + ", " + t.z + ") volvió a funcionar.");
+        if (motivo != null) {
+            Msg.error(dueno, "Tu tienda de " + item + " (" + t.x + ", " + t.y + ", " + t.z + ") quedó suspendida: " + motivo + ".");
+            t.suspensionAvisada = true;
+        } else if (t.suspensionAvisada) {
+            // solo se avisa que volvio si antes se le aviso que se suspendio
+            Msg.ok(dueno, "Tu tienda de " + item + " (" + t.x + ", " + t.y + ", " + t.z + ") volvió a funcionar.");
+            t.suspensionAvisada = false;
+        }
     }
 
     /** Al entrar, el dueño se entera si tiene tiendas suspendidas. */
@@ -141,6 +149,7 @@ final class Integridad implements Listener {
             List<Tienda> malas = new ArrayList<>();
             for (Tienda t : pl.almacen().todas()) if (t.dueno.equals(p.getUniqueId()) && motivo(t) != null) malas.add(t);
             if (malas.isEmpty()) return;
+            for (Tienda t : malas) t.suspensionAvisada = true;
             Msg.error(p, "Tenés " + malas.size() + (malas.size() == 1 ? " tienda suspendida" : " tiendas suspendidas") + ". Nadie puede comprar ni vender ahí hasta que vuelvan a estar dentro de una tierra tuya.");
         }, 100L);
     }
