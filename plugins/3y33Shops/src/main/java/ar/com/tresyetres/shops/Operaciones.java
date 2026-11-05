@@ -132,6 +132,7 @@ final class Operaciones {
         // 4) pagarle al dueño (o repartir entre los administradores)
         pagarIngreso(t, total, p.getName());
         pl.almacen().registrar(t, p.getUniqueId(), "COMPRA", n, total);
+        avisar(t, p, true, n, total, shop);
         return new Resultado(true, "", total);
     }
 
@@ -173,7 +174,35 @@ final class Operaciones {
             return Resultado.error("No pude pagarte. No se hizo nada.");
         }
         pl.almacen().registrar(t, p.getUniqueId(), "VENTA", n, total);
+        avisar(t, p, false, n, total, shop);
         return new Resultado(true, "", total);
+    }
+
+    /** Le cuenta al dueño (y a los administradores que cobran) lo que pasó en su tienda, si estan conectados. */
+    private void avisar(Tienda t, Player actor, boolean compro, int n, long total, Inventory shop) {
+        String item = VentanaTienda.nombreItem(t);
+        java.util.List<java.util.UUID> receptores = new java.util.ArrayList<>();
+        receptores.add(t.dueno);
+        if (compro && "COMPARTIDO".equals(t.modoIngreso)) receptores.addAll(t.admins);
+        long parte = total / receptores.size();
+        int stock = contar(shop, t.item);
+        for (int i = 0; i < receptores.size(); i++) {
+            Player dest = Bukkit.getPlayer(receptores.get(i));
+            if (dest == null) continue;
+            boolean esDueno = receptores.get(i).equals(t.dueno);
+            if (compro) {
+                long monto = parte + (i == 0 ? total - parte * receptores.size() : 0);
+                String extra = receptores.size() > 1 ? " Tu parte: " + Msg.dinero(monto) + " (repartido entre " + receptores.size() + ")." : "";
+                Msg.ok(dest, actor.getName() + " te compró " + Msg.numero(n) + "x " + item + ". Se depositaron " + Msg.dinero(total) + " en tu cuenta." + extra);
+            } else {
+                Msg.info(dest, actor.getName() + " te vendió " + Msg.numero(n) + "x " + item + ". Se descontaron " + Msg.dinero(total) + " de tu cuenta.");
+            }
+            dest.playSound(dest.getLocation(), org.bukkit.Sound.ENTITY_ARROW_HIT_PLAYER, 0.6f, 1.4f);
+            if (compro && esDueno) {
+                if (stock == 0) Msg.error(dest, "Tu tienda de " + item + " se quedó sin stock.");
+                else if (stock <= t.bajoStock) Msg.error(dest, "A tu tienda de " + item + " le quedan solo " + Msg.numero(stock) + " unidades.");
+            }
+        }
     }
 
     /** Paga lo que cobró la tienda: al dueño, o repartido entre dueño y administradores en modo COMPARTIDO. */
