@@ -32,6 +32,12 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         switch (a[0].toLowerCase(Locale.ROOT)) {
             case "crear", "create" -> crear(p, a);
             case "eliminar", "borrar", "delete", "remove" -> eliminar(p);
+            case "reload", "recargar" -> {
+                if (!p.hasPermission("tresyetres.staff")) { Msg.error(p, "No tenés permiso."); return true; }
+                pl.reloadConfig();
+                if (pl.holograma() != null) pl.holograma().reconstruir();
+                Msg.ok(p, "Recargué la config y rearmé los hologramas.");
+            }
             default -> ayuda(p);
         }
         return true;
@@ -132,7 +138,7 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (a.length == 1) return List.of("crear", "eliminar").stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 1) return (s.hasPermission("tresyetres.staff") ? List.of("crear", "eliminar", "reload") : List.of("crear", "eliminar")).stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
         if (a.length >= 2 && a[0].equalsIgnoreCase("crear")) return List.of("-", "1", "10", "100");
         return List.of();
     }

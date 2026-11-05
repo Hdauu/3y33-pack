@@ -33,7 +33,7 @@ final class TiendaAdminComando implements CommandExecutor, TabCompleter {
                 pl.almacen().guardar(t);
                 Msg.ok(s, "Tienda " + t.id + " con rotación " + rot + ".");
             }
-            case "recargar" -> { pl.reloadConfig(); Msg.ok(s, "Config recargada."); }
+            case "recargar", "reload" -> recargar(s);
             case "info", "borrar" -> {
                 if (!(s instanceof Player p)) { Msg.error(s, "Solo en el juego."); return true; }
                 Block b = p.getTargetBlockExact(6);
@@ -54,9 +54,15 @@ final class TiendaAdminComando implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private void recargar(CommandSender s) {
+        pl.reloadConfig();
+        if (pl.holograma() != null) pl.holograma().reconstruir();
+        Msg.ok(s, "Recargué la config y rearmé los hologramas.");
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (a.length == 1) return List.of("lista", "info", "borrar", "recargar").stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 1) return List.of("lista", "info", "borrar", "recargar", "reload").stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
         return List.of();
     }
 }

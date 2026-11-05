@@ -71,6 +71,13 @@ final class Holograma implements Listener {
         piezas.clear();
     }
 
+    /** Borra todos los hologramas; el ciclo los vuelve a armar enseguida con la config y los datos actuales. */
+    void reconstruir() {
+        for (Pieza p : piezas.values()) quitarPieza(p);
+        piezas.clear();
+        limpiarHuerfanas();
+    }
+
     /** Los de Bedrock (Floodgate) tienen UUID que empieza con ceros. */
     static boolean esBedrock(Player p) { return p.getUniqueId().getMostSignificantBits() == 0L; }
 
