@@ -52,6 +52,17 @@ final class HoloComando implements CommandExecutor, TabCompleter {
         return mejor;
     }
 
+    /** Solo la tienda que pedis por id o la que estas mirando: nunca adivina otra cercana (el menu afecta a UNA sola tienda). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Shop<?, ?> tiendaExacta(Player p, String id) {
+        var sm = QuickShopAPI.getInstance().getShopManager();
+        if (id != null) {
+            try { Shop s = sm.getShop(Long.parseLong(id)); if (s != null) return s; } catch (NumberFormatException ignored) { }
+        }
+        Block b = p.getTargetBlockExact(6);
+        return b == null ? null : sm.getShop(b.getLocation());
+    }
+
     private boolean esDueno(Player p, Shop<?, ?> s) {
         if (p.hasPermission("tresyetres.staff")) return true;
         try { return s.getOwner().getUniqueIdIfRealPlayer().map(u -> u.equals(p.getUniqueId())).orElse(false); } catch (Throwable t) { return false; }
@@ -65,8 +76,8 @@ final class HoloComando implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] a) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Solo en el juego."); return true; }
         if (a.length == 0 || a[0].equalsIgnoreCase("menu")) {
-            Shop<?, ?> m = tienda(p, a.length > 1 ? a[1] : null);
-            if (m == null) { pl.msg(p, "Mirá tu tienda (o acercate) y volvé a usar /holo."); return true; }
+            Shop<?, ?> m = tiendaExacta(p, a.length > 1 ? a[1] : null);
+            if (m == null) { pl.msg(p, "Mirá la tienda cuyo holograma querés mover (el cofre) y volvé a usar /holo."); return true; }
             if (!esDueno(p, m)) { pl.msg(p, "Solo el dueño de la tienda puede mover su holograma."); return true; }
             MenuHolo.abrir(p, m);
             return true;
