@@ -7,7 +7,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.BlockState;
@@ -200,24 +199,15 @@ final class Holograma implements Listener {
                 d.setPersistent(false);
                 d.setVisibleByDefault(false);
                 d.setViewRange(0.6f);
-                d.setInterpolationDuration(10);
-                d.setTransformation(new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(0f, 0f, 0f), new Quaternionf()));
+                d.setTeleportDuration(2);
+                d.setInterpolationDuration(40);
+                d.setTransformation(new Transformation(new Vector3f(0f, -vaiven(), 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
                 d.getPersistentDataContainer().set(clave, PersistentDataType.LONG, t.id);
             });
             p.visor = nuevo.getUniqueId();
-            p.listo = false;
+            p.fase = 0;
+            p.listo = true;
             ev = nuevo;
-            final UUID idv = nuevo.getUniqueId();
-            // un instante despues crece hasta su tamaño: asi no aparece de golpe
-            Bukkit.getScheduler().runTaskLater(pl, () -> {
-                if (Bukkit.getEntity(idv) instanceof ItemDisplay d2 && d2.isValid()) {
-                    int f = fase();
-                    d2.setTransformation(new Transformation(new Vector3f(0f, f == 0 ? -vaiven() : vaiven(), 0f), new Quaternionf(), new Vector3f(escala, escala, escala), new Quaternionf()));
-                    d2.setInterpolationDelay(0);
-                    p.fase = f;
-                    p.listo = true;
-                }
-            }, 3L);
         }
         if (ev instanceof ItemDisplay idp) {
             if (idp.getLocation().distanceSquared(destino) > 0.0004) idp.teleport(destino);
@@ -313,7 +303,7 @@ final class Holograma implements Listener {
                             Bukkit.getScheduler().runTaskLater(pl, () -> {
                                 pendientes.remove(k);
                                 Entity e2 = Bukkit.getEntity(u);
-                                if (e2 != null && e2.isValid() && jug.isOnline()) jug.showEntity(pl, e2);
+                                if (e2 != null && e2.isValid() && jug.isOnline()) aparecer(jug, e2);
                             }, 1L + idx * 3L);
                         }
                     } else if (!cerca && ve) {
@@ -328,17 +318,30 @@ final class Holograma implements Listener {
         }
     }
 
-    /** Muestra u oculta el item; al aparecerle a alguien cerca suelta unas chispitas para que no sea tan brusco. */
-    private void mostrarItem(Player jugador, Entity e, boolean debe, double rChispas2) {
+    private void mostrarItem(Player jugador, Entity e, boolean debe, double ignorado) {
         if (e == null || !e.isValid()) return;
         boolean ve = jugador.canSee(e);
-        if (debe && !ve) {
-            jugador.showEntity(pl, e);
-            if (jugador.getWorld().equals(e.getWorld()) && jugador.getLocation().distanceSquared(e.getLocation()) <= rChispas2) {
-                jugador.spawnParticle(Particle.END_ROD, e.getLocation().add(0, 0.1, 0), 6, 0.18, 0.18, 0.18, 0.01);
-            }
-        } else if (!debe && ve) {
-            jugador.hideEntity(pl, e);
+        if (debe && !ve) aparecer(jugador, e);
+        else if (!debe && ve) jugador.hideEntity(pl, e);
+    }
+
+    /**
+     * Le muestra una pieza a un jugador deslizandola desde un poco mas abajo hasta su lugar (el mismo movimiento que se ve al
+     * cambiar la posicion). Si otro jugador ya la esta viendo, la muestra directo para no moverla delante suyo.
+     */
+    private void aparecer(Player jug, Entity e) {
+        for (Player o : Bukkit.getOnlinePlayers()) {
+            if (!o.equals(jug) && o.canSee(e)) { jug.showEntity(pl, e); return; }
+        }
+        final double abajo = 0.6;
+        final Location ini = e.getLocation().clone().add(0, -abajo, 0);
+        e.teleport(ini);
+        jug.showEntity(pl, e);
+        for (int s = 1; s <= 4; s++) {
+            final int paso = s;
+            Bukkit.getScheduler().runTaskLater(pl, () -> {
+                if (e.isValid()) e.teleport(ini.clone().add(0, abajo * paso / 4.0, 0));
+            }, s * 2L);
         }
     }
 
