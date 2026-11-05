@@ -122,3 +122,7 @@ if __name__ == '__main__':
     grupos = [(1, 1, 2, 2), (1, 4, 4, 4), (1, 6, 2, 7), (3, 6, 3, 7)]
     print(generar(3, 'TIENDA', tienda, os.path.join(carpeta, 'tienda_gui.png')))
     print(generar(5, 'AJUSTES', ajustes, os.path.join(carpeta, 'ajustes_gui.png'), grupos))
+    admins = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, 0), (3, 4)}
+    print(generar(4, 'ADMINS', admins, os.path.join(carpeta, 'admins_gui.png'), [(1, 1, 2, 7)]))
+    historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
+    print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
