@@ -33,6 +33,10 @@ final class TiendaAdminComando implements CommandExecutor, TabCompleter {
                 pl.almacen().guardar(t);
                 Msg.ok(s, "Tienda " + t.id + " con rotación " + rot + ".");
             }
+            case "revisar" -> {
+                int[] r = pl.integridad().revisarTodas();
+                Msg.ok(s, "Revisé las tiendas: " + r[0] + " suspendidas, " + r[1] + " eliminadas (sin cofre), " + r[2] + " puntos borrados.");
+            }
             case "recargar", "reload" -> recargar(s);
             case "info", "borrar" -> {
                 if (!(s instanceof Player p)) { Msg.error(s, "Solo en el juego."); return true; }
@@ -62,7 +66,7 @@ final class TiendaAdminComando implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
-        if (a.length == 1) return List.of("lista", "info", "borrar", "recargar", "reload").stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
+        if (a.length == 1) return List.of("lista", "info", "borrar", "revisar", "recargar", "reload").stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
         return List.of();
     }
 }

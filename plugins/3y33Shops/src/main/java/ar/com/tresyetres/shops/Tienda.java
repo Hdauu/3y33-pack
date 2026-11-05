@@ -31,6 +31,8 @@ final class Tienda {
     String mensaje = "";
     String rotacion = "ARRIBA";
     boolean avisos = true;
+    /** Motivo por el que esta suspendida (null si esta en regla). Se recalcula, no se guarda. */
+    String suspension = null;
     long creada;
     final Set<UUID> admins = new HashSet<>();
 

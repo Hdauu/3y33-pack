@@ -102,6 +102,8 @@ final class Operaciones {
     /** El jugador COMPRA n items de la tienda. */
     Resultado comprar(Player p, Tienda t, int n) {
         if (n <= 0) return Resultado.error("La cantidad tiene que ser mayor a cero.");
+        String sus = pl.integridad().motivo(t);
+        if (sus != null) return Resultado.error("Esta tienda está suspendida: " + sus + ".");
         if (t.esDeLosDuenos(p)) return Resultado.error("No podés comprar en tu propia tienda.");
         if (!t.puedeComprar()) return Resultado.error("Esta tienda no vende este ítem.");
         Inventory shop = inventario(t);
@@ -139,6 +141,8 @@ final class Operaciones {
     /** El jugador VENDE n items a la tienda. */
     Resultado vender(Player p, Tienda t, int n) {
         if (n <= 0) return Resultado.error("La cantidad tiene que ser mayor a cero.");
+        String sus = pl.integridad().motivo(t);
+        if (sus != null) return Resultado.error("Esta tienda está suspendida: " + sus + ".");
         if (t.esDeLosDuenos(p)) return Resultado.error("No podés vender en tu propia tienda.");
         if (!t.puedeVender()) return Resultado.error("Esta tienda no compra este ítem.");
         Inventory shop = inventario(t);

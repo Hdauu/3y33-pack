@@ -20,3 +20,8 @@ buscar-espera-segundos: 10
 mostrar:
   radio: 40.0
   segundos: 20
+
+buscar-costo: 0
+
+integridad:
+  revisar-cada-segundos: 120

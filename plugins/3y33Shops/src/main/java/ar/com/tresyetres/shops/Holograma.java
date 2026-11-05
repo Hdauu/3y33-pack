@@ -173,8 +173,9 @@ final class Holograma implements Listener {
         // texto, de abajo hacia arriba
         List<Component> textos = new ArrayList<>();
         textos.add(t.item.effectiveName().color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, true).decoration(TextDecoration.ITALIC, false));
-        textos.add(precios(t));
-        if (stock == 0 && t.puedeComprar()) textos.add(Component.text("Esta tienda está vacía!", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false));
+        boolean suspendida = pl.integridad().motivo(t) != null;
+        textos.add(suspendida ? Component.text("Tienda suspendida", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false) : precios(t));
+        if (!suspendida && stock == 0 && t.puedeComprar()) textos.add(Component.text("Esta tienda está vacía!", NamedTextColor.RED, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false));
         if (!t.mensaje.isBlank()) textos.add(LegacyComponentSerializer.legacyAmpersand().deserialize(t.mensaje).decoration(TextDecoration.ITALIC, false));
 
         Location base = anclaje(t, bloque, textos.size());
