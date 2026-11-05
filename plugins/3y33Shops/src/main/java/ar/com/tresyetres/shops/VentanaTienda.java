@@ -1,6 +1,5 @@
 package ar.com.tresyetres.shops;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -33,7 +32,7 @@ import java.util.UUID;
 /** La ventana "TIENDA" que se abre con clic derecho al cofre: comprar, vender, cantidad personalizada y almacenamiento. */
 final class VentanaTienda implements Listener {
     static final int S_MENOS64 = 10, S_MENOS32 = 11, S_MENOS1 = 12, S_ITEM = 13, S_MAS1 = 14, S_MAS32 = 15, S_MAS64 = 16;
-    static final int S_ALMACEN = 18, S_PERSONAL = 22;
+    static final int S_ALMACEN = 18, S_PERSONAL = 22, S_AJUSTES = 26;
 
     private static final class Titular implements InventoryHolder {
         final long tienda;
@@ -41,10 +40,7 @@ final class VentanaTienda implements Listener {
         @Override public Inventory getInventory() { return null; }
     }
 
-    private record Pendiente(long tienda, boolean venta) { }
-
     private final ShopsPlugin pl;
-    private final Map<UUID, Pendiente> escribiendo = new HashMap<>();
     private final Map<UUID, Long> ultimoClic = new HashMap<>();
 
     VentanaTienda(ShopsPlugin pl) { this.pl = pl; }
@@ -108,6 +104,8 @@ final class VentanaTienda implements Listener {
         inv.setItem(S_PERSONAL, item(Material.NAME_TAG, Component.text("Cantidad personalizada", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false), lp));
 
         if (t.administra(p)) {
+            inv.setItem(S_AJUSTES, item(Material.CRAFTING_TABLE, Component.text("Ajustes de la tienda", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
+                    List.of(linea("Precios, administradores, holograma y más.", NamedTextColor.GRAY), Component.empty(), linea("Clic izquierdo: abrir.", NamedTextColor.YELLOW))));
             inv.setItem(S_ALMACEN, item(Material.CHEST, Component.text("Almacenamiento", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false),
                     List.of(linea("Abrí el cofre de la tienda para reponer o retirar.", NamedTextColor.GRAY), Component.empty(), linea("Clic izquierdo: abrir.", NamedTextColor.YELLOW))));
         }
@@ -193,11 +191,11 @@ final class VentanaTienda implements Listener {
                 Inventory inv = Operaciones.inventario(t);
                 if (inv != null) p.openInventory(inv);
             }
+            case S_AJUSTES -> { if (t.administra(p)) pl.ajustes().abrir(p, t); }
             case S_PERSONAL -> {
-                boolean venta = e.isLeftClick();
-                escribiendo.put(p.getUniqueId(), new Pendiente(t.id, venta));
-                p.closeInventory();
-                Msg.info(p, "Escribí en el chat cuántas unidades querés " + (venta ? "vender" : "comprar") + " (o escribí: cancelar).");
+                final boolean venta = e.isLeftClick();
+                final long id = t.id;
+                pl.entrada().pedir(p, "Escribí en el chat cuántas unidades querés " + (venta ? "vender" : "comprar"), txt -> cantidadPersonalizada(p, id, venta, txt));
             }
             default -> { }
         }
@@ -238,34 +236,24 @@ final class VentanaTienda implements Listener {
 
     @EventHandler
     public void alSalir(PlayerQuitEvent e) {
-        escribiendo.remove(e.getPlayer().getUniqueId());
         ultimoClic.remove(e.getPlayer().getUniqueId());
     }
 
     // ---------- cantidad personalizada por chat ----------
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void alChat(AsyncChatEvent e) {
-        Pendiente pend = escribiendo.remove(e.getPlayer().getUniqueId());
-        if (pend == null) return;
-        e.setCancelled(true);
-        String texto = PlainTextComponentSerializer.plainText().serialize(e.message()).trim();
-        Player p = e.getPlayer();
-        Bukkit.getScheduler().runTask(pl, () -> {
-            if (texto.equalsIgnoreCase("cancelar")) { Msg.info(p, "Cancelado."); return; }
-            int n;
-            try { n = Integer.parseInt(texto.replace(".", "")); } catch (NumberFormatException ex) { Msg.error(p, "Eso no es un número. Volvé a abrir la tienda y probá de nuevo."); return; }
-            int tope = pl.getConfig().getInt("cantidad-maxima-personalizada", 2304);
-            if (n < 1 || n > tope) { Msg.error(p, "La cantidad tiene que estar entre 1 y " + Msg.numero(tope) + "."); return; }
-            Tienda t = pl.almacen().porId(pend.tienda());
-            if (t == null || Operaciones.inventario(t) == null) { Msg.error(p, "Esa tienda ya no existe."); return; }
-            Operaciones.Resultado r = pend.venta() ? pl.operaciones().vender(p, t, n) : pl.operaciones().comprar(p, t, n);
-            if (r.ok()) {
-                Msg.ok(p, (pend.venta() ? "Vendiste " : "Compraste ") + Msg.numero(n) + "x " + nombreItem(t) + (pend.venta() ? " y recibiste " : " por ") + Msg.dinero(r.totalCentavos()) + ".");
-            } else {
-                Msg.error(p, r.mensaje());
-            }
-            abrir(p, t);
-        });
+    private void cantidadPersonalizada(Player p, long id, boolean venta, String texto) {
+        int n;
+        try { n = Integer.parseInt(texto.replace(".", "")); } catch (NumberFormatException ex) { Msg.error(p, "Eso no es un número. Volvé a abrir la tienda y probá de nuevo."); return; }
+        int tope = pl.getConfig().getInt("cantidad-maxima-personalizada", 2304);
+        if (n < 1 || n > tope) { Msg.error(p, "La cantidad tiene que estar entre 1 y " + Msg.numero(tope) + "."); return; }
+        Tienda t = pl.almacen().porId(id);
+        if (t == null || Operaciones.inventario(t) == null) { Msg.error(p, "Esa tienda ya no existe."); return; }
+        Operaciones.Resultado r = venta ? pl.operaciones().vender(p, t, n) : pl.operaciones().comprar(p, t, n);
+        if (r.ok()) {
+            Msg.ok(p, (venta ? "Vendiste " : "Compraste ") + Msg.numero(n) + "x " + nombreItem(t) + (venta ? " y recibiste " : " por ") + Msg.dinero(r.totalCentavos()) + ".");
+        } else {
+            Msg.error(p, r.mensaje());
+        }
+        abrir(p, t);
     }
 }

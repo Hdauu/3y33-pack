@@ -16,8 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BundleMeta;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,18 +69,7 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         return null;
     }
 
-    /** Precio en centavos. "-" o "no" = desactivado (-1). Devuelve -2 si no es un numero valido. */
-    private long precio(String s) {
-        if (s.equals("-") || s.equalsIgnoreCase("no")) return -1;
-        try {
-            BigDecimal v = new BigDecimal(s.replace(',', '.'));
-            if (v.signum() < 0) return -2;
-            if (v.scale() > 2 && v.stripTrailingZeros().scale() > 2) return -2;
-            long c = v.setScale(2, RoundingMode.DOWN).movePointRight(2).longValueExact();
-            long tope = (long) (pl.getConfig().getDouble("precio-maximo", 1_000_000) * 100);
-            return c > tope ? -3 : c;
-        } catch (NumberFormatException | ArithmeticException e) { return -2; }
-    }
+    private long precio(String s) { return Msg.precio(s, pl.getConfig().getDouble("precio-maximo", 1_000_000)); }
 
     private static boolean tieneContenido(ItemStack it) {
         if (it.getItemMeta() instanceof BlockStateMeta bsm && bsm.hasBlockState() && bsm.getBlockState() instanceof Container c && !c.getInventory().isEmpty()) return true;
