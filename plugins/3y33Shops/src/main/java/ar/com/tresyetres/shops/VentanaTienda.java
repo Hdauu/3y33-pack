@@ -219,7 +219,7 @@ final class VentanaTienda implements Listener {
                 final String tierra = t.tierra;
                 final long id = t.id;
                 if (e.isLeftClick()) {
-                    pl.entrada().pedir(p, "Escribí el título de tu tierra (hasta 32 letras, - para borrarlo)", txt -> {
+                    pl.entrada().dialogo(p, "Título de la tierra", "Aparece en /tienda buscar. Dejalo vacío para borrarlo.", "Título", pl.almacen().perfil(tierra).titulo(), 32, () -> reabrir(p, id), txt -> {
                         String titulo = txt.equals("-") ? "" : txt;
                         if (titulo.length() > 32) { Msg.error(p, "Es muy largo: máximo 32 letras."); reabrir(p, id); return; }
                         pl.almacen().guardarPerfil(tierra, titulo, pl.almacen().perfil(tierra).descripcion());
@@ -227,7 +227,7 @@ final class VentanaTienda implements Listener {
                         reabrir(p, id);
                     });
                 } else {
-                    pl.entrada().pedir(p, "Escribí la descripción de tu tierra (hasta 120 letras, - para borrarla)", txt -> {
+                    pl.entrada().dialogo(p, "Descripción de la tierra", "Aparece en /tienda buscar. Dejala vacía para borrarla.", "Descripción", pl.almacen().perfil(tierra).descripcion(), 120, () -> reabrir(p, id), txt -> {
                         String desc = txt.equals("-") ? "" : txt;
                         if (desc.length() > 120) { Msg.error(p, "Es muy larga: máximo 120 letras."); reabrir(p, id); return; }
                         pl.almacen().guardarPerfil(tierra, pl.almacen().perfil(tierra).titulo(), desc);
@@ -240,7 +240,7 @@ final class VentanaTienda implements Listener {
             case S_PERSONAL -> {
                 final boolean venta = e.isLeftClick();
                 final long id = t.id;
-                pl.entrada().pedir(p, "Escribí en el chat cuántas unidades querés " + (venta ? "vender" : "comprar"), txt -> cantidadPersonalizada(p, id, venta, txt));
+                pl.entrada().dialogo(p, "Cantidad personalizada", "Elegí cuántas unidades querés " + (venta ? "vender" : "comprar") + ".", "Unidades", "", 6, () -> reabrir(p, id), txt -> cantidadPersonalizada(p, id, venta, txt));
             }
             default -> { }
         }
