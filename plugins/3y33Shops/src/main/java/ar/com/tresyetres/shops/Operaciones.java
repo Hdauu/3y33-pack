@@ -180,6 +180,8 @@ final class Operaciones {
 
     /** Le cuenta al dueño (y a los administradores que cobran) lo que pasó en su tienda, si estan conectados. */
     private void avisar(Tienda t, Player actor, boolean compro, int n, long total, Inventory shop) {
+        if (pl.holograma() != null) pl.holograma().refrescar(t);
+        if (!t.avisos) return;
         String item = VentanaTienda.nombreItem(t);
         java.util.List<java.util.UUID> receptores = new java.util.ArrayList<>();
         receptores.add(t.dueno);

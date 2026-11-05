@@ -4,3 +4,12 @@ precio-maximo: 1000000
 cantidad-maxima-personalizada: 2304
 # segundos entre clics en la ventana (evita spam de clics)
 pausa-clics-ms: 150
+
+holograma:
+  altura-item: 1.3
+  altura-texto: 0.35
+  separacion-lineas: 0.26
+  escala-item: 0.6
+  rango-texto: 6.0
+  rango-aparicion: 24.0
+  rango-desaparicion: 40.0
