@@ -24,20 +24,27 @@ final class Integridad implements Listener {
     private final ShopsPlugin pl;
     private final Map<String, Integer> fallas = new HashMap<>();
 
+    /** Pasadas seguidas en que cada tienda salio mal: se suspende recien a la segunda, para no avisar por un dato que Lands todavia estaba cargando. */
+    private final Map<Long, Integer> dudas = new HashMap<>();
+    private final long inicio = System.currentTimeMillis();
+
     Integridad(ShopsPlugin pl) { this.pl = pl; }
 
     void iniciar() {
         long cada = pl.getConfig().getLong("integridad.revisar-cada-segundos", 120) * 20L;
         Bukkit.getScheduler().runTaskTimer(pl, () -> {
             try { revisarTodas(); } catch (Throwable e) { pl.getLogger().warning("Integridad: " + e); }
-        }, 600L, Math.max(200L, cada));
+        }, 1800L, Math.max(200L, cada));
     }
 
     /** null si la tienda esta en regla; si no, el motivo de la suspension. No cambia nada. */
     String motivo(Tienda t) {
         if (!pl.lands().disponible()) return null;      // sin Lands no se puede decidir: no se suspende nada
+        // justo despues de arrancar Lands todavia esta cargando las tierras: no se decide nada (se mantiene lo que ya habia)
+        if (System.currentTimeMillis() - inicio < 90_000L) return t.suspension;
         if (t.mundoObj() == null) return "el mundo de la tienda no está disponible";
-        LandsPuente.Terreno ter = pl.lands().en(t.ubicacion(), t.dueno);
+        LandsPuente.Terreno ter = pl.lands().enONoSe(t.ubicacion(), t.dueno);
+        if (ter == LandsPuente.DESCONOCIDO) return t.suspension;     // Lands fallo al contestar: no se cambia el estado
         if (ter == null) return "ya no está dentro de ninguna tierra";
         if (!ter.miembro()) return "su dueño ya no es miembro de la tierra " + ter.nombre();
         return null;
@@ -84,8 +91,13 @@ final class Integridad implements Listener {
                 suspendidas++;
             }
             boolean estabaSuspendida = t.suspension != null;
+            if (m != null && !estabaSuspendida && dudas.merge(t.id, 1, Integer::sum) < 2) continue;   // primera vez que sale mal: se espera a la proxima pasada
+            if (m == null || estabaSuspendida) dudas.remove(t.id);
             t.suspension = m;
-            if (estabaSuspendida != (m != null)) cambioDeEstado(t, m);
+            if (estabaSuspendida != (m != null)) {
+                pl.getLogger().info("Tienda " + t.id + (m != null ? " suspendida: " + m : " rehabilitada") + " (" + t.mundo + " " + t.x + "," + t.y + "," + t.z + ")");
+                cambioDeEstado(t, m);
+            }
         }
         for (Map.Entry<String, Almacen.Punto> e : pl.almacen().todosPuntos()) {
             String clave = e.getKey();
