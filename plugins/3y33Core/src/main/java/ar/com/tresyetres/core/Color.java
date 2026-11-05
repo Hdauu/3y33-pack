@@ -159,6 +159,7 @@ final class Color implements Listener {
     }
 
     ChatEstilo chat;
+    Nombre nombre;
 
     boolean puede(Player p) {
         if (libre(p)) return true;
@@ -251,6 +252,7 @@ final class Color implements Listener {
         if (s == 31) {
             elegido.remove(p.getUniqueId());
             guardar();
+            if (nombre != null) nombre.forzar(p);
             p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.6f, 1f);
             p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Volviste al color de tu rango."));
             abrir(p);
@@ -263,6 +265,7 @@ final class Color implements Listener {
             if (!disponible(p, x)) return;
             elegido.put(p.getUniqueId(), x.id());
             guardar();
+            if (nombre != null) nombre.forzar(p);
             p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.4f);
             p.sendMessage(core.mm("<dark_gray>3y33 »</dark_gray> <white>Tu nombre ahora es <gradient:" + x.a() + ":" + x.b() + ">" + p.getName() + "</gradient><white>."));
             abrir(p);
