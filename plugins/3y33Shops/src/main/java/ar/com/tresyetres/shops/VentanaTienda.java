@@ -49,11 +49,19 @@ final class VentanaTienda implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void alTocar(PlayerInteractEvent e) {
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK || e.getHand() != EquipmentSlot.HAND) return;
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Block b = e.getClickedBlock();
         Tienda t = pl.almacen().en(b);
         if (t == null) return;
         Player p = e.getPlayer();
+        if (e.getHand() != EquipmentSlot.HAND) {
+            // la otra mano tampoco puede abrir el cofre de verdad
+            ItemStack otra = p.getInventory().getItemInOffHand();
+            if (p.isSneaking() && otra.getType().isBlock() && !otra.getType().isAir()) return;
+            e.setCancelled(true);
+            e.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+            return;
+        }
         // agachado con un bloque en la mano: dejá que ponga el bloque
         if (p.isSneaking() && p.getInventory().getItemInMainHand().getType().isBlock() && !p.getInventory().getItemInMainHand().getType().isAir()) return;
         e.setCancelled(true);
@@ -61,6 +69,11 @@ final class VentanaTienda implements Listener {
         e.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
         if (Operaciones.inventario(t) == null) {
             Msg.error(p, "El cofre de esta tienda ya no existe. La tienda se borró.");
+            pl.almacen().borrar(t);
+            return;
+        }
+        if (!Operaciones.contenedorPermitido(b.getType())) {
+            Msg.error(p, "Las tiendas solo pueden estar en cofres o barriles. Esta tienda se borró.");
             pl.almacen().borrar(t);
             return;
         }
@@ -132,6 +145,9 @@ final class VentanaTienda implements Listener {
             String pto = pl.puntos().texto(Puntos.claveTierra(t.tierra));
             lore.add(linea("Punto de viaje: " + (pto == null ? "ninguno" : pto), NamedTextColor.GRAY));
             lore.add(linea("Shift + clic: elegir punto de viaje de la tierra.", NamedTextColor.YELLOW));
+            lore.add(Component.empty());
+            lore.add(linea("Los administradores del servidor también", NamedTextColor.RED));
+            lore.add(linea("pueden editar, modificar o eliminar esto.", NamedTextColor.RED));
         }
         return item(Material.CHEST, Component.text("Perfil de la tienda de tierra", NamedTextColor.AQUA, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false), lore);
     }

@@ -18,12 +18,13 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 /**
  * Protecciones de las tiendas (las mismas que activa QuickShop en este server: explosiones, tolvas, droppers y entidades,
- * mas romper, pistones, fuego y cofres que se juntan).
+ * mas romper, pistones, fuego, cofres que se juntan y tolvas que levantan items).
  */
 final class Proteccion implements Listener {
     private final ShopsPlugin pl;
@@ -87,6 +88,12 @@ final class Proteccion implements Listener {
         if (esTienda(e.getSource()) || esTienda(e.getDestination())) e.setCancelled(true);
     }
 
+    /** Una tolva que levanta items del piso y los mete al cofre de una tienda. */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void alLevantarItems(InventoryPickupItemEvent e) {
+        if (esTienda(e.getInventory())) e.setCancelled(true);
+    }
+
     // ---------- entidades (endermen, etc.) ----------
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -99,7 +106,7 @@ final class Proteccion implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void alPoner(BlockPlaceEvent e) {
         Material m = e.getBlockPlaced().getType();
-        if (m != Material.CHEST && m != Material.TRAPPED_CHEST) return;
+        if (m != Material.CHEST) return;
         Block b = e.getBlockPlaced();
         for (BlockFace f : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST}) {
             Block vecino = b.getRelative(f);
