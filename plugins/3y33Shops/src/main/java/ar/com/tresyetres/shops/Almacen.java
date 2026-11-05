@@ -34,6 +34,10 @@ final class Almacen {
     private final Map<String, Tienda> porBloque = new HashMap<>();
     private long ultimoId = 0;
     private final Map<String, Perfil> perfiles = new HashMap<>();
+    private final Map<String, Punto> puntos = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Punto de viaje guardado (de una tienda: clave S:id; de una tierra: T:nombre). */
+    record Punto(String mundo, double x, double y, double z, float yaw, float pitch) { }
     private final Map<UUID, String[]> skins = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Titulo y descripcion de la tierra que ven los jugadores en el buscador. */
@@ -63,6 +67,7 @@ final class Almacen {
             s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
                     + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
             s.execute("CREATE INDEX IF NOT EXISTS idx_hist ON historial(tienda, cuando)");
+            s.execute("CREATE TABLE IF NOT EXISTS puntos(clave TEXT PRIMARY KEY, mundo TEXT, x REAL, y REAL, z REAL, yaw REAL, pitch REAL)");
             s.execute("CREATE TABLE IF NOT EXISTS skins(uuid TEXT PRIMARY KEY, valor TEXT, firma TEXT)");
             s.execute("CREATE TABLE IF NOT EXISTS perfiles(tierra TEXT PRIMARY KEY, titulo TEXT, descripcion TEXT)");
         }
@@ -105,6 +110,10 @@ final class Almacen {
                 indexar(t);
                 ultimoId = Math.max(ultimoId, t.id);
             }
+        }
+        puntos.clear();
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT clave, mundo, x, y, z, yaw, pitch FROM puntos")) {
+            while (rs.next()) puntos.put(rs.getString(1), new Punto(rs.getString(2), rs.getDouble(3), rs.getDouble(4), rs.getDouble(5), (float) rs.getDouble(6), (float) rs.getDouble(7)));
         }
         skins.clear();
         try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("SELECT uuid, valor, firma FROM skins")) {
@@ -159,6 +168,7 @@ final class Almacen {
     void borrar(Tienda t) {
         desindexar(t);
         if (pl.holograma() != null) pl.holograma().quitar(t.id);
+        borrarPunto(Puntos.claveTienda(t.id));
         final long id = t.id;
         io.execute(() -> {
             try (PreparedStatement p = con.prepareStatement("DELETE FROM tiendas WHERE id=?")) { p.setLong(1, id); p.executeUpdate(); }
@@ -223,6 +233,28 @@ final class Almacen {
                 }
             } catch (SQLException e) { pl.getLogger().severe("No pude leer el historial de la tienda " + id + ": " + e); }
             org.bukkit.Bukkit.getScheduler().runTask(pl, () -> alTerminar.accept(lista));
+        });
+    }
+
+    Punto punto(String clave) { return puntos.get(clave); }
+
+    void guardarPunto(String clave, org.bukkit.Location l) {
+        final Punto pt = new Punto(l.getWorld().getName(), l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch());
+        puntos.put(clave, pt);
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO puntos(clave,mundo,x,y,z,yaw,pitch) VALUES(?,?,?,?,?,?,?)")) {
+                p.setString(1, clave); p.setString(2, pt.mundo()); p.setDouble(3, pt.x()); p.setDouble(4, pt.y()); p.setDouble(5, pt.z());
+                p.setDouble(6, pt.yaw()); p.setDouble(7, pt.pitch());
+                p.executeUpdate();
+            } catch (SQLException e) { pl.getLogger().severe("No pude guardar el punto " + clave + ": " + e); }
+        });
+    }
+
+    void borrarPunto(String clave) {
+        if (puntos.remove(clave) == null) return;
+        io.execute(() -> {
+            try (PreparedStatement p = con.prepareStatement("DELETE FROM puntos WHERE clave=?")) { p.setString(1, clave); p.executeUpdate(); }
+            catch (SQLException e) { pl.getLogger().severe("No pude borrar el punto " + clave + ": " + e); }
         });
     }
 

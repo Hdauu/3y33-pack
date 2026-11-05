@@ -125,7 +125,7 @@ final class Buscador implements Listener {
         for (int i = 0; i < POR_PAGINA && desde + i < grupos.size(); i++) inv.setItem(i, tarjeta(grupos.get(desde + i), hayFiltro ? filtro : null));
         inv.setItem(S_INFO, item(Material.BOOK, n("Página " + (pagina + 1) + " de " + paginas, NamedTextColor.GOLD), List.of(
                 l(Msg.numero(grupos.size()) + " tierras con tiendas.", NamedTextColor.GRAY),
-                l("Clic en una tierra para ir a su spawn.", NamedTextColor.GRAY),
+                l("Clic en una tierra para ir hasta ahí.", NamedTextColor.GRAY),
                 l("Tip: /tienda buscar <ítem>", NamedTextColor.DARK_GRAY))));
         if (pagina > 0) inv.setItem(S_ANTERIOR, item(Material.ARROW, n("Anterior", NamedTextColor.RED), List.of()));
         if (pagina < paginas - 1) inv.setItem(S_SIGUIENTE, item(Material.ARROW, n("Siguiente", NamedTextColor.RED), List.of()));
@@ -173,7 +173,7 @@ final class Buscador implements Listener {
             }
         }
         lore.add(Component.empty());
-        lore.add(l("Clic: ir al spawn de la tierra.", NamedTextColor.YELLOW));
+        lore.add(l("Clic: ir a la tierra.", NamedTextColor.YELLOW));
         sm.lore(lore);
         sm.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES, org.bukkit.inventory.ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
         it.setItemMeta(sm);
@@ -215,29 +215,36 @@ final class Buscador implements Listener {
         if (slot >= POR_PAGINA) return;
         int idx = h.pagina * POR_PAGINA + slot;
         if (idx >= h.grupos.size()) return;
-        viajar(p, h.grupos.get(idx));
+        viajar(p, h.grupos.get(idx), h.filtro);
     }
 
-    private void viajar(Player p, Grupo g) {
+    private void viajar(Player p, Grupo g, String filtro) {
         long espera = pl.getConfig().getLong("buscar-espera-segundos", 10) * 1000L;
         long restante = ultimoViaje.getOrDefault(p.getUniqueId(), 0L) + espera - System.currentTimeMillis();
         if (restante > 0 && !p.hasPermission("tresyetres.staff")) { Msg.error(p, "Esperá " + ((restante + 999) / 1000) + " segundos para volver a viajar."); return; }
-        // una tienda de esa tierra que siga existiendo
+        // la tienda a la que vamos: con un ítem buscado, la mas barata de comprar; si no, la primera que siga existiendo
         Tienda t = null;
-        for (Tienda x : g.tiendas()) if (pl.almacen().porId(x.id) != null) { t = x; break; }
+        boolean hayFiltro = filtro != null && !filtro.isBlank();
+        for (Tienda x : g.tiendas()) {
+            if (pl.almacen().porId(x.id) == null) continue;
+            if (t == null) t = x;
+            else if (hayFiltro && x.puedeComprar() && (!t.puedeComprar() || x.compra < t.compra)) t = x;
+        }
         if (t == null || t.mundoObj() == null) { Msg.error(p, "Esa tierra ya no tiene tiendas."); p.closeInventory(); return; }
-        Location destino = pl.lands().spawn(t.ubicacion());
-        boolean alSpawn = destino != null;
+        // 1) punto de la tienda, 2) punto de la tierra, 3) spawn de Lands, 4) al lado de la tienda
+        Location destino = pl.puntos().ubicacion(Puntos.claveTienda(t.id));
+        if (destino == null) destino = pl.puntos().ubicacion(Puntos.claveTierra(g.tierra()));
+        if (destino == null) destino = pl.lands().spawn(t.ubicacion());
+        final boolean conPunto = destino != null;
         if (destino == null) destino = cercaDe(t);
         ultimoViaje.put(p.getUniqueId(), System.currentTimeMillis());
         final String nombre = g.tierra();
-        final boolean spawn = alSpawn;
         p.closeInventory();
         p.teleportAsync(destino).thenAccept(ok -> Bukkit.getScheduler().runTask(pl, () -> {
             if (!p.isOnline()) return;
             if (ok) {
                 p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.6f, 1.2f);
-                Msg.ok(p, spawn ? "Te llevé al spawn de " + nombre + "." : "La tierra " + nombre + " no tiene spawn: te dejé al lado de una de sus tiendas.");
+                Msg.ok(p, conPunto ? "Te llevé a la tierra " + nombre + "." : "La tierra " + nombre + " no tiene punto de viaje ni spawn: te dejé al lado de una de sus tiendas.");
             } else {
                 Msg.error(p, "No pude teletransportarte.");
             }
