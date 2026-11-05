@@ -45,11 +45,11 @@ final class Ajustes implements Listener {
         @Override public Inventory getInventory() { return null; }
     }
 
-    private record Copia(boolean bloqCompra, boolean bloqVenta, String modo, int bajoStock, String rotacion, String mensaje, Set<UUID> admins) { }
+    private record Copia(boolean avisos, boolean bloqCompra, boolean bloqVenta, String modo, int bajoStock, String rotacion, String mensaje, Set<UUID> admins) { }
 
     // slots de la pantalla de ajustes
     static final int A_BLOQ_COMPRA = 10, A_BLOQ_VENTA = 11, A_PRECIO_COMPRA = 12, A_PRECIO_VENTA = 13, A_MODO = 14, A_ADMINS = 15, A_HISTORIAL = 16;
-    static final int A_COPIAR = 19, A_PEGAR = 20, A_UMBRAL = 21, A_ROTACION = 22, A_MENSAJE = 23, A_VOLVER = 31;
+    static final int A_COPIAR = 19, A_PEGAR = 20, A_UMBRAL = 21, A_ROTACION = 22, A_MENSAJE = 23, A_AVISOS = 24, A_VOLVER = 31;
 
     private final ShopsPlugin pl;
     private final Map<UUID, Copia> portapapeles = new HashMap<>();
@@ -161,6 +161,10 @@ final class Ajustes implements Listener {
                 l("Texto que aparece arriba de la tienda.", NamedTextColor.GRAY),
                 l("Actual: ", NamedTextColor.GRAY).append(Component.text(t.mensaje.isBlank() ? "(ninguno)" : t.mensaje, NamedTextColor.WHITE)),
                 Component.empty(), l("Clic izquierdo: cambiar (hasta " + MAX_MENSAJE + " letras).", NamedTextColor.YELLOW), l("Clic derecho: borrar.", NamedTextColor.YELLOW))));
+
+        inv.setItem(A_AVISOS, item(Material.BELL, n(t.avisos ? "Avisos activados" : "Avisos desactivados", t.avisos ? NamedTextColor.GREEN : NamedTextColor.GRAY), List.of(
+                l("Mensajes en el chat cuando alguien", NamedTextColor.GRAY), l("compra o vende, y de bajo stock.", NamedTextColor.GRAY), Component.empty(),
+                l(t.avisos ? "Clic: desactivar avisos." : "Clic: activar avisos.", NamedTextColor.YELLOW))));
 
         inv.setItem(A_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))));
     }
@@ -299,14 +303,14 @@ final class Ajustes implements Listener {
             }
             case A_HISTORIAL -> abrirHistorial(p, t);
             case A_COPIAR -> {
-                portapapeles.put(p.getUniqueId(), new Copia(t.bloqCompra, t.bloqVenta, t.modoIngreso, t.bajoStock, t.rotacion, t.mensaje, new HashSet<>(t.admins)));
+                portapapeles.put(p.getUniqueId(), new Copia(t.avisos, t.bloqCompra, t.bloqVenta, t.modoIngreso, t.bajoStock, t.rotacion, t.mensaje, new HashSet<>(t.admins)));
                 Msg.ok(p, "Copiaste los ajustes. Abrí otra tienda y usá Pegar ajustes.");
                 llenarAjustes(inv, p, t);
             }
             case A_PEGAR -> {
                 Copia c = portapapeles.get(p.getUniqueId());
                 if (c == null) { Msg.error(p, "No copiaste nada todavía."); return; }
-                t.bloqCompra = c.bloqCompra(); t.bloqVenta = c.bloqVenta();
+                t.avisos = c.avisos(); t.bloqCompra = c.bloqCompra(); t.bloqVenta = c.bloqVenta();
                 t.bajoStock = c.bajoStock(); t.rotacion = c.rotacion(); t.mensaje = c.mensaje();
                 if (esDueno(p, t)) {
                     t.modoIngreso = c.modo();
@@ -342,6 +346,7 @@ final class Ajustes implements Listener {
                     abrir(p, t);
                 });
             }
+            case A_AVISOS -> { t.avisos = !t.avisos; cambio(p, t, inv); }
             case A_VOLVER -> pl.ventana().abrir(p, t);
             default -> { }
         }

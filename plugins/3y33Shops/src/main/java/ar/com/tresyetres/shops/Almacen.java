@@ -52,7 +52,8 @@ final class Almacen {
                     + " doble INT DEFAULT 0, x2 INT, y2 INT, z2 INT, tierra TEXT, dueno TEXT NOT NULL, item BLOB NOT NULL,"
                     + " compra INT NOT NULL, venta INT NOT NULL, bloq_compra INT DEFAULT 0, bloq_venta INT DEFAULT 0,"
                     + " modo_ingreso TEXT DEFAULT 'DUENO', bajo_stock INT DEFAULT 10, mensaje TEXT DEFAULT '',"
-                    + " rotacion TEXT DEFAULT 'SUR', creada INT)");
+                    + " rotacion TEXT DEFAULT 'SUR', creada INT, avisos INT DEFAULT 1)");
+            try { s.execute("ALTER TABLE tiendas ADD COLUMN avisos INT DEFAULT 1"); } catch (SQLException ignored) { }
             s.execute("CREATE TABLE IF NOT EXISTS admins(tienda INT, uuid TEXT, PRIMARY KEY(tienda, uuid))");
             s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
                     + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
@@ -84,6 +85,7 @@ final class Almacen {
                 t.mensaje = rs.getString("mensaje") == null ? "" : rs.getString("mensaje");
                 t.rotacion = rs.getString("rotacion");
                 t.creada = rs.getLong("creada");
+                t.avisos = rs.getInt("avisos") != 0;
                 indexar(t);
                 ultimoId = Math.max(ultimoId, t.id);
             }
@@ -132,6 +134,7 @@ final class Almacen {
 
     void borrar(Tienda t) {
         desindexar(t);
+        if (pl.holograma() != null) pl.holograma().quitar(t.id);
         final long id = t.id;
         io.execute(() -> {
             try (PreparedStatement p = con.prepareStatement("DELETE FROM tiendas WHERE id=?")) { p.setLong(1, id); p.executeUpdate(); }
@@ -143,24 +146,25 @@ final class Almacen {
 
     /** Guarda (o actualiza) una tienda. Copia los datos en el hilo principal y escribe en el hilo de la base. */
     void guardar(Tienda t) {
+        if (pl.holograma() != null) pl.holograma().refrescar(t);
         final Tienda c = t;
         final byte[] item = t.item.serializeAsBytes();
         final long id = c.id; final String mundo = c.mundo; final int x = c.x, y = c.y, z = c.z; final boolean doble = c.doble;
         final int x2 = c.x2, y2 = c.y2, z2 = c.z2; final String tierra = c.tierra; final String dueno = c.dueno.toString();
         final long compra = c.compra, venta = c.venta; final boolean bc = c.bloqCompra, bv = c.bloqVenta;
         final String modo = c.modoIngreso; final int bajo = c.bajoStock; final String msj = c.mensaje; final String rot = c.rotacion;
-        final long creada = c.creada;
+        final long creada = c.creada; final boolean avisos = c.avisos;
         final List<String> admins = new ArrayList<>();
         for (UUID u : c.admins) admins.add(u.toString());
         io.execute(() -> {
             try (PreparedStatement p = con.prepareStatement("INSERT OR REPLACE INTO tiendas(id,mundo,x,y,z,doble,x2,y2,z2,tierra,dueno,item,"
-                    + "compra,venta,bloq_compra,bloq_venta,modo_ingreso,bajo_stock,mensaje,rotacion,creada) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                    + "compra,venta,bloq_compra,bloq_venta,modo_ingreso,bajo_stock,mensaje,rotacion,creada,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
                 int i = 1;
                 p.setLong(i++, id); p.setString(i++, mundo); p.setInt(i++, x); p.setInt(i++, y); p.setInt(i++, z);
                 p.setInt(i++, doble ? 1 : 0); p.setInt(i++, x2); p.setInt(i++, y2); p.setInt(i++, z2);
                 p.setString(i++, tierra); p.setString(i++, dueno); p.setBytes(i++, item);
                 p.setLong(i++, compra); p.setLong(i++, venta); p.setInt(i++, bc ? 1 : 0); p.setInt(i++, bv ? 1 : 0);
-                p.setString(i++, modo); p.setInt(i++, bajo); p.setString(i++, msj); p.setString(i++, rot); p.setLong(i, creada);
+                p.setString(i++, modo); p.setInt(i++, bajo); p.setString(i++, msj); p.setString(i++, rot); p.setLong(i++, creada); p.setInt(i, avisos ? 1 : 0);
                 p.executeUpdate();
             } catch (SQLException e) { pl.getLogger().severe("No pude guardar la tienda " + id + ": " + e); }
             try (PreparedStatement p = con.prepareStatement("DELETE FROM admins WHERE tienda=?")) { p.setLong(1, id); p.executeUpdate(); }

@@ -30,6 +30,7 @@ final class Tienda {
     int bajoStock = 10;
     String mensaje = "";
     String rotacion = "SUR";
+    boolean avisos = true;
     long creada;
     final Set<UUID> admins = new HashSet<>();
 
