@@ -167,14 +167,21 @@ final class Ajustes implements Listener {
                 l("Mensajes en el chat cuando alguien", NamedTextColor.GRAY), l("compra o vende, y de bajo stock.", NamedTextColor.GRAY), Component.empty(),
                 l(t.avisos ? "Clic: desactivar avisos." : "Clic: activar avisos.", NamedTextColor.YELLOW))));
 
-        String pto = pl.puntos().texto(Puntos.claveTienda(t.id));
+        String pto = pl.puntos().texto(Puntos.claveTierra(t.tierra));
+        LandsPuente.Terreno terr = pl.lands().en(t.ubicacion(), p.getUniqueId());
+        boolean puedePunto = pl.puntos().esDuenoDeTierra(p, terr);
         List<Component> lp = new ArrayList<>();
-        lp.add(l("Adónde te lleva /tienda buscar al elegir esta tienda.", NamedTextColor.GRAY));
-        lp.add(l("Actual: ", NamedTextColor.GRAY).append(Component.text(pto == null ? "ninguno (usa el de la tierra o su spawn)" : pto, NamedTextColor.WHITE)));
+        lp.add(l("Adónde te lleva /tienda buscar al elegir una tienda", NamedTextColor.GRAY));
+        lp.add(l("de " + t.tierra + ". Es uno solo y lo comparten todas las tiendas de la tierra.", NamedTextColor.GRAY));
+        lp.add(l("Actual: ", NamedTextColor.GRAY).append(Component.text(pto == null ? "ninguno (usa el spawn de la tierra)" : pto, NamedTextColor.WHITE)));
         lp.add(Component.empty());
-        lp.add(l("Clic izquierdo: elegir punto.", NamedTextColor.YELLOW));
-        if (pto != null) lp.add(l("Clic derecho: borrar punto.", NamedTextColor.YELLOW));
-        inv.setItem(A_PUNTO, item(Material.ENDER_PEARL, n("Punto de viaje", NamedTextColor.AQUA), lp));
+        if (puedePunto) {
+            lp.add(l("Clic izquierdo: elegir punto.", NamedTextColor.YELLOW));
+            if (pto != null) lp.add(l("Clic derecho: borrar punto.", NamedTextColor.YELLOW));
+        } else {
+            lp.add(l("Solo el dueño de la tierra puede cambiarlo.", NamedTextColor.RED));
+        }
+        inv.setItem(A_PUNTO, item(Material.ENDER_PEARL, n("Punto de viaje de la tierra", NamedTextColor.AQUA), lp));
 
         inv.setItem(A_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))));
     }
@@ -363,8 +370,10 @@ final class Ajustes implements Listener {
                 });
             }
             case A_PUNTO -> {
-                if (derecho) { pl.puntos().borrarDeTienda(p, t); llenarAjustes(inv, p, t); }
-                else pl.puntos().iniciarTienda(p, t);
+                if (derecho) {
+                    pl.puntos().borrarDeTierra(p, t.tierra, pl.lands().en(t.ubicacion(), p.getUniqueId()));
+                    llenarAjustes(inv, p, t);
+                } else pl.puntos().iniciarTierra(p, t);
             }
             case A_AVISOS -> { t.avisos = !t.avisos; cambio(p, t, inv); }
             case A_VOLVER -> pl.ventana().abrir(p, t);

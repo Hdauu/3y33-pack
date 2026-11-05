@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/** Punto de viaje de una tienda o de una tierra: adonde te lleva /tienda buscar. Se arma en dos pasos: elegir y confirmar parado en el lugar. */
+/** Punto de viaje de una tierra (uno solo, compartido por todas sus tiendas): adonde te lleva /tienda buscar. Se arma en dos pasos: elegir y confirmar parado en el lugar. */
 final class Puntos implements Listener {
     private record Pendiente(String clave, String tierra, boolean deTierra, long tiendaId, long vence) { }
 
@@ -23,7 +23,6 @@ final class Puntos implements Listener {
 
     Puntos(ShopsPlugin pl) { this.pl = pl; }
 
-    static String claveTienda(long id) { return "S:" + id; }
     static String claveTierra(String tierra) { return "T:" + tierra.toLowerCase(Locale.ROOT); }
 
     boolean esDuenoDeTierra(Player p, LandsPuente.Terreno ter) {
@@ -31,13 +30,6 @@ final class Puntos implements Listener {
     }
 
     // ---------- paso 1: elegir ----------
-
-    void iniciarTienda(Player p, Tienda t) {
-        if (!t.administra(p)) { Msg.error(p, "Solo el dueño o los administradores pueden cambiar el punto de la tienda."); return; }
-        pendientes.put(p.getUniqueId(), new Pendiente(claveTienda(t.id), t.tierra, false, t.id, System.currentTimeMillis() + 300_000));
-        p.closeInventory();
-        Msg.info(p, "Andá al lugar donde querés que lleguen los jugadores y escribí /tienda punto confirmar (o /tienda punto cancelar).");
-    }
 
     void iniciarTierra(Player p, Tienda t) {
         LandsPuente.Terreno ter = pl.lands().en(t.ubicacion(), p.getUniqueId());
@@ -55,18 +47,12 @@ final class Puntos implements Listener {
         Location loc = p.getLocation();
         LandsPuente.Terreno ter = pl.lands().en(loc, p.getUniqueId());
         if (ter == null || !ter.nombre().equalsIgnoreCase(pend.tierra())) { Msg.error(p, "Ese lugar no está dentro de la tierra " + pend.tierra() + ". Probá de nuevo."); return; }
-        if (pend.deTierra()) {
-            if (!esDuenoDeTierra(p, ter)) { Msg.error(p, "Solo el dueño de la tierra puede cambiar este punto."); return; }
-        } else {
-            Tienda t = pl.almacen().porId(pend.tiendaId());
-            if (t == null) { Msg.error(p, "Esa tienda ya no existe."); return; }
-            if (!t.administra(p)) { Msg.error(p, "Ya no podés cambiar el punto de esa tienda."); return; }
-        }
+        if (!esDuenoDeTierra(p, ter)) { Msg.error(p, "Solo el dueño de la tierra puede cambiar este punto."); return; }
         String problema = problemaDelLugar(loc);
         if (problema != null) { Msg.error(p, problema); return; }
         pl.almacen().guardarPunto(pend.clave(), loc);
         p.spawnParticle(Particle.HAPPY_VILLAGER, loc.clone().add(0, 1, 0), 12, 0.4, 0.5, 0.4, 0);
-        Msg.ok(p, "Punto de viaje guardado " + (pend.deTierra() ? "para toda la tierra " + pend.tierra() : "para esta tienda") + ".");
+        Msg.ok(p, "Punto de viaje guardado para la tierra " + pend.tierra() + ": todas sus tiendas llevan acá.");
     }
 
     void cancelar(Player p) {
@@ -74,27 +60,18 @@ final class Puntos implements Listener {
         else Msg.info(p, "No tenías nada pendiente.");
     }
 
-    /** Borra el punto de la tienda que mirás ({@code tierra=false}) o el de la tierra donde estás parado ({@code tierra=true}). */
-    void borrar(Player p, boolean tierra) {
-        if (tierra) {
-            LandsPuente.Terreno ter = pl.lands().en(p.getLocation(), p.getUniqueId());
-            if (ter == null) { Msg.error(p, "Tenés que estar parado dentro de la tierra."); return; }
-            if (!esDuenoDeTierra(p, ter)) { Msg.error(p, "Solo el dueño de la tierra puede borrar este punto."); return; }
-            if (pl.almacen().punto(claveTierra(ter.nombre())) == null) { Msg.info(p, "Esa tierra no tiene punto de viaje."); return; }
-            pl.almacen().borrarPunto(claveTierra(ter.nombre()));
-            Msg.ok(p, "Borraste el punto de viaje de la tierra " + ter.nombre() + ".");
-        } else {
-            Tienda t = pl.almacen().en(p.getTargetBlockExact(6));
-            if (t == null) { Msg.error(p, "Mirá el cofre de la tienda."); return; }
-            borrarDeTienda(p, t);
-        }
+    /** Borra el punto de viaje de la tierra donde estás parado. */
+    void borrar(Player p) {
+        LandsPuente.Terreno ter = pl.lands().en(p.getLocation(), p.getUniqueId());
+        if (ter == null) { Msg.error(p, "Tenés que estar parado dentro de la tierra."); return; }
+        borrarDeTierra(p, ter.nombre(), ter);
     }
 
-    void borrarDeTienda(Player p, Tienda t) {
-        if (!t.administra(p)) { Msg.error(p, "Solo el dueño o los administradores pueden borrar el punto."); return; }
-        if (pl.almacen().punto(claveTienda(t.id)) == null) { Msg.info(p, "Esta tienda no tiene punto de viaje propio."); return; }
-        pl.almacen().borrarPunto(claveTienda(t.id));
-        Msg.ok(p, "Borraste el punto de viaje de la tienda.");
+    void borrarDeTierra(Player p, String tierra, LandsPuente.Terreno ter) {
+        if (!esDuenoDeTierra(p, ter)) { Msg.error(p, "Solo el dueño de la tierra puede borrar este punto."); return; }
+        if (pl.almacen().punto(claveTierra(tierra)) == null) { Msg.info(p, "Esa tierra no tiene punto de viaje."); return; }
+        pl.almacen().borrarPunto(claveTierra(tierra));
+        Msg.ok(p, "Borraste el punto de viaje de la tierra " + tierra + ".");
     }
 
     /** null si el lugar sirve para recibir jugadores; si no, el motivo. */

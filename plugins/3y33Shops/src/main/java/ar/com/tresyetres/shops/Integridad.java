@@ -79,15 +79,9 @@ final class Integridad implements Listener {
         }
         for (Map.Entry<String, Almacen.Punto> e : pl.almacen().todosPuntos()) {
             String clave = e.getKey();
-            String tierra;
-            if (clave.startsWith("S:")) {
-                Tienda t;
-                try { t = pl.almacen().porId(Long.parseLong(clave.substring(2))); } catch (NumberFormatException ex) { t = null; }
-                if (t == null) { pl.almacen().borrarPunto(clave); puntos++; continue; }
-                tierra = t.tierra;
-            } else {
-                tierra = clave.substring(2);
-            }
+            if (clave.startsWith("S:")) { pl.almacen().borrarPunto(clave); puntos++; continue; }   // puntos por tienda de versiones viejas
+            String tierra = clave.substring(2);
+            if (!hayTiendas(tierra)) { pl.almacen().borrarPunto(clave); puntos++; continue; }       // tierra sin tiendas: no queda punto suelto
             Location loc = pl.puntos().ubicacion(clave);
             if (loc == null) continue;      // mundo no cargado: no se decide
             if (puntoValido(loc, tierra)) { fallas.remove(clave); continue; }
@@ -100,6 +94,11 @@ final class Integridad implements Listener {
             }
         }
         return new int[]{suspendidas, eliminadas, puntos};
+    }
+
+    private boolean hayTiendas(String tierra) {
+        for (Tienda t : pl.almacen().todas()) if (t.tierra.equalsIgnoreCase(tierra)) return true;
+        return false;
     }
 
     private void cambioDeEstado(Tienda t, String motivo) {

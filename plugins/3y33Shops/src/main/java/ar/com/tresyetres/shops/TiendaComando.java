@@ -45,8 +45,8 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
                 switch (sub) {
                     case "confirmar" -> pl.puntos().confirmar(p);
                     case "cancelar" -> pl.puntos().cancelar(p);
-                    case "borrar" -> pl.puntos().borrar(p, a.length > 2 && a[2].equalsIgnoreCase("tierra"));
-                    default -> Msg.info(p, "Elegí el punto desde los ajustes de la tienda o el perfil de la tierra, y después usá /tienda punto confirmar parado en el lugar.");
+                    case "borrar" -> pl.puntos().borrar(p);
+                    default -> Msg.info(p, "Elegí el punto desde los ajustes de la tienda (botón Punto de viaje) y después usá /tienda punto confirmar parado en el lugar.");
                 }
             }
             case "reload", "recargar" -> {
@@ -65,7 +65,7 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
         linea(p, "/tienda crear (precio de compra) (precio de venta)", "Crea una tienda en un cofre que estés mirando con el ítem que querés vender en la mano. Usá - para desactivar compra o venta.");
         linea(p, "/tienda eliminar", "Elimina la tienda del cofre que estás mirando.");
         linea(p, "/tienda buscar [ítem]", "Mirá las tierras con tiendas y andá a su spawn con un clic.");
-        linea(p, "/tienda punto <confirmar|cancelar|borrar>", "Punto de viaje de tu tienda o tierra (se elige desde los ajustes).");
+        linea(p, "/tienda punto <confirmar|cancelar|borrar>", "Punto de viaje de tu tierra (lo usan todas sus tiendas).");
         linea(p, "/tienda mostrar <vacias|bajostock>", "Resalta tus tiendas cercanas vacías o con poco stock.");
         Msg.info(p, "Después hacé clic derecho al cofre para abrir la tienda.");
     }
@@ -159,7 +159,6 @@ final class TiendaComando implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
         if (a.length == 2 && a[0].equalsIgnoreCase("punto")) return List.of("confirmar", "cancelar", "borrar").stream().filter(x -> x.startsWith(a[1].toLowerCase(Locale.ROOT))).toList();
-        if (a.length == 3 && a[0].equalsIgnoreCase("punto") && a[1].equalsIgnoreCase("borrar")) return List.of("tierra");
         if (a.length == 2 && a[0].equalsIgnoreCase("mostrar")) return List.of("vacias", "bajostock", "apagar").stream().filter(x -> x.startsWith(a[1].toLowerCase(Locale.ROOT))).toList();
         if (a.length == 2 && a[0].equalsIgnoreCase("buscar")) return pl.buscador().itemsConTienda().stream().filter(x -> x.startsWith(a[1].toLowerCase(Locale.ROOT))).toList();
         if (a.length == 1) return (s.hasPermission("tresyetres.staff") ? List.of("crear", "eliminar", "buscar", "mostrar", "punto", "reload") : List.of("crear", "eliminar", "buscar", "mostrar", "punto")).stream().filter(x -> x.startsWith(a[0].toLowerCase(Locale.ROOT))).toList();
