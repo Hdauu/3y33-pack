@@ -31,7 +31,9 @@ final class Nombre implements Listener {
 
     /** El nombre que ven todos: [insignia] nombre con degradado. */
     String de(Player p) {
-        return color.insignia(p) + color.nombreLegacy(p) + "§r";
+        // §f: el glifo del pack se tiñe con el color del texto de alrededor; en blanco se ve con sus colores originales
+        String ins = color.insignia(p);
+        return (ins.isEmpty() ? "" : "§f" + ins) + color.nombreLegacy(p) + "§r";
     }
 
     void refrescar(Player p) {
