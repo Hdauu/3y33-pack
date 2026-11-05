@@ -33,6 +33,8 @@ final class Tienda {
     boolean avisos = true;
     /** Motivo por el que esta suspendida (null si esta en regla). Se recalcula, no se guarda. */
     String suspension = null;
+    /** Si el dueño ya se entero de la suspension actual (para avisarle que volvio solo si de verdad se lo habiamos dicho). */
+    transient boolean suspensionAvisada = false;
     long creada;
     final Set<UUID> admins = new HashSet<>();
 
