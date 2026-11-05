@@ -1,0 +1,15 @@
+name: 3y33Shops
+version: 2.0.0
+main: ar.com.tresyetres.shops.ShopsPlugin
+api-version: '1.21'
+author: 3y33 SMP
+description: Tiendas de 3y33 SMP (motor propio, atadas a Lands)
+depend: [Vault, Lands]
+commands:
+  tienda:
+    description: Tiendas de cofre
+    usage: /tienda [crear|eliminar]
+    aliases: [tiendas]
+  tiendaadmin:
+    description: Herramientas de staff para las tiendas
+    usage: /tiendaadmin [lista|info|borrar|recargar]
