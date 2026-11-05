@@ -25,3 +25,6 @@ buscar-costo: 0
 
 integridad:
   revisar-cada-segundos: 120
+
+# Banner/fondo de la ventana TIENDA (necesita el resource pack): staff = solo staff (para probar), todos, no
+ventana-banner: staff

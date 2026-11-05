@@ -88,9 +88,14 @@ final class VentanaTienda implements Listener {
     // ---------- construir la ventana ----------
 
     void abrir(Player p, Tienda t) {
-        Inventory inv = Bukkit.createInventory(new Titular(t.id), 27, Component.text("TIENDA", NamedTextColor.DARK_RED, TextDecoration.BOLD));
-        ItemStack relleno = item(Material.BLACK_STAINED_GLASS_PANE, Component.text(" "), List.of());
-        for (int i = 0; i < 27; i++) inv.setItem(i, relleno);
+        boolean banner = pl.banner().activo(p);
+        // con banner el fondo (y los marcos de los slots) los dibuja el resource pack: no se rellena con vidrios
+        Component titulo = banner ? pl.banner().titulo() : Component.text("TIENDA", NamedTextColor.DARK_RED, TextDecoration.BOLD);
+        Inventory inv = Bukkit.createInventory(new Titular(t.id), 27, titulo);
+        if (!banner) {
+            ItemStack relleno = item(Material.BLACK_STAINED_GLASS_PANE, Component.text(" "), List.of());
+            for (int i = 0; i < 27; i++) inv.setItem(i, relleno);
+        }
         llenar(inv, p, t);
         p.openInventory(inv);
     }

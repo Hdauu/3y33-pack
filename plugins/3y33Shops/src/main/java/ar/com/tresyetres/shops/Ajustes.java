@@ -116,13 +116,13 @@ final class Ajustes implements Listener {
                 l("Actual: ", NamedTextColor.GRAY).append(Component.text(t.venta < 0 ? "desactivado" : Msg.dinero(t.venta), NamedTextColor.WHITE)),
                 Component.empty(), l("Clic izquierdo: cambiar.", NamedTextColor.YELLOW), l("Clic derecho: desactivar.", NamedTextColor.YELLOW))));
 
-        boolean comp = "COMPARTIDO".equals(t.modoIngreso);
+        String modo = t.modoIngreso == null ? "DUENO" : t.modoIngreso;
         List<Component> lm = new ArrayList<>();
         lm.add(l("Quién cobra lo que ganan las ventas.", NamedTextColor.GRAY));
         lm.add(Component.empty());
-        lm.add(l((comp ? "  " : "▶ ") + "Dueño", comp ? NamedTextColor.GRAY : NamedTextColor.GREEN));
-        lm.add(l((comp ? "▶ " : "  ") + "Compartido entre admins", comp ? NamedTextColor.GREEN : NamedTextColor.GRAY));
-        lm.add(l("  Tierra (próximamente)", NamedTextColor.DARK_GRAY));
+        lm.add(l((modo.equals("DUENO") ? "▶ " : "  ") + "Dueño", modo.equals("DUENO") ? NamedTextColor.GREEN : NamedTextColor.GRAY));
+        lm.add(l((modo.equals("COMPARTIDO") ? "▶ " : "  ") + "Compartido entre admins", modo.equals("COMPARTIDO") ? NamedTextColor.GREEN : NamedTextColor.GRAY));
+        if (pl.lands().bancoDisponible()) lm.add(l((modo.equals("TIERRA") ? "▶ " : "  ") + "Banco de la tierra", modo.equals("TIERRA") ? NamedTextColor.GREEN : NamedTextColor.GRAY));
         lm.add(Component.empty());
         lm.add(dueno ? l("Clic: cambiar modo.", NamedTextColor.YELLOW) : l("Solo el dueño puede cambiarlo.", NamedTextColor.RED));
         inv.setItem(A_MODO, item(Material.EMERALD, n("Modo de ingresos", NamedTextColor.GREEN), lm));
@@ -317,7 +317,13 @@ final class Ajustes implements Listener {
             }
             case A_MODO -> {
                 if (!esDueno(p, t)) { Msg.error(p, "Solo el dueño puede cambiar el modo de ingresos."); return; }
-                t.modoIngreso = "COMPARTIDO".equals(t.modoIngreso) ? "DUENO" : "COMPARTIDO";
+                String actual = t.modoIngreso == null ? "DUENO" : t.modoIngreso;
+                boolean banco = pl.lands().bancoDisponible();
+                t.modoIngreso = switch (actual) {
+                    case "DUENO" -> "COMPARTIDO";
+                    case "COMPARTIDO" -> banco ? "TIERRA" : "DUENO";
+                    default -> "DUENO";
+                };
                 cambio(p, t, inv);
             }
             case A_ADMINS -> {
