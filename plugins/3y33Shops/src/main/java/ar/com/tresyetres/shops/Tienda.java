@@ -29,7 +29,7 @@ final class Tienda {
     String modoIngreso = "DUENO";
     int bajoStock = 10;
     String mensaje = "";
-    String rotacion = "SUR";
+    String rotacion = "ARRIBA";
     boolean avisos = true;
     long creada;
     final Set<UUID> admins = new HashSet<>();

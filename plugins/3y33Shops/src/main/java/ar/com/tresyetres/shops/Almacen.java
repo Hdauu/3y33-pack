@@ -52,12 +52,21 @@ final class Almacen {
                     + " doble INT DEFAULT 0, x2 INT, y2 INT, z2 INT, tierra TEXT, dueno TEXT NOT NULL, item BLOB NOT NULL,"
                     + " compra INT NOT NULL, venta INT NOT NULL, bloq_compra INT DEFAULT 0, bloq_venta INT DEFAULT 0,"
                     + " modo_ingreso TEXT DEFAULT 'DUENO', bajo_stock INT DEFAULT 10, mensaje TEXT DEFAULT '',"
-                    + " rotacion TEXT DEFAULT 'SUR', creada INT, avisos INT DEFAULT 1)");
+                    + " rotacion TEXT DEFAULT 'ARRIBA', creada INT, avisos INT DEFAULT 1)");
             try { s.execute("ALTER TABLE tiendas ADD COLUMN avisos INT DEFAULT 1"); } catch (SQLException ignored) { }
             s.execute("CREATE TABLE IF NOT EXISTS admins(tienda INT, uuid TEXT, PRIMARY KEY(tienda, uuid))");
             s.execute("CREATE TABLE IF NOT EXISTS historial(id INTEGER PRIMARY KEY AUTOINCREMENT, tienda INT, cuando INT,"
                     + " jugador TEXT, tipo TEXT, cantidad INT, total INT)");
             s.execute("CREATE INDEX IF NOT EXISTS idx_hist ON historial(tienda, cuando)");
+        }
+        // una sola vez: antes "SUR" era el valor por defecto sin efecto; ahora la posicion por defecto es ARRIBA
+        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("PRAGMA user_version")) {
+            if (rs.next() && rs.getInt(1) < 1) {
+                try (Statement u = con.createStatement()) {
+                    u.executeUpdate("UPDATE tiendas SET rotacion='ARRIBA'");
+                    u.execute("PRAGMA user_version=1");
+                }
+            }
         }
         cargar();
     }
@@ -83,7 +92,7 @@ final class Almacen {
                 t.modoIngreso = rs.getString("modo_ingreso");
                 t.bajoStock = rs.getInt("bajo_stock");
                 t.mensaje = rs.getString("mensaje") == null ? "" : rs.getString("mensaje");
-                t.rotacion = rs.getString("rotacion");
+                t.rotacion = rs.getString("rotacion") == null ? "ARRIBA" : rs.getString("rotacion");
                 t.creada = rs.getLong("creada");
                 t.avisos = rs.getInt("avisos") != 0;
                 indexar(t);
