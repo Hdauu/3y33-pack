@@ -38,7 +38,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|quitar|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|info|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -75,9 +75,21 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.perfiles().guardar(f);
                 Msg.ok(s, "Le saqué la espera a " + p.getName() + ".");
             }
+            case "tomar" -> {
+                // staff: se pone un trabajo al instante, sin espera ni penalizacion. Uso: tomar <trabajo> [jugador]
+                Trabajo t = a.length > 1 ? Trabajo.de(a[1]) : null;
+                Player p = a.length > 2 ? Bukkit.getPlayerExact(a[2]) : (s instanceof Player pj ? pj : null);
+                if (t == null || p == null) { Msg.error(s, "Uso: /trabajosadmin tomar <trabajo> [jugador]"); return true; }
+                Perfil f = pl.perfiles().de(p);
+                f.activo = null;
+                f.libreHasta = 0;
+                f.pendiente = 0;
+                pl.servicio().unirse(p, t);
+                Msg.ok(s, p.getName() + " ahora es " + t.nombre + " (sin espera).");
+            }
             case "quitar" -> {
-                Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : null;
-                if (p == null) { Msg.error(s, "Uso: /trabajosadmin quitar <jugador>"); return true; }
+                Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
+                if (p == null) { Msg.error(s, "Uso: /trabajosadmin quitar [jugador]"); return true; }
                 Perfil f = pl.perfiles().de(p);
                 f.activo = null;
                 f.libreHasta = 0;
@@ -107,7 +119,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "quitar", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "info", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
@@ -115,7 +127,9 @@ final class Comandos implements CommandExecutor, TabCompleter {
         } else if (a.length == 2 && !admin && a[0].equalsIgnoreCase("unirse")) {
             for (Trabajo t : Trabajo.values()) out.add(t.id);
         } else if (admin && s.hasPermission("tresyetres.staff")) {
-            if (a.length == 2) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
+            if (a.length == 2 && a[0].equalsIgnoreCase("tomar")) for (Trabajo t : Trabajo.values()) out.add(t.id);
+            else if (a.length == 3 && a[0].equalsIgnoreCase("tomar")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
+            else if (a.length == 2) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 3 && (a[0].equalsIgnoreCase("nivel") || a[0].equalsIgnoreCase("xp"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
         }
         String ult = a[a.length - 1].toLowerCase(Locale.ROOT);
