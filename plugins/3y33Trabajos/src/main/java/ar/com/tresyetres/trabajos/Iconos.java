@@ -1,6 +1,8 @@
 package ar.com.tresyetres.trabajos;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
@@ -66,15 +68,37 @@ final class Iconos implements Listener {
         return it;
     }
 
-    /** La carta de un trabajo: icono con marco del pack (si lo tiene) o el item comun. */
-    ItemStack carta(Player p, Trabajo t, int prestigio, boolean activo, Component nombre, List<Component> lore) {
+    /** Fondos de ventana: cada uno es un caracter de la fuente 3y33:tienda del pack. */
+    static final char FONDO_TRABAJOS = (char) 0xE304, FONDO_TRABAJO = (char) 0xE305;
+    private static final char CORRER_8 = (char) 0xF808;
+
+    /** Titulo con el fondo ilustrado (corrido 8 a la izquierda para quedar pegado al borde); sin el pack, el titulo comun. */
+    Component titulo(Player p, char fondo, String textoComun) {
+        if (!conPack(p)) return Component.text(textoComun, NamedTextColor.DARK_RED, TextDecoration.BOLD);
+        return Component.text("" + CORRER_8 + fondo).font(Key.key("3y33", "tienda")).color(NamedTextColor.WHITE);
+    }
+
+    /**
+     * La carta de un trabajo. Con el pack es un item grande (32x48, 2 casilleros de ancho por 3 de alto) que cuelga del casillero
+     * donde se pone; "detalle" es la misma carta centrada en la ventana del trabajo. Sin el pack, el item comun.
+     */
+    ItemStack carta(Player p, Trabajo t, int prestigio, boolean activo, boolean detalle, Component nombre, List<Component> lore) {
         ItemStack it = item(t.icono, nombre, lore);
         if (conPack(p)) {
             ItemMeta meta = it.getItemMeta();
             String marco = MARCOS[Math.max(0, Math.min(3, prestigio))];
-            meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + t.id + "_" + marco + "_" + (activo ? "activo" : "normal")));
+            meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + (detalle ? "detalle_" : "") + "carta_" + t.id + "_" + marco + "_" + (activo ? "activo" : "normal")));
             it.setItemMeta(meta);
         }
+        return it;
+    }
+
+    /** Un casillero invisible con el mismo nombre y lore que la carta, para que el cursor la muestre en toda su superficie. */
+    ItemStack relleno(ItemStack carta) {
+        ItemStack it = carta.clone();
+        ItemMeta meta = it.getItemMeta();
+        meta.setItemModel(new NamespacedKey("3y33", "trabajos/vacio"));
+        it.setItemMeta(meta);
         return it;
     }
 }
