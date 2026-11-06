@@ -44,7 +44,7 @@ POS = {  # trabajo: (x izquierdo de la carta, columna del casillero donde se pon
     'minero': (10, 1), 'lenador': (64, 4), 'granjero': (118, 7),
     'cazador': (37, 2), 'pescador': (91, 5),
 }
-A = 2 / 3   # y inferior del modelo: en el juego deja la carta con el borde de arriba en y=30 (medido en pantalla), centrada en la caja
+A = 4 / 3   # y inferior del modelo: en el juego deja la carta con el borde de arriba en y=28 (medido en pantalla), centrada entre la linea del panel y los botones de abajo
 
 
 def x0(tid):
