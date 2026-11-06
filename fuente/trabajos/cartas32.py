@@ -74,38 +74,49 @@ def marco(img, m, activo, acc):
     d.line([(1, 2), (1, H - 3)], fill=luz + (255,))
     n = m['n']
     if n >= 1:
-        for (x, y) in ((4, 4), (W - 5, 4), (4, H - 5), (W - 5, H - 5)):
+        for (x, y) in ((4, 4), (W - 5, 4)):
             d.point((x, y), fill=luz + (255,))
     if n >= 2:
-        for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
-            ox = 4 if sx > 0 else W - 5; oy = 4 if sy > 0 else H - 5
+        for sx, sy in ((1, 1), (-1, 1)):
+            ox = 4 if sx > 0 else W - 5; oy = 4
             for k in range(1, 4): d.point((ox + sx * k, oy), fill=luz + (255,)); d.point((ox, oy + sy * k), fill=luz + (255,))
     if n >= 3:
-        cx = W // 2
-        d.polygon([(cx, 0), (cx + 3, 3), (cx, 6), (cx - 3, 3)], fill=(18, 8, 12, 255), outline=base + (255,))
-        d.point((cx, 3), fill=RED + (255,)); d.point((cx, 2), fill=lighten(RED, .5) + (255,))
         for (x, y) in ((7, 9), (W - 8, 9)):
             d.point((x, y), fill=(255, 250, 200, 255))
     for (x, y) in ((0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)): img.putpixel((x, y), (0, 0, 0, 0))
     if activo:
         d.rectangle([1, 1, W - 2, H - 2], outline=lighten(acc, .35) + (255,))
         for (x, y) in ((0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)): img.putpixel((x, y), (0, 0, 0, 0))
+    if n >= 3 or activo:
+        cx = W // 2
+        gema = (60, 200, 90) if activo else RED
+        d.polygon([(cx, 0), (cx + 3, 3), (cx, 6), (cx - 3, 3)], fill=(18, 8, 12, 255), outline=(base if n >= 3 else lighten(acc, .35)) + (255,))
+        d.point((cx, 3), fill=gema + (255,)); d.point((cx, 2), fill=lighten(gema, .5) + (255,))
     return img
 
 
+import pixel
+pixel.FONT.setdefault('T', ['XXX', '.X.', '.X.', '.X.', '.X.'])
+ANCHA = {'M': ['X...X', 'XX.XX', 'X.X.X', 'X...X', 'X...X']}
+ETIQUETA = {'MINERO': 'MINA', 'LEÑADOR': 'TALA', 'GRANJERO': 'GRANJA', 'CAZADOR': 'CAZA', 'PESCADOR': 'PESCA'}
+
+
 def cinta(img, acc, activo, nombre):
-    """Cinta de abajo con el nombre; si el trabajo esta activo lleva una gema verde."""
+    """Cinta de abajo con la actividad del trabajo (el nombre completo va en el cartel del cursor)."""
     d = ImageDraw.Draw(img)
-    y0, y1 = 38, 45
+    y0, y1 = 37, 45
     d.rectangle([3, y0, W - 4, y1], fill=(20, 8, 12, 255), outline=acc + (255,))
     d.line([(4, y0 + 1), (W - 5, y0 + 1)], fill=darken(acc, .45) + (255,))
-    if activo:
-        gx, gy = W // 2, y0 + 4
-        d.polygon([(gx, gy - 3), (gx + 3, gy), (gx, gy + 3), (gx - 3, gy)], fill=(60, 200, 90, 255), outline=(255, 255, 255, 255))
-        d.point((gx, gy - 1), fill=(210, 255, 220, 255)); d.point((gx, gy), fill=(120, 240, 150, 255))
-    else:
-        for x in range(8, W - 8, 3):
-            d.point((x, y0 + 4), fill=darken(acc, .2) + (255,))
+    t = ETIQUETA[nombre]
+    letras = [ANCHA.get(ch, pixel.FONT[ch]) for ch in t]
+    ancho = sum(len(g[0]) for g in letras) + len(letras) - 1
+    for col, dx in (((0, 0, 0), 1), (CREAM, 0)):
+        x = (W - ancho) // 2 + dx
+        for g in letras:
+            for r, fila in enumerate(g):
+                for c, v in enumerate(fila):
+                    if v == 'X': img.putpixel((x + c, y0 + 2 + r + dx), col + (255,))
+            x += len(g[0]) + 1
     return img
 
 
