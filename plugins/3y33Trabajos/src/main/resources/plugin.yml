@@ -1,5 +1,5 @@
 name: 3y33Trabajos
-version: 1.3.6
+version: 1.3.7
 main: ar.com.tresyetres.trabajos.TrabajosPlugin
 api-version: '1.21'
 author: 3y33 SMP
@@ -13,4 +13,4 @@ commands:
     aliases: [jobs, trabajo, job]
   trabajosadmin:
     description: Herramientas de staff para los trabajos
-    usage: /trabajosadmin [reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|info|recargar]
+    usage: /trabajosadmin [reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|holo|info|recargar]
