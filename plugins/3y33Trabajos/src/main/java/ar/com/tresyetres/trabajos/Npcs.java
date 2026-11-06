@@ -81,6 +81,7 @@ final class Npcs implements Listener {
         final boolean panel;
         final Trabajo trabajo;
         Location loc;
+        Float yaw;                                            // solo los paneles: hacia donde miran (fijos)
         TextDisplay titulo;                                   // solo los titulos
         final Map<UUID, TextDisplay> paneles = new HashMap<>(); // un panel por jugador cercano
         Holo(String id, boolean panel, Trabajo trabajo, Location loc) { this.id = id; this.panel = panel; this.trabajo = trabajo; this.loc = loc; }
@@ -115,7 +116,9 @@ final class Npcs implements Listener {
             Trabajo t = h == null ? null : Trabajo.de(h.getString("trabajo"));
             World w = h == null ? null : Bukkit.getWorld(h.getString("mundo", ""));
             if (t == null || w == null) continue;
-            holos.put(id, new Holo(id, "panel".equals(h.getString("tipo")), t, new Location(w, h.getDouble("x"), h.getDouble("y"), h.getDouble("z"))));
+            Holo n = new Holo(id, "panel".equals(h.getString("tipo")), t, new Location(w, h.getDouble("x"), h.getDouble("y"), h.getDouble("z")));
+            if (h.contains("yaw")) n.yaw = (float) h.getDouble("yaw");
+            holos.put(id, n);
         }
     }
 
@@ -129,6 +132,7 @@ final class Npcs implements Listener {
             y.set(b + ".x", h.loc.getX());
             y.set(b + ".y", h.loc.getY());
             y.set(b + ".z", h.loc.getZ());
+            if (h.yaw != null) y.set(b + ".yaw", h.yaw.doubleValue());
         }
         try { y.save(archivo); } catch (IOException e) { pl.getLogger().warning("No pude guardar hologramas.yml: " + e.getMessage()); }
     }
@@ -159,13 +163,17 @@ final class Npcs implements Listener {
         holos.put(a, new Holo(a, false, t, base.clone().add(0, 2.75, 0)));
         double r = Math.toRadians(yaw);
         String b = nuevoId();
-        holos.put(b, new Holo(b, true, t, base.clone().add(-Math.cos(r) * 3.4, 1.5, -Math.sin(r) * 3.4)));
+        Holo panel = new Holo(b, true, t, base.clone().add(-Math.cos(r) * 3.4, 1.5, -Math.sin(r) * 3.4));
+        panel.yaw = yaw;
+        holos.put(b, panel);
     }
 
     /** Pone un holograma suelto donde esta el jugador (a la altura de los ojos). */
     String crearHolo(Player p, boolean panel, Trabajo t) {
         String id = nuevoId();
-        holos.put(id, new Holo(id, panel, t, p.getEyeLocation().clone()));
+        Holo n = new Holo(id, panel, t, p.getEyeLocation().clone());
+        if (panel) n.yaw = p.getLocation().getYaw() + 180f;
+        holos.put(id, n);
         guardar();
         actualizar();
         return id;
@@ -187,10 +195,32 @@ final class Npcs implements Listener {
         Holo h = masCercano(p, panel);
         if (h == null) return null;
         h.loc = p.getEyeLocation().clone();
+        if (h.panel) h.yaw = p.getLocation().getYaw() + 180f;
         if (h.titulo != null) h.titulo.teleport(h.loc);
-        for (TextDisplay d : h.paneles.values()) d.teleport(h.loc);
+        for (TextDisplay d : h.paneles.values()) d.teleport(ubicacion(h));
         guardar();
         return h.id + " (" + (h.panel ? "panel" : "titulo") + " de " + h.trabajo.nombre + ")";
+    }
+
+    /** Donde va el cartel de un holograma: los paneles son fijos y miran hacia su yaw. */
+    private Location ubicacion(Holo h) {
+        Location l = h.loc.clone();
+        l.setYaw(h.yaw != null ? h.yaw : 0f);
+        l.setPitch(0f);
+        return l;
+    }
+
+    /** Un panel viejo sin direccion: mira para donde mira el NPC del trabajo que tenga cerca (o al sur). */
+    private void orientar(Holo h) {
+        float y = 0f;
+        for (Entity e : h.loc.getWorld().getNearbyEntities(h.loc, 12, 12, 12)) {
+            if (trabajoDe(e) != h.trabajo || !e.getScoreboardTags().contains(TAG)) continue;
+            Float a = e.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
+            y = a != null ? a : e.getLocation().getYaw();
+            break;
+        }
+        h.yaw = y;
+        guardar();
     }
 
     String quitarHolo(Player p, Boolean panel) {
@@ -350,7 +380,10 @@ final class Npcs implements Listener {
                     .append(Component.text(" (" + pct + "%)", pct >= 100 ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).appendNewline();
         }
         TextColor naranja = TextColor.color(0xFFAA00), verde = TextColor.color(0x55FF55);
-        c = c.append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), verde)).appendNewline()
+        double parte = pl.misiones().parte(t, p.getUniqueId());
+        c = c.append(Component.text("Pozo: ", gris)).append(Component.text("$" + Msg.num(pl.misiones().pozo(t), 0), verde)).appendNewline()
+                .append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), verde))
+                .append(Component.text(parte > 0 ? " (" + Msg.num(parte * 100, 1) + "%)" : "", gris)).appendNewline()
                 .append(Component.text("Tu puesto ", gris)).append(Component.text(puesto, naranja, TextDecoration.BOLD)).appendNewline();
         for (int i = 0; i < 5; i++) {
             if (i > 0) c = c.appendNewline();
@@ -426,7 +459,8 @@ final class Npcs implements Listener {
                 TextDisplay d = h.paneles.get(p.getUniqueId());
                 Component txt = panel(h.trabajo, p);
                 if (d == null) {
-                    d = texto(h.loc, false, txt, 0.85f, 0, Display.Billboard.VERTICAL);
+                    if (h.yaw == null) orientar(h);
+                    d = texto(ubicacion(h), false, txt, 0.85f, 0, Display.Billboard.FIXED);
                     h.paneles.put(p.getUniqueId(), d);
                     p.showEntity(pl, d);
                 } else d.text(txt);
