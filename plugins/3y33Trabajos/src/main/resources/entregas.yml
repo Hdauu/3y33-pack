@@ -23,11 +23,11 @@ ciclo-dias: 3
 # según el % de los puntos que aportó cada uno. Para cobrar hay que llegar al mínimo de puntos de global.aporte-minimo (misiones.yml).
 # Si un tema no tiene "pozo" usa el de pozo-base de su trabajo.
 pozo-base:
-  minero: 9000
-  lenador: 6000
-  granjero: 7000
-  cazador: 8000
-  pescador: 7500
+  minero: 90000
+  lenador: 60000
+  granjero: 70000
+  cazador: 80000
+  pescador: 75000
 
 # Objetivo mínimo de cada ciclo, en puntos (el objetivo es el mayor entre este y un % del total del ciclo anterior).
 minimo:
@@ -42,7 +42,7 @@ temas:
   minero:
     profundo:
       nombre: "Corazón de Roca Profunda"
-      pozo: 12000
+      pozo: 120000
       items:
         "*DEEPSLATE*": 2
         COBBLED_DEEPSLATE: 1
@@ -67,7 +67,7 @@ temas:
         SCULK_CATALYST: 40
     cantera:
       nombre: "Cantera de Piedra"
-      pozo: 7000
+      pozo: 70000
       items:
         STONE: 1
         COBBLESTONE: 1
@@ -109,7 +109,7 @@ temas:
         STONE_BRICK_SLAB: 1
     carbon:
       nombre: "Hornos y Fundición"
-      pozo: 9000
+      pozo: 90000
       items:
         COAL: 3
         CHARCOAL: 3
@@ -144,7 +144,7 @@ temas:
         HOPPER: 38
     redstone:
       nombre: "Ingeniería de Redstone"
-      pozo: 10000
+      pozo: 100000
       items:
         REDSTONE: 3
         REDSTONE_BLOCK: 27
@@ -179,7 +179,7 @@ temas:
         "*_BUTTON": 2
     gemas:
       nombre: "Fiebre de Gemas"
-      pozo: 14000
+      pozo: 140000
       items:
         DIAMOND: 60
         EMERALD: 60
@@ -206,7 +206,7 @@ temas:
         ENCHANTING_TABLE: 250
     nether:
       nombre: "Minería del Nether"
-      pozo: 12000
+      pozo: 120000
       items:
         NETHERRACK: 1
         BASALT: 1
@@ -238,7 +238,7 @@ temas:
         IRON_CHAIN: 4
     arena:
       nombre: "Arena, Vidrio y Ladrillos"
-      pozo: 7000
+      pozo: 70000
       items:
         SAND: 1
         RED_SAND: 1
@@ -269,7 +269,7 @@ temas:
         BRICK_WALL: 4
     aldea:
       nombre: "Herramientas y Armaduras"
-      pozo: 10000
+      pozo: 100000
       items:
         IRON_PICKAXE: 22
         IRON_AXE: 22
@@ -297,7 +297,7 @@ temas:
   lenador:
     taller:
       nombre: "Taller de Carpintería"
-      pozo: 7000
+      pozo: 70000
       items:
         "{M}_LOG": 1
         "{M}_PLANKS": 1
@@ -327,7 +327,7 @@ temas:
         WOODEN_HOE: 3
     escaleras:
       nombre: "Escalones y Losas"
-      pozo: 5500
+      pozo: 55000
       items:
         "{M}_PLANKS": 1
         "{M}_STAIRS": 2
@@ -342,7 +342,7 @@ temas:
         "{M}_FENCE_GATE": 4
     nobles:
       nombre: "Maderas Nobles"
-      pozo: 6500
+      pozo: 65000
       items:
         DARK_OAK_LOG: 2
         ACACIA_LOG: 2
@@ -372,7 +372,7 @@ temas:
         MUDDY_MANGROVE_ROOTS: 2
     nether:
       nombre: "Bosque del Nether"
-      pozo: 6500
+      pozo: 65000
       items:
         CRIMSON_STEM: 2
         WARPED_STEM: 2
@@ -397,7 +397,7 @@ temas:
         WARPED_NYLIUM: 0
     jardin:
       nombre: "Jardín del Bosque"
-      pozo: 6500
+      pozo: 65000
       items:
         "*_LEAVES": 1
         "*_SAPLING": 2
@@ -426,7 +426,7 @@ temas:
         ROOTED_DIRT: 2
     biblioteca:
       nombre: "Biblioteca del Pueblo"
-      pozo: 8000
+      pozo: 80000
       items:
         BOOK: 8
         PAPER: 3
@@ -450,7 +450,7 @@ temas:
         CANDLE: 6
     barcos:
       nombre: "Astillero"
-      pozo: 7000
+      pozo: 70000
       items:
         "{M}_BOAT": 5
         "{M}_CHEST_BOAT": 15
@@ -472,7 +472,7 @@ temas:
         FISHING_ROD: 6
     fogata:
       nombre: "Fogata y Leña"
-      pozo: 6000
+      pozo: 60000
       items:
         "{M}_LOG": 1
         CHARCOAL: 3
@@ -497,7 +497,7 @@ temas:
   granjero:
     panaderia:
       nombre: "Panadería del Pueblo"
-      pozo: 7000
+      pozo: 70000
       items:
         WHEAT: 2
         WHEAT_SEEDS: 1
@@ -516,7 +516,7 @@ temas:
         APPLE: 4
     huerta:
       nombre: "La Gran Huerta"
-      pozo: 6500
+      pozo: 65000
       items:
         CARROT: 1
         POTATO: 1
@@ -537,7 +537,7 @@ temas:
         BOWL: 2
     granja:
       nombre: "Granja de Animales"
-      pozo: 7500
+      pozo: 75000
       items:
         BEEF: 2
         COOKED_BEEF: 4
@@ -564,7 +564,7 @@ temas:
         NAME_TAG: 25
     tinte:
       nombre: "Lana y Colores"
-      pozo: 8000
+      pozo: 80000
       items:
         "*_WOOL": 3
         "*_CARPET": 2
@@ -596,7 +596,7 @@ temas:
         PALE_MOSS_CARPET: 0
     dulce:
       nombre: "Cosecha Dulce"
-      pozo: 8000
+      pozo: 80000
       items:
         SUGAR_CANE: 1
         SUGAR: 2
@@ -621,7 +621,7 @@ temas:
         CANDLE: 6
     calabazas:
       nombre: "Calabazas y Sandías"
-      pozo: 6000
+      pozo: 60000
       items:
         PUMPKIN: 3
         CARVED_PUMPKIN: 5
@@ -641,7 +641,7 @@ temas:
         BONE_MEAL: 1
     raros:
       nombre: "Cultivos Raros"
-      pozo: 8500
+      pozo: 85000
       items:
         BROWN_MUSHROOM: 2
         RED_MUSHROOM: 2
@@ -670,7 +670,7 @@ temas:
         BONE_MEAL: 1
     banquete:
       nombre: "Banquete del Pueblo"
-      pozo: 9000
+      pozo: 90000
       items:
         BREAD: 6
         COOKED_BEEF: 5
@@ -698,7 +698,7 @@ temas:
   cazador:
     cementerio:
       nombre: "Noche de Cementerio"
-      pozo: 7000
+      pozo: 70000
       items:
         ROTTEN_FLESH: 1
         BONE: 2
@@ -718,7 +718,7 @@ temas:
         STRING: 2
     telaranas:
       nombre: "Telarañas y Veneno"
-      pozo: 7000
+      pozo: 70000
       items:
         STRING: 2
         SPIDER_EYE: 3
@@ -738,7 +738,7 @@ temas:
         WHITE_WOOL: 6
     polvora:
       nombre: "Pólvora y Fuegos Artificiales"
-      pozo: 8000
+      pozo: 80000
       items:
         GUNPOWDER: 4
         TNT: 28
@@ -757,7 +757,7 @@ temas:
         "*_DYE": 3
     infierno:
       nombre: "Cacería en el Nether"
-      pozo: 11000
+      pozo: 110000
       items:
         BLAZE_ROD: 10
         BLAZE_POWDER: 5
@@ -785,7 +785,7 @@ temas:
         SPECTRAL_ARROW: 5
     alquimia:
       nombre: "Laboratorio de Alquimia"
-      pozo: 9500
+      pozo: 95000
       items:
         SPIDER_EYE: 3
         FERMENTED_SPIDER_EYE: 9
@@ -811,7 +811,7 @@ temas:
         HONEY_BOTTLE: 12
     ender:
       nombre: "Caza Rara"
-      pozo: 14000
+      pozo: 140000
       items:
         ENDER_PEARL: 12
         ENDER_EYE: 25
@@ -834,7 +834,7 @@ temas:
         BLAZE_ROD: 10
     arsenal:
       nombre: "Arsenal del Cazador"
-      pozo: 10000
+      pozo: 100000
       items:
         BOW: 8
         CROSSBOW: 22
@@ -862,7 +862,7 @@ temas:
         COOKED_BEEF: 5
     pantano:
       nombre: "Pantano de Slimes"
-      pozo: 8000
+      pozo: 80000
       items:
         SLIME_BALL: 4
         SLIME_BLOCK: 38
@@ -891,7 +891,7 @@ temas:
   pescador:
     dia:
       nombre: "Pesca del Día"
-      pozo: 6000
+      pozo: 60000
       items:
         COD: 2
         SALMON: 2
@@ -915,7 +915,7 @@ temas:
         PUFFERFISH_BUCKET: 28
     tesoros:
       nombre: "Tesoros del Mar"
-      pozo: 8500
+      pozo: 85000
       items:
         NAUTILUS_SHELL: 20
         NAME_TAG: 20
@@ -938,7 +938,7 @@ temas:
         HEART_OF_THE_SEA: 200
     ahumadero:
       nombre: "Ahumadero del Puerto"
-      pozo: 7000
+      pozo: 70000
       items:
         COOKED_COD: 4
         COOKED_SALMON: 4
@@ -961,7 +961,7 @@ temas:
         BAKED_POTATO: 3
     arrecife:
       nombre: "Arrecife de Coral"
-      pozo: 8000
+      pozo: 80000
       items:
         "*_CORAL": 5
         "*_CORAL_BLOCK": 8
@@ -984,7 +984,7 @@ temas:
         PRISMARINE_SHARD: 5
     monumento:
       nombre: "Monumento Submarino"
-      pozo: 12000
+      pozo: 120000
       items:
         PRISMARINE_SHARD: 5
         PRISMARINE_CRYSTALS: 5
@@ -1007,7 +1007,7 @@ temas:
         TURTLE_SCUTE: 12
     playa:
       nombre: "Playa y Tortugas"
-      pozo: 7000
+      pozo: 70000
       items:
         SAND: 1
         SEAGRASS: 1
@@ -1033,7 +1033,7 @@ temas:
         SUSPICIOUS_SAND: 0
     hielo:
       nombre: "Pesca en el Hielo"
-      pozo: 7500
+      pozo: 75000
       items:
         COD: 2
         SALMON: 2
