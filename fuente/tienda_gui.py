@@ -70,15 +70,6 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
         d.line([px(7), px(3.7), px(169), px(3.7)], fill=(150, 98, 58, 255), width=px(1))
 
 
-    else:
-        # friso dorado en lugar del toldo: banda roja con gemas
-        d.rounded_rectangle(box(6, 4, 170, 13), radius=px(2), fill=T['friso'] + (255,), outline=(214, 164, 65, 255), width=px(1))
-        d.line([px(8), px(6), px(168), px(6)], fill=(150, 40, 50, 255), width=px(1))
-        d.line([px(8), px(11), px(168), px(11)], fill=(60, 12, 20, 255), width=px(1))
-        for k in range(11):
-            x = 12 + k * 15.2
-            d.polygon([(px(x), px(5.2)), (px(x + 2.6), px(8.5)), (px(x), px(11.8)), (px(x - 2.6), px(8.5))], fill=(238, 190, 80, 255), outline=(120, 80, 30, 255))
-            d.ellipse(box(x - 0.7, 7.8, x + 0.7, 9.2), fill=(210, 40, 60, 255))
 
     # panel de contenido liso, con marcos solo detras de los botones
     top, bot = 35, 17 + 18 * filas + 0.5
@@ -99,7 +90,7 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
     font = ImageFont.truetype(FONT, px(16))
     tw = d.textlength(texto, font=font) / S
     ancho = max(100, tw + 20)
-    cy0, cy1 = (16, 36) if toldo else (14.5, 33.5)
+    cy0, cy1 = (16, 36) if toldo else (6, 26)
     cx0, cx1 = (W - ancho) / 2, (W + ancho) / 2
     d.rounded_rectangle(box(cx0 + 0.6, cy0 + 1, cx1 + 0.6, cy1 + 1), radius=px(3), fill=(0, 0, 0, 110))
     pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), T['cartel1'], T['cartel2'])
@@ -159,8 +150,8 @@ if __name__ == '__main__':
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
     trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
-    print(generar(6, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(1, 0, 4, 8)], toldo=False))
+    print(generar(6, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.85, 0, 4, 8)], toldo=False))
     detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
-    print(generar(6, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(1, 3, 4, 5)], toldo=False))
+    print(generar(6, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.85, 3, 4, 5)], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
