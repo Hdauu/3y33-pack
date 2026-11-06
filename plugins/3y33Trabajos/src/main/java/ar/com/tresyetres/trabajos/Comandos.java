@@ -38,7 +38,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|holo|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|tema|npc|holo|info|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -152,6 +152,14 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.misiones().sumarGlobal(t, n);
                 Msg.ok(s, "Sumé " + n + " a la misión global de " + t.nombre + ".");
             }
+            case "tema" -> {
+                // /trabajosadmin tema <trabajo> [id]: sin id lista los temas; con id fuerza ese tema (para probar)
+                Trabajo t = a.length > 1 ? Trabajo.de(a[1]) : null;
+                if (t == null) { Msg.error(s, "Uso: /trabajosadmin tema <trabajo> [tema]"); return true; }
+                if (a.length < 3) { Msg.info(s, t.nombre + ": tema actual " + pl.misiones().nombreTema(t) + ". Temas: " + String.join(", ", pl.misiones().idsTemas(t))); return true; }
+                if (!pl.misiones().fijarTema(t, a[2])) { Msg.error(s, "Ese tema no existe."); return true; }
+                Msg.ok(s, "Tema de " + t.nombre + ": " + pl.misiones().nombreTema(t) + ".");
+            }
             case "info" -> {
                 Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
                 if (p == null) { Msg.error(s, "Uso: /trabajosadmin info <jugador>"); return true; }
@@ -174,7 +182,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "npc", "holo", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "tema", "npc", "holo", "info", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
@@ -187,7 +195,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
             else if (a.length == 3 && a[0].equalsIgnoreCase("holo")) out.addAll(List.of("titulo", "panel"));
             else if (a.length == 4 && a[0].equalsIgnoreCase("holo") && a[1].equalsIgnoreCase("crear")) { for (Trabajo t : Trabajo.values()) out.add(t.id); }
             else if (a.length == 3 && a[0].equalsIgnoreCase("npc") && a[1].equalsIgnoreCase("crear")) out.addAll(List.of("minero", "lenador", "granjero", "cazador", "pescador", "general"));
-            else if (a.length == 2 && (a[0].equalsIgnoreCase("tomar") || a[0].equalsIgnoreCase("global"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
+            else if (a.length == 2 && (a[0].equalsIgnoreCase("tomar") || a[0].equalsIgnoreCase("global") || a[0].equalsIgnoreCase("tema"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
             else if (a.length == 3 && a[0].equalsIgnoreCase("tomar")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 2) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 3 && (a[0].equalsIgnoreCase("nivel") || a[0].equalsIgnoreCase("xp"))) for (Trabajo t : Trabajo.values()) out.add(t.id);

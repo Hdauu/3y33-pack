@@ -342,7 +342,7 @@ final class Npcs implements Listener {
         for (int i = 0; i < top.size(); i++) if (top.get(i).getKey().equals(p.getUniqueId())) { puesto = "#" + (i + 1); break; }
         NamedTextColor gris = NamedTextColor.GRAY;
         Component c = Component.text("MISIÓN GLOBAL", TextColor.color(0xFFAA00), TextDecoration.BOLD).appendNewline()
-                .append(Component.text(MISION.get(t), t.color, TextDecoration.BOLD)).appendNewline();
+                .append(Component.text(pl.misiones().nombreTema(t), t.color, TextDecoration.BOLD)).appendNewline();
         if (g.completada) {
             c = c.append(Component.text("¡Completada!", NamedTextColor.GREEN, TextDecoration.BOLD)).appendNewline();
         } else {
