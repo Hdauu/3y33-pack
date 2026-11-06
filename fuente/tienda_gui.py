@@ -165,9 +165,9 @@ if __name__ == '__main__':
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
     trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
-    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.6278, 0, 3.8333, 8)], toldo=False))
+    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [], toldo=False))
     detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
-    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.6278, 3, 3.8333, 5)], toldo=False))
+    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [], toldo=False))
     # acciones (lista de 28 casilleros + pie con volver, reloj y flechas) y confirmacion (3 filas, tres botones)
     acciones = {(r, c) for r in range(1, 5) for c in range(1, 8)} | {(5, 0), (5, 3), (5, 4), (5, 5)}
     print(generar(6, '', acciones, os.path.join(carpeta, 'acciones_gui.png'), [], toldo=False))
