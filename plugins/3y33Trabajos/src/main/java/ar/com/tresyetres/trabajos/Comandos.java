@@ -38,7 +38,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|quitar|info|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -75,6 +75,16 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.perfiles().guardar(f);
                 Msg.ok(s, "Le saqué la espera a " + p.getName() + ".");
             }
+            case "quitar" -> {
+                Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : null;
+                if (p == null) { Msg.error(s, "Uso: /trabajosadmin quitar <jugador>"); return true; }
+                Perfil f = pl.perfiles().de(p);
+                f.activo = null;
+                f.libreHasta = 0;
+                f.pendiente = 0;
+                pl.perfiles().guardar(f);
+                Msg.ok(s, p.getName() + " quedó sin trabajo y sin espera.");
+            }
             case "info" -> {
                 Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
                 if (p == null) { Msg.error(s, "Uso: /trabajosadmin info <jugador>"); return true; }
@@ -97,7 +107,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "quitar", "info", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
