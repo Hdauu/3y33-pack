@@ -5,13 +5,16 @@ from pixel import FONT, mask, shift, lighten, darken, pintar, contorno, texto
 
 CW, CH = 48, 72
 ACC = {'MINERO': (84, 150, 255), 'LEÑADOR': (222, 142, 52), 'GRANJERO': (132, 204, 68), 'CAZADOR': (236, 70, 78), 'PESCADOR': (48, 190, 230)}
-ICON = {'MINERO': 'pico', 'LEÑADOR': 'hacha', 'GRANJERO': 'espiga', 'CAZADOR': 'espada', 'PESCADOR': 'pez'}
+ICON = {'MINERO': 'nat_minero', 'LEÑADOR': 'nat_lenador', 'GRANJERO': 'nat_granjero', 'CAZADOR': 'nat_cazador', 'PESCADOR': 'nat_pescador'}
 STEEL = (166, 180, 198); WOOD = (150, 98, 52); GOLD = (236, 190, 80); CREAM = (248, 238, 216); RED = (210, 40, 60)
 BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 
 def P(img, m, col): pintar(img, m, col)
 
 def icono(nombre):
+    if nombre.startswith('nat_'):   # arte nativo 28x28 (ya trae su contorno): se usa tal cual, sin reescalar ni contornear
+        import os
+        return Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'iconos_nuevos', nombre[4:] + '_nat32.png')).convert('RGBA')
     s = 32
     im = Image.new('RGBA', (s, s), (0, 0, 0, 0))
     def M(fn): return mask(s, s, fn)
