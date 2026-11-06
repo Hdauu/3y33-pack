@@ -155,7 +155,7 @@ final class Npcs implements Listener {
         Carteles c = carteles.remove(id);
         if (c == null) return;
         if (c.titulo != null) c.titulo.remove();
-        for (TextDisplay d : c.paneles.values()) d.remove();
+        for (Panel pa : c.paneles.values()) pa.d.remove();
     }
 
     /** Saca todos los carteles (al apagar el plugin). */
