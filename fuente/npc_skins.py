@@ -102,11 +102,9 @@ def minero():
             return None
         if y <= 2: return lado(cara, AMAR)
         return None
-    s.pintar('cabeza', True, casco)
+    # (el casco ahora es un gorro 3D del pack)
     # la lampara: un cuadradito gris claro con brillo arriba del casco
     s.im.putpixel((8 + 3 + 32 - 0, 8), (200, 206, 214, 255)) if False else None
-    for (x, y) in ((43, 8), (44, 8), (43, 9), (44, 9)): s.im.putpixel((x, y), (214, 220, 228, 255))
-    s.im.putpixel((43, 8), (255, 250, 200, 255))
     def mameluco(cara, x, y, w, h):
         c = NARA
         if y in (7, 8) or y in (10, 11): c = (30, 30, 34) if y in (8, 11) else (236, 236, 150)
@@ -139,7 +137,6 @@ def lenador():
         if cara == 'frente': return ROJO if y <= 1 else None
         if cara == 'arriba': return lado(cara, ROJO)
         return lado(cara, ROJO) if y <= 1 else None
-    s.pintar('cabeza', True, gorro)
     # cinturon con hebilla y pañuelo al cuello
     s.pintar('cuerpo', True, lambda cara, x, y, w, h: None if cara in ('arriba', 'abajo') or y not in (0, 9) else lado(cara, (236, 236, 236) if y == 0 else (50, 34, 22)))
     return s
@@ -171,7 +168,6 @@ def granjero():
         if y == 2 and (cara != 'frente' or True): return lado(cara, (130, 70, 40))
         if cara == 'frente' and y == 3 and x in (0, 7): return lado(cara, PAJA)
         return None
-    s.pintar('cabeza', True, paja)
     return s
 
 
@@ -229,7 +225,6 @@ def pescador():
         if cara == 'arriba': return lado(cara, AMAR)
         if cara == 'frente': return lado(cara, AMAR) if y <= 1 else (sombra(AMAR, .8) if y == 2 else None)
         return lado(cara, AMAR) if y <= 2 else (lado(cara, AMAR) if cara == 'espalda' and y <= 4 else None)
-    s.pintar('cabeza', True, sueste)
     return s
 
 
