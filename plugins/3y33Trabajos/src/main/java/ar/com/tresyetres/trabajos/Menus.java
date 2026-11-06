@@ -177,7 +177,7 @@ final class Menus implements Listener {
                 linea("Muy pronto.", NamedTextColor.RED))));
 
         v.poner(16, relojRarezas());
-        v.poner(45, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p, java.util.Arrays.asList(Trabajo.values()).indexOf(t) < 3 ? 0 : 1); });
+        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p, java.util.Arrays.asList(Trabajo.values()).indexOf(t) < 3 ? 0 : 1); });
 
         if (activo) {
             v.poner(53, Iconos.item(Material.RED_DYE, Iconos.txtNegrita("Abandonar el trabajo", NamedTextColor.RED), List.of(
@@ -222,12 +222,12 @@ final class Menus implements Listener {
             if (idx >= todas.size()) break;
             v.poner(SLOTS_ACCIONES[i], itemAccion(t, todas.get(idx), personal));
         }
-        v.poner(45, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
-        if (pag > 0) v.poner(48, Iconos.item(Material.SPECTRAL_ARROW, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), null), e -> { sonido(p); acciones(p, t, pag - 1); });
+        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
+        if (pag > 0) v.poner(48, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + pag + " de " + paginas, GRIS))), e -> { sonido(p); acciones(p, t, pag - 1); });
         v.poner(49, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Rarezas de hoy", NamedTextColor.GOLD), List.of(
                 linea("Se renuevan en " + Msg.tiempo(pl.rarezas().msRestantes()), NamedTextColor.YELLOW),
                 linea("Página " + (pag + 1) + " de " + paginas, GRIS))));
-        if (pag < paginas - 1) v.poner(50, Iconos.item(Material.SPECTRAL_ARROW, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), null), e -> { sonido(p); acciones(p, t, pag + 1); });
+        if (pag < paginas - 1) v.poner(50, pl.iconos().flecha(p, true, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 2) + " de " + paginas, GRIS))), e -> { sonido(p); acciones(p, t, pag + 1); });
         v.abrir(p);
     }
 
