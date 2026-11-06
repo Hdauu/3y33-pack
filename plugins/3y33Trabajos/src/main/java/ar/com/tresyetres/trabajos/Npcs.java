@@ -68,11 +68,11 @@ final class Npcs implements Listener {
         MISION.put(Trabajo.GRANJERO, "Cosecha del Pueblo");
         MISION.put(Trabajo.CAZADOR, "Cacería Mayor");
         MISION.put(Trabajo.PESCADOR, "La Gran Pesca");
-        UNIDAD.put(Trabajo.MINERO, "menas");
-        UNIDAD.put(Trabajo.LENADOR, "troncos");
-        UNIDAD.put(Trabajo.GRANJERO, "cultivos");
-        UNIDAD.put(Trabajo.CAZADOR, "mobs");
-        UNIDAD.put(Trabajo.PESCADOR, "pescas");
+        UNIDAD.put(Trabajo.MINERO, "puntos");
+        UNIDAD.put(Trabajo.LENADOR, "puntos");
+        UNIDAD.put(Trabajo.GRANJERO, "puntos");
+        UNIDAD.put(Trabajo.CAZADOR, "puntos");
+        UNIDAD.put(Trabajo.PESCADOR, "puntos");
     }
 
     /** Un holograma guardado: un titulo ("Misiones / Trabajo") o un panel de la mision global. Se puede poner y mover donde sea. */
@@ -240,6 +240,14 @@ final class Npcs implements Listener {
     }
 
     private static Trabajo trabajoDe(Entity e) { return e instanceof Mannequin ? Trabajo.de(idDe(e)) : null; }
+
+    /** true si hay un NPC de ese trabajo a menos de tantos bloques del jugador. */
+    boolean cercaDeNpc(Player p, Trabajo t, double dist) {
+        for (Entity e : p.getNearbyEntities(dist, dist, dist)) {
+            if (trabajoDe(e) == t && e.getScoreboardTags().contains(TAG)) return true;
+        }
+        return false;
+    }
 
     private static String num(double d) { return String.format(Locale.GERMANY, "%,d", (long) d); }
 

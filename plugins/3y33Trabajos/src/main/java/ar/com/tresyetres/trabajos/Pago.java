@@ -60,7 +60,6 @@ final class Pago {
         if (f.ultimoPagoTiempo == 0) f.ultimoPagoTiempo = ahora;
         depositar(p, f, pesos);
         subirXp(p, f, a.trabajo(), xp);
-        pl.misiones().aporte(p, a);
         p.sendActionBar(Component.text(r.nombre + "  ", r.color)
                 .append(Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN))
                 .append(Component.text("  +" + Msg.num(xp, 2) + " XP", NamedTextColor.AQUA))

@@ -1,0 +1,92 @@
+# Misión global semanal de 3y33Trabajos: se completa ENTREGANDO ítems en el NPC del trabajo.
+# Cada ítem vale puntos (los más difíciles de conseguir valen más). Solo cuentan ítems "limpios" (sin nombre ni encantamientos).
+# Se recarga con /trabajosadmin recargar.
+
+# Si es true, las misiones (diarias, semanal y global) solo se entregan estando cerca del NPC del trabajo.
+solo-en-npc: true
+distancia-npc: 8
+
+# Objetivo mínimo de la semana, en puntos (el objetivo de cada semana es el mayor entre este y un % del total de la anterior).
+minimo:
+  minero: 20000
+  lenador: 6000
+  granjero: 8000
+  cazador: 6000
+  pescador: 3000
+
+puntos:
+  minero:
+    COBBLESTONE: 1
+    COBBLED_DEEPSLATE: 1
+    STONE: 1
+    DEEPSLATE: 1
+    ANDESITE: 1
+    DIORITE: 1
+    GRANITE: 1
+    TUFF: 1
+    COAL: 4
+    RAW_COPPER: 3
+    RAW_IRON: 6
+    RAW_GOLD: 10
+    REDSTONE: 3
+    LAPIS_LAZULI: 3
+    QUARTZ: 4
+    AMETHYST_SHARD: 5
+    DIAMOND: 60
+    EMERALD: 60
+    ANCIENT_DEBRIS: 120
+  lenador:
+    # todos los troncos, maderas y tallos (OAK_LOG, STRIPPED_CHERRY_LOG, CRIMSON_STEM, BAMBOO_BLOCK...) valen 1
+    TRONCOS: 1
+    APPLE: 3
+  granjero:
+    WHEAT: 2
+    CARROT: 1
+    POTATO: 1
+    BEETROOT: 2
+    PUMPKIN: 3
+    MELON: 4
+    MELON_SLICE: 1
+    NETHER_WART: 2
+    SWEET_BERRIES: 1
+    GLOW_BERRIES: 1
+    COCOA_BEANS: 2
+    SUGAR_CANE: 1
+    CACTUS: 1
+    BEEF: 2
+    PORKCHOP: 2
+    CHICKEN: 2
+    MUTTON: 2
+    RABBIT: 2
+    EGG: 1
+    FEATHER: 1
+    LEATHER: 3
+  cazador:
+    ROTTEN_FLESH: 1
+    BONE: 2
+    ARROW: 1
+    STRING: 2
+    SPIDER_EYE: 3
+    GUNPOWDER: 4
+    SLIME_BALL: 4
+    MAGMA_CREAM: 6
+    PRISMARINE_SHARD: 5
+    PRISMARINE_CRYSTALS: 5
+    BREEZE_ROD: 8
+    BLAZE_ROD: 10
+    ENDER_PEARL: 12
+    PHANTOM_MEMBRANE: 12
+    GHAST_TEAR: 25
+    SHULKER_SHELL: 40
+    WITHER_SKELETON_SKULL: 60
+    NETHER_STAR: 300
+  pescador:
+    COD: 2
+    SALMON: 2
+    TROPICAL_FISH: 5
+    PUFFERFISH: 5
+    LILY_PAD: 1
+    INK_SAC: 2
+    NAUTILUS_SHELL: 20
+    NAME_TAG: 20
+    SADDLE: 25
