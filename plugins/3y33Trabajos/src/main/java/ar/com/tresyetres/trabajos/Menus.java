@@ -216,7 +216,7 @@ final class Menus implements Listener {
         int porPagina = SLOTS_ACCIONES.length;
         int paginas = Math.max(1, (todas.size() + porPagina - 1) / porPagina);
         int pag = Math.max(0, Math.min(pagina, paginas - 1));
-        Ventana v = new Ventana(6, Component.text("Acciones · " + t.nombre, ROJO, TextDecoration.BOLD));
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_ACCIONES, "Acciones · " + t.nombre));
         for (int i = 0; i < porPagina; i++) {
             int idx = pag * porPagina + i;
             if (idx >= todas.size()) break;
@@ -249,7 +249,7 @@ final class Menus implements Listener {
 
     void confirmarAbandono(Player p, Trabajo t) {
         long horas = pl.getConfig().getLong("abandonar-horas", 13);
-        Ventana v = new Ventana(3, Component.text("¿Abandonar " + t.nombre + "?", ROJO, TextDecoration.BOLD));
+        Ventana v = new Ventana(3, pl.iconos().titulo(p, Iconos.FONDO_CONFIRMAR, "¿Abandonar " + t.nombre + "?"));
         v.poner(13, Iconos.item(Material.PAPER, Iconos.txtNegrita("¿Seguro?", NamedTextColor.RED), List.of(
                 linea("Te quedás " + horas + " horas sin trabajo:", GRIS),
                 linea("no cobrás por acciones ni por tiempo", GRIS),
