@@ -42,18 +42,14 @@ def icono(nombre):
         P(im, M(lambda d: d.polygon([(26, 25), (30, 29), (28, 31), (25, 26)], fill=255)), (170, 36, 50))
         P(im, M(lambda d: d.polygon([(6, 25), (2, 29), (4, 31), (7, 26)], fill=255)), (170, 36, 50))
     elif nombre == 'azada':
-        # azada de huerta: mango largo en diagonal, barra fina arriba y una hoja plana que cuelga.
-        # Todo corrido (-1, -1) para que el dibujo quede centrado y el contorno no toque el borde (si no, se envuelve al otro lado).
-        T = lambda pts: [(x - 1, y - 1) for x, y in pts]
-        P(im, M(lambda d: d.line(T([(3, 30), (17, 11)]), fill=255, width=3)), WOOD)
-        for k in range(4):
-            x = 5 + round(k * 14 / 19 * 4.7); y = 27 - round(k * 4.7)
-            im.putpixel((x - 1, y - 1), darken(WOOD, .45) + (255,))
-        P(im, M(lambda d: d.polygon(T([(13, 10), (17, 6), (30, 4), (30, 8), (19, 12)]), fill=255)), STEEL)
-        P(im, M(lambda d: d.polygon(T([(24, 6), (30, 5), (31, 16), (29, 23), (25, 22), (24, 14)]), fill=255)), STEEL)
-        P(im, M(lambda d: d.polygon(T([(27, 8), (30, 8), (30, 17), (28, 21), (27, 17)]), fill=255)), (232, 240, 250))
-        P(im, M(lambda d: d.polygon(T([(17, 6), (23, 5), (23, 8), (19, 9)]), fill=255)), (226, 234, 246))
-        P(im, M(lambda d: d.rectangle(T([(14, 10), (18, 13)]), fill=255)), (160, 50, 52))
+        # azada de huerta: mismo mango que el hacha (misma posicion, grosor y muescas), barra fina arriba y una hoja plana que cuelga
+        P(im, M(lambda d: d.line([(4, 30), (16, 9)], fill=255, width=3)), WOOD)
+        for k in range(5): im.putpixel((7 + k, 27 - k * 4), darken(WOOD, .45) + (255,))
+        P(im, M(lambda d: d.polygon([(12, 8), (16, 4), (29, 2), (29, 6), (18, 10)], fill=255)), STEEL)
+        P(im, M(lambda d: d.polygon([(23, 4), (29, 3), (30, 14), (28, 21), (24, 20), (23, 12)], fill=255)), STEEL)
+        P(im, M(lambda d: d.polygon([(26, 6), (29, 6), (29, 15), (27, 19), (26, 15)], fill=255)), (232, 240, 250))
+        P(im, M(lambda d: d.polygon([(16, 4), (22, 3), (22, 6), (18, 7)], fill=255)), (226, 234, 246))
+        P(im, M(lambda d: d.rectangle([13, 8, 17, 11], fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
