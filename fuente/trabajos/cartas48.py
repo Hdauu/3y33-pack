@@ -37,14 +37,14 @@ def carta(nombre, marco, estado):
 
 
 # ---------- ubicacion en el menu ----------
-# Menu de 6 filas: las cartas ocupan las filas 1 a 4 (y 35 a 107). Cada carta cuelga de un casillero de la fila 3.
+# Menu de 6 filas: las cartas ocupan las filas 1 a 4 (y 34 a 106). Cada carta cuelga de un casillero de la fila 3.
 # Primera pagina: 3 cartas (izquierda x=10, 64 y 118), segunda pagina: 2 cartas centradas (x=37 y 91).
-# Casilleros de 18 px; el primero empieza en x=7. Posicion de la carta: x = sx + 3*b - 16 (sx: origen del casillero), y = 35 fijo.
+# Casilleros de 18 px; el primero empieza en x=7. Posicion de la carta: x = sx + 3*b - 16 (sx: origen del casillero), y = 34 fijo.
 POS = {  # trabajo: (x izquierdo de la carta, columna del casillero donde se pone el item)
     'minero': (10, 1), 'lenador': (64, 4), 'granjero': (118, 7),
     'cazador': (37, 2), 'pescador': (91, 5),
 }
-A = -2 / 3   # y inferior del modelo: deja la carta con el borde de arriba en y=35 en la fila 3
+A = -1 / 3   # y inferior del modelo: deja la carta con el borde de arriba en y=34 en la fila 3 (1 px mas arriba, centrada en la caja)
 
 
 def x0(tid):
