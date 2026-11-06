@@ -4,6 +4,24 @@ import sys, os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 S = 8                      # supersampling
+OSCURO = dict(bg1=(46, 24, 29), bg2=(24, 13, 16), rojo=(128, 26, 36), panel=(34, 18, 22), panel_borde=(70, 36, 42), rayado=(38, 20, 25),
+              grupo=(52, 28, 34), grupo_borde=(150, 96, 52), hueco=(15, 8, 10), hueco_borde=(96, 50, 58), hueco_sombra=(6, 3, 4),
+              cartel1=(62, 30, 36), cartel2=(30, 15, 19), friso=(92, 22, 32))
+T = dict(OSCURO)
+TEMAS = {
+ 'oscuro': OSCURO,
+ 'madera': dict(bg1=(222, 168, 104), bg2=(180, 120, 66), rojo=(158, 30, 42), panel=(204, 148, 88), panel_borde=(122, 72, 36), rayado=(196, 140, 82),
+                grupo=(176, 116, 62), grupo_borde=(112, 66, 30), hueco=(126, 80, 44), hueco_borde=(88, 52, 28), hueco_sombra=(66, 38, 20),
+                cartel1=(146, 44, 52), cartel2=(104, 28, 38), friso=(150, 34, 46)),
+ 'crema': dict(bg1=(250, 236, 208), bg2=(226, 200, 160), rojo=(172, 34, 46), panel=(240, 222, 188), panel_borde=(176, 126, 74), rayado=(234, 214, 178),
+               grupo=(222, 196, 154), grupo_borde=(168, 118, 66), hueco=(204, 176, 138), hueco_borde=(150, 108, 66), hueco_sombra=(120, 84, 52),
+               cartel1=(170, 40, 50), cartel2=(120, 26, 36), friso=(168, 34, 46)),
+ 'rojo': dict(bg1=(176, 40, 52), bg2=(118, 22, 34), rojo=(70, 10, 18), panel=(142, 32, 44), panel_borde=(214, 164, 65), rayado=(136, 28, 40),
+              grupo=(116, 24, 36), grupo_borde=(214, 164, 65), hueco=(78, 14, 24), hueco_borde=(214, 164, 65), hueco_sombra=(50, 8, 14),
+              cartel1=(96, 18, 28), cartel2=(60, 10, 18), friso=(84, 14, 24)),
+}
+def tema(nombre):
+    T.clear(); T.update(TEMAS[nombre])
 W = 176
 FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fuentes', 'PressStart2P.ttf')
 
@@ -15,7 +33,7 @@ def vgrad(w, h, top, bot):
     a = (np.array(top)[None, None, :] * (1 - t) + np.array(bot)[None, None, :] * t)
     return Image.fromarray(np.repeat(a, w, axis=1).astype('uint8'), 'RGB').convert('RGBA')
 
-def generar(filas, texto, botones, salida, grupos=()):
+def generar(filas, texto, botones, salida, grupos=(), toldo=True):
     """filas: filas de la ventana (3 o 4). botones: set de (fila, columna) que llevan marco. Las filas se cuentan desde 0 (la 0 es el banner)."""
     H = 114 + 18 * filas
     img = Image.new('RGBA', (W * S, H * S), (0, 0, 0, 0))
@@ -23,45 +41,57 @@ def generar(filas, texto, botones, salida, grupos=()):
     # fondo y bordes
     mask = Image.new('L', img.size, 0)
     ImageDraw.Draw(mask).rounded_rectangle(box(0, 0, W, H), radius=px(4), fill=255)
-    img.paste(vgrad(W * S, H * S, (46, 24, 29), (24, 13, 16)), (0, 0), mask)
+    img.paste(vgrad(W * S, H * S, T['bg1'], T['bg2']), (0, 0), mask)
     d = ImageDraw.Draw(img)
     d.rounded_rectangle(box(0, 0, W, H), radius=px(4), outline=(10, 5, 7, 255), width=px(1))
-    d.rounded_rectangle(box(1, 1, W - 1, H - 1), radius=px(3), outline=(128, 26, 36, 255), width=px(1))
+    d.rounded_rectangle(box(1, 1, W - 1, H - 1), radius=px(3), outline=T['rojo'] + (255,), width=px(1))
     d.rounded_rectangle(box(2, 2, W - 2, H - 2), radius=px(2.5), outline=(214, 164, 65, 255), width=px(1))
 
-    # toldo
-    ax0, ax1, ay0, ay1, n = 7, 169, 4, 13, 18
-    sw = (ax1 - ax0) / n
-    awn = Image.new('RGBA', img.size, (0, 0, 0, 0)); ad = ImageDraw.Draw(awn)
-    for i in range(n):
-        x0 = ax0 + i * sw
-        col = (196, 40, 52, 255) if i % 2 == 0 else (246, 236, 216, 255)
-        ad.rectangle(box(x0, ay0, x0 + sw, ay1), fill=col)
-        ad.pieslice(box(x0, ay1 - sw / 2, x0 + sw, ay1 + sw / 2), 0, 180, fill=col)
-    a = np.array(awn).astype(float)
-    ymap = np.linspace(0, 1, H * S)[:, None]
-    k = 1.0 - 0.38 * np.clip((ymap - ay0 / H) / ((ay1 + 3) / H - ay0 / H), 0, 1)
-    for c in range(3): a[:, :, c] = a[:, :, c] * k
-    awn = Image.fromarray(a.astype('uint8'), 'RGBA')
-    sh = Image.new('RGBA', img.size, (0, 0, 0, 0))
-    sh.putalpha(awn.split()[3].filter(ImageFilter.GaussianBlur(px(1.2))).point(lambda v: int(v * 0.55)))
-    img.alpha_composite(sh, (0, px(1.2))); img.alpha_composite(awn)
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle(box(6, 3, 170, 5), radius=px(1), fill=(92, 52, 30, 255), outline=(40, 22, 14, 255), width=px(1))
-    d.line([px(7), px(3.7), px(169), px(3.7)], fill=(150, 98, 58, 255), width=px(1))
+    if toldo:
+        # toldo
+        ax0, ax1, ay0, ay1, n = 7, 169, 4, 13, 18
+        sw = (ax1 - ax0) / n
+        awn = Image.new('RGBA', img.size, (0, 0, 0, 0)); ad = ImageDraw.Draw(awn)
+        for i in range(n):
+            x0 = ax0 + i * sw
+            col = (196, 40, 52, 255) if i % 2 == 0 else (246, 236, 216, 255)
+            ad.rectangle(box(x0, ay0, x0 + sw, ay1), fill=col)
+            ad.pieslice(box(x0, ay1 - sw / 2, x0 + sw, ay1 + sw / 2), 0, 180, fill=col)
+        a = np.array(awn).astype(float)
+        ymap = np.linspace(0, 1, H * S)[:, None]
+        k = 1.0 - 0.38 * np.clip((ymap - ay0 / H) / ((ay1 + 3) / H - ay0 / H), 0, 1)
+        for c in range(3): a[:, :, c] = a[:, :, c] * k
+        awn = Image.fromarray(a.astype('uint8'), 'RGBA')
+        sh = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        sh.putalpha(awn.split()[3].filter(ImageFilter.GaussianBlur(px(1.2))).point(lambda v: int(v * 0.55)))
+        img.alpha_composite(sh, (0, px(1.2))); img.alpha_composite(awn)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle(box(6, 3, 170, 5), radius=px(1), fill=(92, 52, 30, 255), outline=(40, 22, 14, 255), width=px(1))
+        d.line([px(7), px(3.7), px(169), px(3.7)], fill=(150, 98, 58, 255), width=px(1))
+
+
+    else:
+        # friso dorado en lugar del toldo: banda roja con gemas
+        d.rounded_rectangle(box(6, 4, 170, 13), radius=px(2), fill=T['friso'] + (255,), outline=(214, 164, 65, 255), width=px(1))
+        d.line([px(8), px(6), px(168), px(6)], fill=(150, 40, 50, 255), width=px(1))
+        d.line([px(8), px(11), px(168), px(11)], fill=(60, 12, 20, 255), width=px(1))
+        for k in range(11):
+            x = 12 + k * 15.2
+            d.polygon([(px(x), px(5.2)), (px(x + 2.6), px(8.5)), (px(x), px(11.8)), (px(x - 2.6), px(8.5))], fill=(238, 190, 80, 255), outline=(120, 80, 30, 255))
+            d.ellipse(box(x - 0.7, 7.8, x + 0.7, 9.2), fill=(210, 40, 60, 255))
 
     # panel de contenido liso, con marcos solo detras de los botones
     top, bot = 35, 17 + 18 * filas + 0.5
-    d.rounded_rectangle(box(6, top, 170, bot), radius=px(2), fill=(34, 18, 22, 255), outline=(70, 36, 42, 255), width=px(1))
+    d.rounded_rectangle(box(6, top, 170, bot), radius=px(2), fill=T['panel'] + (255,), outline=T['panel_borde'] + (255,), width=px(1))
     for y in range(int(top) + 3, int(bot) - 1, 6):          # rayado muy suave
-        d.line([px(7), px(y), px(169), px(y)], fill=(38, 20, 25, 255), width=px(1))
+        d.line([px(7), px(y), px(169), px(y)], fill=T['rayado'] + (255,), width=px(1))
     # recuadros de grupo: (fila0, col0, fila1, col1) inclusive
     for (r0, c0, r1, c1) in grupos:
         d.rounded_rectangle(box(7 + 18 * c0 - 1.5, 17 + 18 * r0 - 1.5, 7 + 18 * (c1 + 1) + 1.5, 17 + 18 * (r1 + 1) + 1.5), radius=px(3),
-                            fill=(52, 28, 34, 255), outline=(150, 96, 52, 255), width=px(1))
+                            fill=T['grupo'] + (255,), outline=T['grupo_borde'] + (255,), width=px(1))
     def marco(x, y):
-        d.rounded_rectangle(box(x, y, x + 18, y + 18), radius=px(1.4), fill=(15, 8, 10, 255), outline=(96, 50, 58, 255), width=px(1))
-        d.line([px(x + 1), px(y + 1.5), px(x + 17), px(y + 1.5)], fill=(6, 3, 4, 255), width=px(1))
+        d.rounded_rectangle(box(x, y, x + 18, y + 18), radius=px(1.4), fill=T['hueco'] + (255,), outline=T['hueco_borde'] + (255,), width=px(1))
+        d.line([px(x + 1), px(y + 1.5), px(x + 17), px(y + 1.5)], fill=T['hueco_sombra'] + (255,), width=px(1))
     for (r, c) in botones:
         marco(7 + 18 * c, 17 + 18 * r)
 
@@ -71,7 +101,7 @@ def generar(filas, texto, botones, salida, grupos=()):
     ancho = max(100, tw + 20)
     cx0, cx1, cy0, cy1 = (W - ancho) / 2, (W + ancho) / 2, 16, 36
     d.rounded_rectangle(box(cx0 + 0.6, cy0 + 1, cx1 + 0.6, cy1 + 1), radius=px(3), fill=(0, 0, 0, 110))
-    pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), (62, 30, 36), (30, 15, 19))
+    pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), T['cartel1'], T['cartel2'])
     pm = Image.new('L', pl.size, 0)
     ImageDraw.Draw(pm).rounded_rectangle([0, 0, pl.size[0] - 1, pl.size[1] - 1], radius=px(3), fill=255)
     img.paste(pl, (px(cx0), px(cy0)), pm)
@@ -96,7 +126,7 @@ def generar(filas, texto, botones, salida, grupos=()):
 
     # separador y etiqueta clara para el "Inventory" que escribe el juego
     sep = 17 + 18 * filas + 2
-    d.line([px(8), px(sep), px(168), px(sep)], fill=(128, 26, 36, 255), width=px(1))
+    d.line([px(8), px(sep), px(168), px(sep)], fill=T['rojo'] + (255,), width=px(1))
     d.line([px(8), px(sep + 1), px(168), px(sep + 1)], fill=(214, 164, 65, 120), width=px(1))
     d.rounded_rectangle(box(5.5, sep - 0.6, 62, sep + 10.6), radius=px(2.2), fill=(222, 208, 182, 255), outline=(120, 80, 30, 255), width=px(1))
     # inventario del jugador (y = 85 + 18*(filas-3) para el primer renglon, hotbar 58 mas abajo)
@@ -125,4 +155,9 @@ if __name__ == '__main__':
     admins = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, 0), (3, 4)}
     print(generar(4, 'ADMINS', admins, os.path.join(carpeta, 'admins_gui.png'), [(1, 1, 2, 7)]))
     historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
+    # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
+    trabajos = {(4, 3), (4, 5)}
+    print(generar(5, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(1, 0, 3, 8)], toldo=False))
+    detalle = {(1, 2), (2, 2), (3, 2), (1, 6), (3, 0), (3, 8)}
+    print(generar(4, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(1, 3, 3, 5)], toldo=False))
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
