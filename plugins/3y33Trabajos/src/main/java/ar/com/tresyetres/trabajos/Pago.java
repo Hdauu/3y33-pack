@@ -53,7 +53,7 @@ final class Pago {
         }
         double mom = momentum(f, ahora);
         double pesos = a.pago() * (personal(g) + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo()));
-        double xp = a.xp() * (1.0 + r.bono()) * mom;
+        double xp = a.xp() * (1.0 + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo()));
         f.momentum = Math.min(pl.getConfig().getDouble("momentum.maximo", 3.0), mom + pl.getConfig().getDouble("momentum.por-accion", 0.02));
         f.momentumT = ahora;
         f.accionesVentana++;
