@@ -97,9 +97,9 @@ final class Menus implements Listener {
         lc.add(linea("Clic izquierdo: ver sus detalles.", GRIS));
         v.poner(48, Iconos.item(Material.PAPER, Iconos.txtNegrita(p.getName(), BLANCO), lc));
         v.poner(50, relojRarezas());
-        v.poner(45, Iconos.item(Material.ARROW, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
+        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
                 e -> { sonido(p); principal(p, pag - 1); });
-        v.poner(53, Iconos.item(Material.ARROW, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
+        v.poner(53, pl.iconos().flecha(p, true, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
                 e -> { sonido(p); principal(p, pag + 1); });
         v.abrir(p);
     }

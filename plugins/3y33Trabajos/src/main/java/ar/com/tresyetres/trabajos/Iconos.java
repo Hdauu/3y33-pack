@@ -96,6 +96,17 @@ final class Iconos implements Listener {
         return it;
     }
 
+    /** Flecha doble « » para pasar de pagina: la del pack (roja, como la de Masivo) o la flecha comun. */
+    ItemStack flecha(Player p, boolean derecha, Component nombre, List<Component> lore) {
+        ItemStack it = item(org.bukkit.Material.ARROW, nombre, lore);
+        if (conPack(p)) {
+            ItemMeta meta = it.getItemMeta();
+            meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + (derecha ? "flecha_der" : "flecha_izq")));
+            it.setItemMeta(meta);
+        }
+        return it;
+    }
+
     /** Un casillero invisible con el mismo nombre y lore que la carta, para que el cursor la muestre en toda su superficie. */
     ItemStack relleno(ItemStack carta) {
         ItemStack it = carta.clone();
