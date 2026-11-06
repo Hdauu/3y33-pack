@@ -5,7 +5,7 @@ from pixel import FONT, mask, shift, lighten, darken, pintar, contorno, texto
 
 CW, CH = 48, 72
 ACC = {'MINERO': (84, 150, 255), 'LEÑADOR': (222, 142, 52), 'GRANJERO': (132, 204, 68), 'CAZADOR': (236, 70, 78), 'PESCADOR': (48, 190, 230)}
-ICON = {'MINERO': 'nat_minero', 'LEÑADOR': 'nat_lenador', 'GRANJERO': 'nat_granjero', 'CAZADOR': 'nat_cazador', 'PESCADOR': 'nat_pescador'}
+ICON = {'MINERO': 'nat_minero', 'LEÑADOR': 'nat_lenador', 'GRANJERO': 'nat_granjero', 'CAZADOR': 'nat_cazador_ancha', 'PESCADOR': 'nat_pescador'}
 STEEL = (166, 180, 198); WOOD = (150, 98, 52); GOLD = (236, 190, 80); CREAM = (248, 238, 216); RED = (210, 40, 60)
 BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 
