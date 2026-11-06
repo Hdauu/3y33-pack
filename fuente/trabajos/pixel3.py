@@ -125,6 +125,29 @@ def icono(nombre):
             P(im, M(lambda d: d.polygon(X([(26, 4), (28, 7), (29, 12), (27, 17), (26, 11), (25, 7)]), fill=255)), LUZ)
             P(im, M(lambda d: d.polygon(X([(15, 5), (20, 4), (21, 11), (16, 11)]), fill=255)), SOM)
             P(im, M(lambda d: d.rectangle(X([(13, 12), (19, 14)]), fill=255)), (160, 50, 52))
+    elif nombre in ('hacha_v2', 'hacha_v3'):
+        LUZ = (232, 240, 250); SOM = (96, 106, 122)
+        ox = -4 if nombre == 'hacha_v2' else 0
+        X = lambda pts: [(x + ox, y) for x, y in pts]
+        hx = 16 + ox
+        P(im, M(lambda d: d.rectangle([hx - 1, 9, hx + 1, 30], fill=255)), WOOD)
+        for y in (27, 23, 19, 15): im.putpixel((hx + 1, y), darken(WOOD, .45) + (255,)); im.putpixel((hx + 1, y - 1), darken(WOOD, .45) + (255,))
+        for y in range(10, 30): im.putpixel((hx - 1, y), lighten(WOOD, .25) + (255,))
+        if nombre == 'hacha_v2':     # hacha de una hoja: nuca recta pegada al mango y filo curvo hacia la derecha
+            P(im, M(lambda d: d.polygon(X([(12, 4), (18, 2), (24, 1), (28, 3), (30, 8), (29, 15), (26, 20), (22, 20), (24, 15), (22, 11), (18, 10), (12, 10)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(27, 4), (29, 8), (28, 14), (26, 18), (26, 12), (25, 7)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(13, 4), (20, 3), (24, 3), (19, 5), (13, 6)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(13, 7), (19, 7), (19, 10), (13, 10)]), fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle(X([(13, 10), (19, 12)]), fill=255)), (160, 50, 52))
+        else:                        # hacha de dos hojas, simetrica, a juego con el pico
+            for lado in (0, 1):
+                f = (lambda x: x) if lado == 0 else (lambda x: 32 - x)
+                pts = [(14, 5), (9, 3), (4, 4), (2, 9), (3, 15), (6, 19), (10, 20), (9, 15), (11, 11), (14, 10)]
+                P(im, M(lambda d, f=f, pts=pts: d.polygon([(f(x), y) for x, y in pts], fill=255)), STEEL)
+                lz = [(4, 6), (3, 9), (4, 14), (6, 17), (6, 11), (5, 8)]
+                P(im, M(lambda d, f=f, lz=lz: d.polygon([(f(x), y) for x, y in lz], fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle([13, 3, 19, 12], fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle([14, 12, 18, 14], fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
