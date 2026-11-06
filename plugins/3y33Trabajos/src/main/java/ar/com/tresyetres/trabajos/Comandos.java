@@ -99,13 +99,19 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 Msg.ok(s, p.getName() + " quedó sin trabajo y sin espera.");
             }
             case "npc" -> {
-                // /trabajosadmin npc crear | quitar: el aldeano de Trabajos del spawn
-                if (!(s instanceof Player pj) || a.length < 2) { Msg.error(s, "Uso: /trabajosadmin npc <crear|quitar> (parado donde va el NPC)"); return true; }
-                if (a[1].equalsIgnoreCase("crear")) pl.npcs().crear(pj);
-                else if (a[1].equalsIgnoreCase("quitar")) {
+                // /trabajosadmin npc crear <trabajo|general> | quitar: los NPC de misiones (uno por trabajo) y el aldeano general del spawn
+                if (!(s instanceof Player pj) || a.length < 2) { Msg.error(s, "Uso: /trabajosadmin npc <crear <trabajo|general>|quitar> (parado donde va el NPC)"); return true; }
+                if (a[1].equalsIgnoreCase("crear")) {
+                    if (a.length < 3) { Msg.error(s, "Uso: /trabajosadmin npc crear <minero|lenador|granjero|cazador|pescador|general>"); return true; }
+                    if (a[2].equalsIgnoreCase("general")) pl.npcs().crearGeneral(pj);
+                    else {
+                        Trabajo t = Trabajo.de(a[2]);
+                        if (t == null) Msg.error(s, "Ese trabajo no existe."); else pl.npcs().crear(pj, t);
+                    }
+                } else if (a[1].equalsIgnoreCase("quitar")) {
                     int n = pl.npcs().quitar(pj);
                     if (n == 0) Msg.error(s, "No hay ningún NPC de Trabajos a menos de 4 bloques."); else Msg.ok(s, "Saqué " + n + " NPC de Trabajos.");
-                } else Msg.error(s, "Uso: /trabajosadmin npc <crear|quitar>");
+                } else Msg.error(s, "Uso: /trabajosadmin npc <crear <trabajo|general>|quitar>");
             }
             case "misiones" -> {
                 // /trabajosadmin misiones [jugador]: vuelve a generar las misiones del jugador (para probar)
@@ -156,6 +162,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
             for (Trabajo t : Trabajo.values()) out.add(t.id);
         } else if (admin && s.hasPermission("tresyetres.staff")) {
             if (a.length == 2 && a[0].equalsIgnoreCase("npc")) out.addAll(List.of("crear", "quitar"));
+            else if (a.length == 3 && a[0].equalsIgnoreCase("npc") && a[1].equalsIgnoreCase("crear")) out.addAll(List.of("minero", "lenador", "granjero", "cazador", "pescador", "general"));
             else if (a.length == 2 && (a[0].equalsIgnoreCase("tomar") || a[0].equalsIgnoreCase("global"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
             else if (a.length == 3 && a[0].equalsIgnoreCase("tomar")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 2) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());

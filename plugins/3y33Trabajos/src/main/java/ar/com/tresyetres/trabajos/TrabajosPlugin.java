@@ -76,5 +76,6 @@ public final class TrabajosPlugin extends JavaPlugin {
         if (perfiles != null) perfiles.guardarTodo();
         if (rarezas != null) rarezas.guardar();
         if (misiones != null) misiones.guardar();
+        if (npcs != null) npcs.apagar();
     }
 }
