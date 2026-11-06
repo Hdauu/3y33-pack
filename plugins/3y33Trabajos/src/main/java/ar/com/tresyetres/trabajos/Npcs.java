@@ -159,7 +159,7 @@ final class Npcs implements Listener {
         holos.put(a, new Holo(a, false, t, base.clone().add(0, 2.75, 0)));
         double r = Math.toRadians(yaw);
         String b = nuevoId();
-        holos.put(b, new Holo(b, true, t, base.clone().add(-Math.cos(r) * 2.1, 1.7, -Math.sin(r) * 2.1)));
+        holos.put(b, new Holo(b, true, t, base.clone().add(-Math.cos(r) * 3.4, 1.5, -Math.sin(r) * 3.4)));
     }
 
     /** Pone un holograma suelto donde esta el jugador (a la altura de los ojos). */
