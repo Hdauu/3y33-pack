@@ -72,7 +72,7 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
 
 
     # panel de contenido liso, con marcos solo detras de los botones
-    top, bot = 35, 17 + 18 * filas + 0.5
+    top, bot = (35 if toldo else 21), 17 + 18 * filas + 0.5   # sin toldo: la linea del panel sube para no tocar los marcos
     d.rounded_rectangle(box(6, top, 170, bot), radius=px(2), fill=T['panel'] + (255,), outline=T['panel_borde'] + (255,), width=px(1))
     for y in range(int(top) + 3, int(bot) - 1, 6):          # rayado muy suave
         d.line([px(7), px(y), px(169), px(y)], fill=T['rayado'] + (255,), width=px(1))
@@ -118,7 +118,7 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
             moneda(19, 28.5, 6.2); moneda(11, 25.5, 4.2); moneda(157, 28.5, 6.2); moneda(165, 25.5, 4.2)
     else:
         oro, oro_o, rojo = (238, 190, 80, 255), (120, 80, 30, 255), (210, 40, 60, 255)
-        cy = 15
+        cy = 11
         for lado in (-1, 1):
             x0, x1 = 88 + lado * 8, 88 + lado * 46
             d.line([px(x0), px(cy), px(x1), px(cy)], fill=oro, width=px(1))
@@ -127,7 +127,7 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
                 d.polygon([(px(88 + lado * k), px(cy - r - .4)), (px(88 + lado * k + r + .4), px(cy)), (px(88 + lado * k), px(cy + r + .4)), (px(88 + lado * k - r - .4), px(cy))], fill=oro)
         d.polygon([(px(88), px(cy - 5)), (px(88 + 5), px(cy)), (px(88), px(cy + 5)), (px(88 - 5), px(cy))], fill=(40, 12, 18, 255), outline=oro, width=px(1))
         d.polygon([(px(88), px(cy - 2.6)), (px(88 + 2.6), px(cy)), (px(88), px(cy + 2.6)), (px(88 - 2.6), px(cy))], fill=rojo)
-        for (sx, sy) in ((60, 8), (116, 8)):
+        for (sx, sy) in ((60, 6), (116, 6)):
             d.line([px(sx), px(sy - 1.6), px(sx), px(sy + 1.6)], fill=(255, 236, 170, 255), width=px(0.6))
             d.line([px(sx - 1.6), px(sy), px(sx + 1.6), px(sy)], fill=(255, 236, 170, 255), width=px(0.6))
 
