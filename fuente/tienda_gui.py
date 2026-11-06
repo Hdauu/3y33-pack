@@ -172,8 +172,8 @@ if __name__ == '__main__':
     acciones = {(r, c) for r in range(1, 5) for c in range(1, 8)} | {(5, 0), (5, 3), (5, 4), (5, 5)}
     print(generar(6, '', acciones, os.path.join(carpeta, 'acciones_gui.png'), [], toldo=False))
     print(generar(3, '', {(1, 2), (1, 4), (1, 6)}, os.path.join(carpeta, 'confirmar_gui.png'), [], toldo=False))
-    # misiones (6 filas: diarias arriba, semanal y global abajo) y eleccion de la diaria (3 filas, 4 opciones)
-    print(generar(6, '', {(1, 2), (1, 4), (1, 6), (3, 2), (3, 4), (3, 6), (5, 0)}, os.path.join(carpeta, 'misiones_gui.png'), [], toldo=False))
-    print(generar(3, '', {(1, 1), (1, 3), (1, 5), (1, 7), (2, 4)}, os.path.join(carpeta, 'elegir_gui.png'), [], toldo=False))
+    # misiones (6 filas: las tarjetas en las filas 1 a 3 y el pie con volver, paginas y reloj) y eleccion de la diaria (6 filas, solo volver)
+    print(generar(6, '', {(5, 0), (5, 3), (5, 4), (5, 5)}, os.path.join(carpeta, 'misiones_gui.png'), [], toldo=False))
+    print(generar(6, '', {(5, 0)}, os.path.join(carpeta, 'elegir_gui.png'), [], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))

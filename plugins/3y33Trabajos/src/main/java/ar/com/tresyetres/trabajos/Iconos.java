@@ -107,6 +107,14 @@ final class Iconos implements Listener {
         return it;
     }
 
+    /** Le pone a un item el modelo de una tarjeta de mision del pack (solo se ve con el pack). */
+    ItemStack modelo(ItemStack it, String clave) {
+        ItemMeta meta = it.getItemMeta();
+        meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + clave));
+        it.setItemMeta(meta);
+        return it;
+    }
+
     /** Un casillero invisible con el mismo nombre y lore que la carta, para que el cursor la muestre en toda su superficie. */
     ItemStack relleno(ItemStack carta) {
         ItemStack it = carta.clone();
