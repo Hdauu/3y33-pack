@@ -232,6 +232,31 @@ final class Menus implements Listener {
         v.abrir(p);
     }
 
+    /** Lista de todo lo que suma a la mision global actual de ese trabajo, con su valor en puntos. */
+    void entrega(Player p, Trabajo t, int pagina) {
+        List<java.util.Map.Entry<Material, Integer>> todos = pl.misiones().aceptados(t);
+        int porPagina = SLOTS_ACCIONES.length;
+        int paginas = Math.max(1, (todos.size() + porPagina - 1) / porPagina);
+        int pag = Math.max(0, Math.min(pagina, paginas - 1));
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_ACCIONES, "Se entrega · " + pl.misiones().nombreTema(t)));
+        for (int i = 0; i < porPagina; i++) {
+            int idx = pag * porPagina + i;
+            if (idx >= todos.size()) break;
+            java.util.Map.Entry<Material, Integer> en = todos.get(idx);
+            v.poner(SLOTS_ACCIONES[i], Iconos.item(en.getKey(),
+                    Component.translatable(en.getKey().translationKey()).color(BLANCO).decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true),
+                    List.of(linea("Vale " + en.getValue() + (en.getValue() == 1 ? " punto" : " puntos"), NamedTextColor.YELLOW),
+                            linea("(sin nombre ni encantamientos)", GRIS))));
+        }
+        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); misiones(p, t, 1); });
+        if (pag > 0) v.poner(48, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + pag + " de " + paginas, GRIS))), e -> { sonido(p); entrega(p, t, pag - 1); });
+        v.poner(49, Iconos.item(Material.BOOK, Iconos.txtNegrita(pl.misiones().nombreTema(t), NamedTextColor.GOLD), List.of(
+                linea("Los más difíciles de conseguir valen más.", GRIS),
+                linea("Página " + (pag + 1) + " de " + paginas, GRIS))));
+        if (pag < paginas - 1) v.poner(50, pl.iconos().flecha(p, true, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 2) + " de " + paginas, GRIS))), e -> { sonido(p); entrega(p, t, pag + 1); });
+        v.abrir(p);
+    }
+
     private ItemStack itemAccion(Trabajo t, Accion a, double personal) {
         Rareza r = pl.rarezas().de(a);
         double factor = personal + r.bono();
@@ -375,7 +400,9 @@ final class Menus implements Listener {
             }
             if (!gl.completada) lg.add(linea("Cambia de tema en " + Msg.tiempo(pl.misiones().msHastaCiclo()), GRIS));
             String claveG = cobrada ? "mision_global_x_completa" : "mision_global_" + t.id + (cobrable ? "_lista" : "_normal");
-            tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global semanal", cobrable ? NamedTextColor.GREEN : t.color), lg), new int[]{1, 2, 3}, e -> {
+            lg.add(linea("Shift + clic: ver qué items se entregan", GRIS));
+            tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global", cobrable ? NamedTextColor.GREEN : t.color), lg), new int[]{1, 2, 3}, e -> {
+                if (e.isShiftClick()) { sonido(p); entrega(p, t, 0); return; }
                 if (pl.misiones().puedeCobrarGlobal(t, p)) {
                     if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t, pag);
                     return;
@@ -407,19 +434,12 @@ final class Menus implements Listener {
         lt.add(linea("si lo abandonás, las que no cobraste se pierden.", GRIS));
         v.poner(5 * 9 + 4, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Reinicios", NamedTextColor.GOLD), lt));
         if (pag == 1) {
-            List<Component> la = new ArrayList<>();
-            la.add(linea("Entregá estos items en el NPC (sin nombre", GRIS));
-            la.add(linea("ni encantamientos). Los más raros valen más.", GRIS));
-            la.add(Component.empty());
-            List<java.util.Map.Entry<Material, Integer>> acep = pl.misiones().aceptados(t);
-            int mostrar = Math.min(16, acep.size());
-            for (int i = 0; i < mostrar; i++) {
-                java.util.Map.Entry<Material, Integer> en = acep.get(i);
-                la.add(Iconos.txt(en.getValue() + " pts  ", NamedTextColor.YELLOW)
-                        .append(Component.translatable(en.getKey().translationKey()).color(BLANCO).decoration(TextDecoration.ITALIC, false)));
-            }
-            if (acep.size() > mostrar) la.add(linea("... y " + (acep.size() - mostrar) + " más", GRIS));
-            v.poner(5 * 9 + 7, Iconos.item(Material.BOOK, Iconos.txtNegrita("Qué se entrega: " + pl.misiones().nombreTema(t), NamedTextColor.GOLD), la));
+            int cant = pl.misiones().aceptados(t).size();
+            v.poner(5 * 9 + 7, Iconos.item(Material.BOOK, Iconos.txtNegrita("Qué se entrega", NamedTextColor.GOLD), List.of(
+                    linea("Tema: " + pl.misiones().nombreTema(t), NamedTextColor.YELLOW),
+                    linea(cant + " items suman a esta misión.", GRIS),
+                    Component.empty(),
+                    linea("Clic para ver la lista completa", NamedTextColor.GREEN))), e -> { sonido(p); entrega(p, t, 0); });
         }
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
