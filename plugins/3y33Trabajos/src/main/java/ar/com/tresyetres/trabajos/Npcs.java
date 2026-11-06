@@ -70,7 +70,14 @@ final class Npcs implements Listener {
     /** Los carteles de un NPC: el titulo (lo ve todo el mundo) y un panel por jugador cercano. */
     private static final class Carteles {
         TextDisplay titulo;
-        final Map<UUID, TextDisplay> paneles = new HashMap<>();
+        final Map<UUID, Panel> paneles = new HashMap<>();
+    }
+
+    /** El panel de un jugador: se acomoda del lado izquierdo de como el jugador ve al NPC, y solo se mueve si el jugador cambia bastante de lado. */
+    private static final class Panel {
+        final TextDisplay d;
+        double lado;
+        Panel(TextDisplay d, double lado) { this.d = d; this.lado = lado; }
     }
 
     private final TrabajosPlugin pl;
@@ -162,8 +169,10 @@ final class Npcs implements Listener {
             d.setVisibleByDefault(visible);
             d.setBillboard(Display.Billboard.CENTER);
             d.setSeeThrough(false);
-            d.setShadowed(true);
-            d.setLineWidth(400);
+            d.setShadowed(false);
+            d.setLineWidth(300);
+            d.setBrightness(new Display.Brightness(15, 15));
+            d.setTeleportDuration(6);
             d.setBackgroundColor(Color.fromARGB(fondo, 24, 6, 10));
             d.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(), new Vector3f(escala, escala, escala), new AxisAngle4f()));
             d.text(c);
@@ -194,8 +203,8 @@ final class Npcs implements Listener {
         if (g.completada) {
             c = c.append(Component.text("¡Completada!", NamedTextColor.GREEN, TextDecoration.BOLD)).appendNewline();
         } else {
-            c = c.append(Component.text(num(g.total) + " / " + num(g.objetivo) + " " + UNIDAD.get(t), NamedTextColor.WHITE)).appendNewline()
-                    .append(Component.text(pct + "%", pct >= 100 ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).appendNewline();
+            c = c.append(Component.text(num(g.total) + " / " + num(g.objetivo) + " " + UNIDAD.get(t), NamedTextColor.WHITE))
+                    .append(Component.text(" (" + pct + "%)", pct >= 100 ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).appendNewline();
         }
         c = c.append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), NamedTextColor.WHITE)).appendNewline()
                 .append(Component.text("Tu puesto: ", gris)).append(Component.text(puesto, NamedTextColor.GOLD)).appendNewline()
@@ -211,6 +220,12 @@ final class Npcs implements Listener {
         return c;
     }
 
+    /** El panel queda al costado del NPC, a la izquierda de un jugador que lo mira desde el angulo ang (NPC -> jugador). */
+    private static Location posPanel(Location base, double ang) {
+        // el jugador mira hacia -(cos, sin); su izquierda es (-sin, cos) en (x, z)
+        return base.clone().add(-Math.sin(ang) * 1.5, 1.15, Math.cos(ang) * 1.5);
+    }
+
     /** Cada segundo: crea o saca los carteles de cada NPC y actualiza el panel de cada jugador cercano. */
     private void actualizar() {
         List<UUID> vistos = new ArrayList<>();
@@ -222,27 +237,32 @@ final class Npcs implements Listener {
                 vistos.add(m.getUniqueId());
                 Carteles c = carteles.computeIfAbsent(m.getUniqueId(), k -> new Carteles());
                 Location base = m.getLocation();
-                if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.75, 0), true, titulo(t), 1.7f, 0);
-                double rad = Math.toRadians(base.getYaw());
-                Location lp = base.clone().add(-Math.cos(rad) * 2.0, 1.3, -Math.sin(rad) * 2.0);
-                Iterator<Map.Entry<UUID, TextDisplay>> it = c.paneles.entrySet().iterator();
+                if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.5, 0), true, titulo(t), 1.3f, 0);
+                Iterator<Map.Entry<UUID, Panel>> it = c.paneles.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<UUID, TextDisplay> en = it.next();
+                    Map.Entry<UUID, Panel> en = it.next();
                     Player p = Bukkit.getPlayer(en.getKey());
-                    if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE || !en.getValue().isValid()) {
-                        en.getValue().remove();
+                    if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE || !en.getValue().d.isValid()) {
+                        en.getValue().d.remove();
                         it.remove();
                     }
                 }
                 for (Player p : w.getPlayers()) {
                     if (p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE) continue;
-                    TextDisplay d = c.paneles.get(p.getUniqueId());
+                    // direccion del NPC hacia el jugador; el panel va a la izquierda de como el jugador ve al NPC
+                    double ang = Math.atan2(p.getLocation().getZ() - base.getZ(), p.getLocation().getX() - base.getX());
+                    Panel pa = c.paneles.get(p.getUniqueId());
                     Component txt = panel(t, p);
-                    if (d == null) {
-                        d = texto(lp, false, txt, 0.8f, 150);
-                        c.paneles.put(p.getUniqueId(), d);
+                    if (pa == null) {
+                        TextDisplay d = texto(posPanel(base, ang), false, txt, 0.5f, 140);
+                        pa = new Panel(d, ang);
+                        c.paneles.put(p.getUniqueId(), pa);
                         p.showEntity(pl, d);
-                    } else d.text(txt);
+                    } else {
+                        pa.d.text(txt);
+                        double dif = Math.abs(Math.atan2(Math.sin(ang - pa.lado), Math.cos(ang - pa.lado)));
+                        if (dif > 0.6) { pa.lado = ang; pa.d.teleport(posPanel(base, ang)); }
+                    }
                 }
             }
         }
