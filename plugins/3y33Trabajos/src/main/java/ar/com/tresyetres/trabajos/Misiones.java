@@ -54,13 +54,17 @@ final class Misiones {
     private final File archivoConfig;
     private final Random azar = new Random();
     private final Map<Trabajo, Global> globales = new EnumMap<>(Trabajo.class);
+    private final File archivoEntregas;
     private YamlConfiguration cfg = new YamlConfiguration();
+    private YamlConfiguration ent = new YamlConfiguration();
+    private final Map<Trabajo, Map<Material, Integer>> puntos = new EnumMap<>(Trabajo.class);
     private boolean sucio;
 
     Misiones(TrabajosPlugin pl) {
         this.pl = pl;
         this.archivoGlobal = new File(pl.getDataFolder(), "misiones-globales.yml");
         this.archivoConfig = new File(pl.getDataFolder(), "misiones.yml");
+        this.archivoEntregas = new File(pl.getDataFolder(), "entregas.yml");
     }
 
     // ---------- carga y guardado ----------
@@ -68,10 +72,16 @@ final class Misiones {
     void cargar() {
         if (!archivoConfig.exists()) pl.saveResource("misiones.yml", false);
         cfg = YamlConfiguration.loadConfiguration(archivoConfig);
+        if (!archivoEntregas.exists()) pl.saveResource("entregas.yml", false);
+        ent = YamlConfiguration.loadConfiguration(archivoEntregas);
+        cargarPuntos();
         YamlConfiguration y = YamlConfiguration.loadConfiguration(archivoGlobal);
+        // la global de antes contaba acciones, la de ahora cuenta puntos de items entregados: se empieza de cero una sola vez
+        boolean viejo = archivoGlobal.exists() && !"entrega".equals(y.getString("modo"));
+        if (viejo) pl.getLogger().info("Las globales eran por acciones: se reinician para pasar a entrega de items.");
         for (Trabajo t : Trabajo.values()) {
             Global g = globales.computeIfAbsent(t, k -> new Global());
-            ConfigurationSection s = y.getConfigurationSection(t.id);
+            ConfigurationSection s = viejo ? null : y.getConfigurationSection(t.id);
             if (s == null) continue;
             g.semana = s.getLong("semana", 0L);
             g.objetivo = s.getDouble("objetivo", 0);
@@ -94,6 +104,7 @@ final class Misiones {
 
     void guardar() {
         YamlConfiguration y = new YamlConfiguration();
+        y.set("modo", "entrega");
         for (Map.Entry<Trabajo, Global> e : globales.entrySet()) {
             Global g = e.getValue();
             String b = e.getKey().id;
@@ -238,7 +249,7 @@ final class Misiones {
     /** Entrega lo que tenga el jugador para esa mision. true si cambio algo. */
     boolean entregar(Player p, Trabajo t, int tipo, Perfil.Mision m) {
         Perfil f = pl.perfiles().de(p);
-        if (f.activo != t) { Msg.error(p, "Tenés que tener el trabajo de " + t.nombre + " para entregar sus misiones."); return false; }
+        if (!puedeEntregar(p, t)) return false;
         if (m == null || m.estado != Perfil.Mision.ACTIVA) { Msg.error(p, "Esa misión ya no está activa."); return false; }
         int falta = m.meta - m.entregado;
         int tiene = contar(p, m.item);
@@ -330,7 +341,7 @@ final class Misiones {
             if (g.semana == semana && g.objetivo > 0) continue;
             long anterior = g.semana == 0 ? 0 : g.total;
             g.totalAnterior = anterior;
-            double minimo = cfg.getDouble("global.minimo." + t.id, 1000);
+            double minimo = ent.getDouble("minimo." + t.id, 5000);
             g.objetivo = Math.max(minimo, Math.floor(anterior * cfg.getDouble("global.porcentaje-anterior", 0.6)));
             g.semana = semana;
             g.total = 0;
@@ -342,20 +353,98 @@ final class Misiones {
         }
     }
 
-    /** Las menas de la mision global del Minero; en los demas trabajos cuenta toda accion que paga. */
-    private static boolean cuenta(Accion a) {
-        if (a.trabajo() != Trabajo.MINERO) return true;
-        return a.clave().endsWith("_ORE") || a.clave().equals("ANCIENT_DEBRIS");
+    // ---------- entrega de items a la global ----------
+
+    private void cargarPuntos() {
+        puntos.clear();
+        for (Trabajo t : Trabajo.values()) {
+            Map<Material, Integer> m = new java.util.LinkedHashMap<>();
+            ConfigurationSection s = ent.getConfigurationSection("puntos." + t.id);
+            if (s != null) for (String k : s.getKeys(false)) {
+                int pts = s.getInt(k, 0);
+                if (pts <= 0) continue;
+                if (k.equals("TRONCOS")) {
+                    for (Material mat : Material.values()) {
+                        String n = mat.name();
+                        if (!mat.isItem() || mat.isLegacy()) continue;
+                        if (n.endsWith("_LOG") || n.endsWith("_STEM") || n.endsWith("_WOOD") || n.endsWith("_HYPHAE") || n.equals("BAMBOO_BLOCK") || n.equals("STRIPPED_BAMBOO_BLOCK")) m.put(mat, pts);
+                    }
+                    continue;
+                }
+                Material mat = Material.matchMaterial(k);
+                if (mat == null) pl.getLogger().warning("entregas.yml: material desconocido " + k + " en " + t.id);
+                else m.put(mat, pts);
+            }
+            puntos.put(t, m);
+        }
     }
 
-    /** Una accion que pago suma a la global de su trabajo. */
-    void aporte(Player p, Accion a) {
-        if (!cuenta(a)) return;
-        Global g = global(a.trabajo());
-        g.total++;
-        g.aportes.merge(p.getUniqueId(), 1, Integer::sum);
+    /** Puntos que vale un item para la global de ese trabajo (0 si no sirve). */
+    int puntosDe(Trabajo t, Material m) { return puntos.getOrDefault(t, Map.of()).getOrDefault(m, 0); }
+
+    /** Los items que sirven, del que mas vale al que menos. */
+    List<Map.Entry<Material, Integer>> aceptados(Trabajo t) {
+        List<Map.Entry<Material, Integer>> l = new ArrayList<>(puntos.getOrDefault(t, Map.of()).entrySet());
+        l.sort((a, b) -> b.getValue() != a.getValue().intValue() ? Integer.compare(b.getValue(), a.getValue()) : a.getKey().name().compareTo(b.getKey().name()));
+        return l;
+    }
+
+    boolean soloEnNpc() { return ent.getBoolean("solo-en-npc", true); }
+
+    /** true si puede entregar: tiene el trabajo puesto y, si hace falta, esta cerca del NPC. Si no, le avisa. */
+    boolean puedeEntregar(Player p, Trabajo t) {
+        Perfil f = pl.perfiles().de(p);
+        if (f.activo != t) { Msg.error(p, "Tenés que tener el trabajo de " + t.nombre + " para entregar."); return false; }
+        if (!enNpc(p, t)) { Msg.error(p, "Las entregas se hacen en el NPC de " + t.nombre + ". Acercate y hacele clic."); return false; }
+        return true;
+    }
+
+    /** true si no hace falta NPC o si el jugador esta cerca del NPC de ese trabajo. */
+    boolean enNpc(Player p, Trabajo t) { return !soloEnNpc() || pl.npcs().cercaDeNpc(p, t, ent.getDouble("distancia-npc", 8)); }
+
+    /** Entrega a la global lo que tenga el jugador (o solo lo que tiene en la mano). Devuelve los puntos sumados. */
+    int entregarGlobal(Player p, Trabajo t, boolean soloMano) {
+        if (!puedeEntregar(p, t)) return 0;
+        Global g = global(t);
+        if (g.completada) { Msg.error(p, "La misión global de esta semana ya se completó. ¡Cobrá tu parte!"); return 0; }
+        Map<Material, Integer> val = puntos.getOrDefault(t, Map.of());
+        ItemStack[] cont = p.getInventory().getStorageContents();
+        // primero lo que menos vale, asi no se va un diamante cuando faltaban pocos puntos
+        List<Integer> idx = new ArrayList<>();
+        for (int i = 0; i < cont.length; i++) {
+            ItemStack it = cont[i];
+            if (it == null || !val.containsKey(it.getType()) || !it.isSimilar(new ItemStack(it.getType()))) continue;
+            if (soloMano && i != p.getInventory().getHeldItemSlot()) continue;
+            idx.add(i);
+        }
+        if (idx.isEmpty()) {
+            Msg.error(p, soloMano ? "Lo que tenés en la mano no suma a esta misión." : "No tenés nada que sume a esta misión (items sin nombre ni encantamientos).");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.7f, 1.0f);
+            return 0;
+        }
+        idx.sort((a, b) -> Integer.compare(val.get(cont[a].getType()), val.get(cont[b].getType())));
+        long faltan = (long) Math.ceil(g.objetivo - g.total);
+        long sumados = 0;
+        int items = 0;
+        for (int i : idx) {
+            if (sumados >= faltan) break;
+            ItemStack it = cont[i];
+            int v = val.get(it.getType());
+            int n = (int) Math.min(it.getAmount(), (faltan - sumados + v - 1) / v);
+            sumados += (long) n * v;
+            items += n;
+            if (n == it.getAmount()) cont[i] = null; else it.setAmount(it.getAmount() - n);
+        }
+        p.getInventory().setStorageContents(cont);
+        g.total += sumados;
+        g.aportes.merge(p.getUniqueId(), (int) sumados, Integer::sum);
         sucio = true;
-        if (!g.completada && g.total >= g.objetivo) completarGlobal(a.trabajo(), g);
+        Msg.aviso(p, Component.text("Entregaste " + items + " items · ", NamedTextColor.GRAY)
+                .append(Component.text("+" + sumados + " puntos", NamedTextColor.GREEN))
+                .append(Component.text("  (" + Msg.num(Math.min(g.total, g.objetivo), 0) + "/" + Msg.num(g.objetivo, 0) + ")", NamedTextColor.YELLOW)));
+        p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.8f, 1.1f);
+        if (!g.completada && g.total >= g.objetivo) completarGlobal(t, g);
+        return (int) sumados;
     }
 
     private void completarGlobal(Trabajo t, Global g) {

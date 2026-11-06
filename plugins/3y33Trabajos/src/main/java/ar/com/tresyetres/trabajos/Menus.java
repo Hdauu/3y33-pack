@@ -277,6 +277,7 @@ final class Menus implements Listener {
         if (m.estado == Perfil.Mision.COMPLETA) lore.add(linea("¡Cobrada!", NamedTextColor.GREEN));
         else if (m.estado == Perfil.Mision.PERDIDA) lore.add(linea("Perdida: abandonaste el trabajo.", NamedTextColor.RED));
         else if (f.activo != t) lore.add(linea("Tomá este trabajo para entregarla.", NamedTextColor.RED));
+        else if (!pl.misiones().enNpc(p, t)) lore.add(linea("Entregala en el NPC de " + t.nombre + ".", NamedTextColor.YELLOW));
         else {
             lore.add(linea("Clic: entregar lo que tengas", NamedTextColor.GREEN));
             lore.add(linea("(items sin nombre ni encantamientos)", GRIS));
@@ -349,10 +350,10 @@ final class Menus implements Listener {
             int aporte = pl.misiones().aporteDe(t, p);
             int minimo = pl.misiones().aporteMinimo();
             List<Component> lg = new ArrayList<>();
-            lg.add(linea("Todos los " + t.nombre + " suman al mismo objetivo.", GRIS));
+            lg.add(linea("Todos los " + t.nombre + " entregan al mismo objetivo.", GRIS));
             lg.add(Component.empty());
-            lg.add(barra(gl.total / gl.objetivo, t.color).append(Iconos.txt("  " + Msg.num(gl.total, 0) + "/" + Msg.num(gl.objetivo, 0), BLANCO)));
-            lg.add(linea("Tu aporte: " + aporte + " (hacen falta " + minimo + " para cobrar)", aporte >= minimo ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
+            lg.add(barra(gl.total / gl.objetivo, t.color).append(Iconos.txt("  " + Msg.num(Math.min(gl.total, gl.objetivo), 0) + "/" + Msg.num(gl.objetivo, 0) + " puntos", BLANCO)));
+            lg.add(linea("Tu aporte: " + aporte + " puntos (hacen falta " + minimo + " para cobrar)", aporte >= minimo ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
             lg.add(Component.empty());
             lg.add(linea("Al completarse:", GRIS));
             lg.add(linea(" · Cada colaborador cobra " + Msg.dinero(pl.misiones().pagoGlobal()), NamedTextColor.GREEN));
@@ -362,11 +363,21 @@ final class Menus implements Listener {
             boolean cobrada = gl.completada && gl.cobraron.contains(p.getUniqueId());
             if (cobrada) lg.add(linea("¡Completada y cobrada!", NamedTextColor.GREEN));
             else if (cobrable) lg.add(linea("Clic para cobrar tu parte", NamedTextColor.GREEN));
-            else if (gl.completada) lg.add(linea("Completada. Sin " + minimo + " acciones no cobrás.", NamedTextColor.RED));
-            else lg.add(linea("Se reinicia en " + Msg.tiempo(pl.misiones().msHastaSemana()), NamedTextColor.YELLOW));
+            else if (gl.completada) lg.add(linea("Completada. Sin " + minimo + " puntos no cobrás.", NamedTextColor.RED));
+            else if (f.activo != t) lg.add(linea("Tomá este trabajo para entregar.", NamedTextColor.RED));
+            else if (!pl.misiones().enNpc(p, t)) lg.add(linea("Entregá en el NPC de " + t.nombre + ".", NamedTextColor.YELLOW));
+            else {
+                lg.add(linea("Clic: entregar todo lo que sume", NamedTextColor.GREEN));
+                lg.add(linea("Clic derecho: solo lo que tenés en la mano", NamedTextColor.GREEN));
+            }
+            if (!gl.completada) lg.add(linea("Se reinicia en " + Msg.tiempo(pl.misiones().msHastaSemana()), GRIS));
             String claveG = cobrada ? "mision_global_x_completa" : "mision_global_" + t.id + (cobrable ? "_lista" : "_normal");
             tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global semanal", cobrable ? NamedTextColor.GREEN : t.color), lg), new int[]{1, 2, 3}, e -> {
-                if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t, pag);
+                if (pl.misiones().puedeCobrarGlobal(t, p)) {
+                    if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t, pag);
+                    return;
+                }
+                if (pl.misiones().entregarGlobal(p, t, e.isRightClick()) > 0) misiones(p, t, pag);
             });
 
             int racha = pl.misiones().racha(g);
@@ -391,6 +402,21 @@ final class Menus implements Listener {
         lt.add(linea("Las misiones valen solo con el trabajo puesto:", GRIS));
         lt.add(linea("si lo abandonás, las que no cobraste se pierden.", GRIS));
         v.poner(5 * 9 + 4, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Reinicios", NamedTextColor.GOLD), lt));
+        if (pag == 1) {
+            List<Component> la = new ArrayList<>();
+            la.add(linea("Entregá estos items en el NPC (sin nombre", GRIS));
+            la.add(linea("ni encantamientos). Los más raros valen más.", GRIS));
+            la.add(Component.empty());
+            List<java.util.Map.Entry<Material, Integer>> acep = pl.misiones().aceptados(t);
+            int mostrar = Math.min(14, acep.size());
+            for (int i = 0; i < mostrar; i++) {
+                java.util.Map.Entry<Material, Integer> en = acep.get(i);
+                la.add(Iconos.txt(en.getValue() + " pts  ", NamedTextColor.YELLOW)
+                        .append(Component.translatable(en.getKey().translationKey()).color(BLANCO).decoration(TextDecoration.ITALIC, false)));
+            }
+            if (acep.size() > mostrar) la.add(linea("... y " + (acep.size() - mostrar) + " más", GRIS));
+            v.poner(5 * 9 + 7, Iconos.item(Material.BOOK, Iconos.txtNegrita("Qué se entrega", NamedTextColor.GOLD), la));
+        }
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
                 e -> { sonido(p); misiones(p, t, pag - 1); });
