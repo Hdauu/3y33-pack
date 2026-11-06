@@ -120,11 +120,11 @@ def carta(nombre, marco_id, activo):
 
 # ---------- ubicacion del item de cada carta en el menu ----------
 # Menu de 5 filas: las cartas ocupan las filas 1 a 3 (49 px de alto). Cada carta cuelga de un casillero de la fila 2.
-# Los casilleros miden 18 px y el primero empieza en x=7. La carta i empieza en x = 8 + 32*i.
+# Los casilleros miden 18 px y el primero empieza en x=7. La carta i empieza en x = 7 + 32*i.
 # Dentro del casillero (16 unidades de modelo = 16 px) el modelo va de x0 a x0+32 y de y -16 a 32 (el maximo que acepta el juego).
 SLOT_X = {0: 7, 2: 43, 4: 79, 6: 115, 8: 151}
 COLUMNA = {'minero': 0, 'lenador': 2, 'granjero': 4, 'cazador': 6, 'pescador': 8}
-IZQ = {'minero': 8, 'lenador': 40, 'granjero': 72, 'cazador': 104, 'pescador': 136}
+IZQ = {'minero': 7, 'lenador': 39, 'granjero': 71, 'cazador': 103, 'pescador': 135}
 
 
 def modelo(tid):
