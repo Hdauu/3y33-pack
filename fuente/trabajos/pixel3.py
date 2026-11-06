@@ -41,6 +41,15 @@ def icono(nombre):
         P(im, M(lambda d: d.rectangle([6, 23, 26, 25], fill=255)), (200, 50, 62))
         P(im, M(lambda d: d.polygon([(26, 25), (30, 29), (28, 31), (25, 26)], fill=255)), (170, 36, 50))
         P(im, M(lambda d: d.polygon([(6, 25), (2, 29), (4, 31), (7, 26)], fill=255)), (170, 36, 50))
+    elif nombre == 'azada':
+        # azada de huerta: mango largo en diagonal, barra fina arriba y una hoja plana que cuelga
+        P(im, M(lambda d: d.line([(3, 30), (17, 11)], fill=255, width=3)), WOOD)
+        for k in range(5): im.putpixel((6 + k, 27 - k * 4), darken(WOOD, .45) + (255,))
+        P(im, M(lambda d: d.polygon([(13, 10), (17, 6), (30, 4), (30, 8), (19, 12)], fill=255)), STEEL)
+        P(im, M(lambda d: d.polygon([(24, 6), (30, 5), (31, 16), (29, 23), (25, 22), (24, 14)], fill=255)), STEEL)
+        P(im, M(lambda d: d.polygon([(27, 8), (30, 8), (30, 17), (28, 21), (27, 17)], fill=255)), (232, 240, 250))
+        P(im, M(lambda d: d.polygon([(17, 6), (23, 5), (23, 8), (19, 9)], fill=255)), (226, 234, 246))
+        P(im, M(lambda d: d.rectangle([14, 10, 18, 13], fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
