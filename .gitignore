@@ -3,3 +3,4 @@ libs/
 fuente/fuentes/ascii.png
 fuente/fuentes/accented.png
 fuente/fuentes/default_font.json
+__pycache__/
