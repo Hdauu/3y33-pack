@@ -168,6 +168,31 @@ def icono(nombre):
             P(im, M(lambda d: d.polygon(X([(12, 5), (17, 5), (22, 3), (24, 3), (18, 7), (12, 7)]), fill=255)), LUZ)
             P(im, M(lambda d: d.polygon(X([(12, 9), (18, 10), (18, 13), (12, 12)]), fill=255)), SOM)
             P(im, M(lambda d: d.rectangle(X([(13, 12), (19, 14)]), fill=255)), (160, 50, 52))
+    elif nombre in ('pico_dg', 'hacha_dg', 'azada_dg'):
+        # herramientas en diagonal a 45 grados, con el mismo mango las tres (formas tomadas de la referencia)
+        LUZ = (232, 240, 250); SOM = (116, 126, 142)
+        P(im, M(lambda d: d.line([(3, 29), (20, 11)], fill=255, width=3)), WOOD)
+        for k in range(5): im.putpixel((5 + k * 3, 27 - k * 3), darken(WOOD, .45) + (255,))
+        for k in range(5): im.putpixel((4 + k * 3, 27 - k * 3), lighten(WOOD, .3) + (255,))
+        if nombre == 'pico_dg':
+            P(im, M(lambda d: d.polygon([(3, 6), (8, 3), (15, 2), (21, 4), (26, 8), (28, 14), (27, 21), (25, 17), (24, 12), (20, 8), (14, 7), (8, 8)], fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon([(8, 4), (15, 3), (21, 5), (25, 9), (21, 7), (15, 5), (9, 6)], fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon([(25, 12), (27, 14), (27, 19), (26, 17)], fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle([17, 8, 22, 12], fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle([18, 9, 21, 10], fill=255)), (200, 70, 60))
+        elif nombre == 'hacha_dg':
+            P(im, M(lambda d: d.polygon([(6, 4), (12, 2), (15, 4), (15, 11), (9, 12), (6, 9)], fill=255)), SOM)
+            P(im, M(lambda d: d.polygon([(8, 4), (12, 3), (13, 5), (8, 6)], fill=255)), (170, 180, 196))
+            P(im, M(lambda d: d.polygon([(14, 5), (19, 5), (24, 8), (28, 12), (29, 18), (26, 23), (22, 21), (18, 17), (14, 13)], fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon([(15, 6), (19, 6), (23, 9), (19, 9)], fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon([(27, 14), (28, 18), (26, 22), (25, 18)], fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle([18, 9, 21, 12], fill=255)), (160, 50, 52))
+        else:
+            P(im, M(lambda d: d.polygon([(10, 3), (16, 3), (18, 8), (12, 10)], fill=255)), SOM)
+            P(im, M(lambda d: d.polygon([(11, 4), (15, 4), (16, 6), (12, 7)], fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon([(19, 9), (25, 8), (28, 11), (27, 17), (23, 22), (16, 24), (14, 21), (19, 19), (22, 15), (21, 12)], fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon([(25, 10), (27, 12), (26, 17), (23, 20), (24, 15)], fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle([18, 9, 21, 11], fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 2), (20, 6), (20, 20), (12, 20), (12, 6)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 4), (17, 7), (17, 19), (15, 19), (15, 7)], fill=255)), (240, 246, 252))
