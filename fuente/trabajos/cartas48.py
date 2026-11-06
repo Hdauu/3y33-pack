@@ -44,13 +44,13 @@ POS = {  # trabajo: (x izquierdo de la carta, columna del casillero donde se pon
     'minero': (10, 1), 'lenador': (64, 4), 'granjero': (118, 7),
     'cazador': (37, 2), 'pescador': (91, 5),
 }
-A = -1 / 3   # y inferior del modelo: deja la carta con el borde de arriba en y=34 en la fila 3 (1 px mas arriba, centrada en la caja)
+A = -2 / 3   # y inferior del modelo: en el juego deja la carta con el borde de arriba en y=34 (medido en pantalla)
 
 
 def x0(tid):
     izq, col = POS[tid]
     sx = 7 + 18 * col
-    return (izq - sx + 16) / 3
+    return (izq - sx + 15) / 3   # el item se dibuja 1 px a la derecha del origen del casillero (medido en pantalla)
 
 
 def modelo(b):
@@ -75,7 +75,7 @@ def escribir(pack):
             for estado in ESTADOS:
                 clave = 'carta_%s_%s_%s' % (tid, mid, estado)
                 carta(nombre, mid, estado).save(os.path.join(tex, clave + '.png'))
-                for prefijo, b in (('', x0(tid)), ('detalle_', (64 - 79 + 16) / 3)):
+                for prefijo, b in (('', x0(tid)), ('detalle_', (64 - 79 + 15) / 3)):
                     m = modelo(b); m['textures']['layer0'] = '3y33:item/trabajos/' + clave
                     json.dump(m, open(os.path.join(mod, prefijo + clave + '.json'), 'w'), indent=1)
                     json.dump({'oversized_in_gui': True, 'model': {'type': 'minecraft:model', 'model': '3y33:item/trabajos/' + prefijo + clave}},

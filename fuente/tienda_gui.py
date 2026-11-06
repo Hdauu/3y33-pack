@@ -164,9 +164,9 @@ if __name__ == '__main__':
     historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
-    trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
-    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.85, 0, 4, 8)], toldo=False))
-    detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
-    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.85, 3, 4, 5)], toldo=False))
+    trabajos = set()   # sin marcos: solo los items y las flechas sobre el fondo
+    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [], toldo=False))
+    detalle = set()
+    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
