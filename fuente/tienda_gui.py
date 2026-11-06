@@ -99,7 +99,8 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
     font = ImageFont.truetype(FONT, px(16))
     tw = d.textlength(texto, font=font) / S
     ancho = max(100, tw + 20)
-    cx0, cx1, cy0, cy1 = (W - ancho) / 2, (W + ancho) / 2, 16, 36
+    cy0, cy1 = (16, 36) if toldo else (14.5, 33.5)
+    cx0, cx1 = (W - ancho) / 2, (W + ancho) / 2
     d.rounded_rectangle(box(cx0 + 0.6, cy0 + 1, cx1 + 0.6, cy1 + 1), radius=px(3), fill=(0, 0, 0, 110))
     pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), T['cartel1'], T['cartel2'])
     pm = Image.new('L', pl.size, 0)
@@ -157,9 +158,9 @@ if __name__ == '__main__':
     historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
-    trabajos = {(4, 3), (4, 5)}
-    print(generar(5, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(1, 0, 3, 8)], toldo=False))
-    detalle = {(1, 2), (2, 2), (3, 2), (1, 6), (3, 0), (3, 8)}
-    print(generar(4, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(1, 3, 3, 5)], toldo=False))
+    trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
+    print(generar(6, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(1, 0, 4, 8)], toldo=False))
+    detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
+    print(generar(6, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(1, 3, 4, 5)], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))

@@ -51,35 +51,38 @@ final class Menus implements Listener {
 
     // ---------- principal ----------
 
-    /** Columna del casillero de la fila 2 de donde cuelga la carta de cada trabajo, y las columnas que ocupa su zona de clic. */
-    private static final int[] COLUMNA_CARTA = {0, 2, 4, 6, 8};
-    private static final int[][] ZONA = {{0, 1}, {2, 3}, {4}, {5, 6}, {7, 8}};
+    /** Trabajos de cada pagina (indices de Trabajo.values()), columna del casillero de la fila 3 de donde cuelga cada carta y columnas de su zona de clic. */
+    private static final int[][] PAGINA = {{0, 1, 2}, {3, 4}};
+    private static final int[][] COLUMNA_CARTA = {{1, 4, 7}, {2, 5}};
+    private static final int[][][] ZONA = {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}, {{1, 2, 3}, {4, 5, 6}}};
 
-    void principal(Player p) {
+    void principal(Player p) { principal(p, 0); }
+
+    void principal(Player p, int pagina) {
+        final int pag = ((pagina % PAGINA.length) + PAGINA.length) % PAGINA.length;
         Perfil f = pl.perfiles().de(p);
         boolean pack = pl.iconos().conPack(p);
-        Ventana v = new Ventana(5, pl.iconos().titulo(p, Iconos.FONDO_TRABAJOS, "Trabajos"));
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_TRABAJOS, "Trabajos"));
         Trabajo[] ts = Trabajo.values();
-        for (int i = 0; i < ts.length; i++) {
-            Trabajo t = ts[i];
+        for (int k = 0; k < PAGINA[pag].length; k++) {
+            Trabajo t = ts[PAGINA[pag][k]];
             ItemStack carta = cartaDe(p, f, t, false);
             java.util.function.Consumer<InventoryClickEvent> alClic = e -> {
                 if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {
-                    if (pl.servicio().unirse(p, t)) principal(p);
+                    if (pl.servicio().unirse(p, t)) principal(p, pag);
                 } else {
                     sonido(p);
                     trabajo(p, t);
                 }
             };
-            int principal = 2 * 9 + COLUMNA_CARTA[i];
+            int principal = 3 * 9 + COLUMNA_CARTA[pag][k];
             if (pack) {
-                // la carta ocupa 2x3 casilleros: el item grande va en uno y el resto lleva un relleno invisible con el mismo texto
+                // la carta ocupa 3x4 casilleros: el item grande va en uno y el resto lleva un relleno invisible con el mismo texto
                 ItemStack vacio = pl.iconos().relleno(carta);
-                for (int fila = 1; fila <= 3; fila++)
-                    for (int col : ZONA[i]) {
+                for (int fila = 1; fila <= 4; fila++)
+                    for (int col : ZONA[pag][k]) {
                         int slot = fila * 9 + col;
-                        if (slot == principal) continue;
-                        v.poner(slot, vacio, alClic);
+                        if (slot != principal) v.poner(slot, vacio, alClic);
                     }
             }
             v.poner(principal, carta, alClic);
@@ -92,8 +95,12 @@ final class Menus implements Listener {
         lc.add(Component.empty());
         lc.add(linea("Clic derecho en una carta: tomar el trabajo.", GRIS));
         lc.add(linea("Clic izquierdo: ver sus detalles.", GRIS));
-        v.poner(39, Iconos.item(Material.PAPER, Iconos.txtNegrita(p.getName(), BLANCO), lc));
-        v.poner(41, relojRarezas());
+        v.poner(48, Iconos.item(Material.PAPER, Iconos.txtNegrita(p.getName(), BLANCO), lc));
+        v.poner(50, relojRarezas());
+        v.poner(45, Iconos.item(Material.ARROW, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
+                e -> { sonido(p); principal(p, pag - 1); });
+        v.poner(53, Iconos.item(Material.ARROW, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINA.length, GRIS))),
+                e -> { sonido(p); principal(p, pag + 1); });
         v.abrir(p);
     }
 
@@ -108,6 +115,8 @@ final class Menus implements Listener {
     private ItemStack cartaDe(Player p, Perfil f, Trabajo t, boolean detalle) {
         Perfil.Progreso g = f.de(t);
         boolean activo = f.activo == t;
+        long ahoraMs = System.currentTimeMillis();
+        Iconos.Estado estado = activo ? Iconos.Estado.ACTIVO : (f.activo != null || ahoraMs < f.libreHasta) ? Iconos.Estado.BLOQUEADO : Iconos.Estado.NORMAL;
         Component nombre = Iconos.txtNegrita(t.nombre + (activo ? "  (activo)" : ""), t.color);
         List<Component> lore = new ArrayList<>();
         lore.add(linea(t.descripcion, GRIS));
@@ -122,7 +131,7 @@ final class Menus implements Listener {
         else if (ahora < f.libreHasta) lore.add(linea("Disponible en " + Msg.tiempo(f.libreHasta - ahora), NamedTextColor.RED));
         else if (!detalle) lore.add(linea("Clic derecho: tomar este trabajo", NamedTextColor.GREEN));
         if (!detalle) lore.add(linea("Clic izquierdo: ver detalles", GRIS));
-        return pl.iconos().carta(p, t, g.prestigio, activo, detalle, nombre, lore);
+        return pl.iconos().carta(p, t, g.prestigio, estado, detalle, nombre, lore);
     }
 
     private Component barraNivel(Trabajo t, Perfil.Progreso g) {
@@ -140,16 +149,16 @@ final class Menus implements Listener {
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         boolean activo = f.activo == t;
-        Ventana v = new Ventana(4, pl.iconos().titulo(p, Iconos.FONDO_TRABAJO, t.nombre));
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_TRABAJO, t.nombre));
         ItemStack carta = cartaDe(p, f, t, true);
         if (pl.iconos().conPack(p)) {
             ItemStack vacio = pl.iconos().relleno(carta);
-            v.poner(13, vacio);
-            v.poner(31, vacio);
+            for (int fila = 1; fila <= 4; fila++)
+                for (int col = 3; col <= 5; col++) v.poner(fila * 9 + col, vacio);
         }
-        v.poner(22, carta);
+        v.poner(3 * 9 + 4, carta);
 
-        v.poner(11, Iconos.item(Material.BOOK, Iconos.txtNegrita("Acciones del trabajo", NamedTextColor.GREEN), List.of(
+        v.poner(10, Iconos.item(Material.BOOK, Iconos.txtNegrita("Acciones del trabajo", NamedTextColor.GREEN), List.of(
                 linea("Todo lo que paga en " + t.nombre + ", con su rareza de hoy.", GRIS),
                 Component.empty(),
                 linea("Acciones: " + pl.catalogo().de(t).size(), NamedTextColor.YELLOW),
@@ -157,27 +166,27 @@ final class Menus implements Listener {
                 Component.empty(),
                 linea("Clic para ver", NamedTextColor.GREEN))), e -> { sonido(p); acciones(p, t, 0); });
 
-        v.poner(20, Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Misiones", NamedTextColor.GOLD), List.of(
+        v.poner(19, Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Misiones", NamedTextColor.GOLD), List.of(
                 linea("Diarias, semanales y globales de " + t.nombre + ".", GRIS),
                 Component.empty(),
                 linea("Muy pronto.", NamedTextColor.RED))));
 
-        v.poner(29, Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), List.of(
+        v.poner(28, Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), List.of(
                 linea("Premios por nivel, hasta el 100.", GRIS),
                 Component.empty(),
                 linea("Muy pronto.", NamedTextColor.RED))));
 
-        v.poner(15, relojRarezas());
-        v.poner(27, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p); });
+        v.poner(16, relojRarezas());
+        v.poner(45, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p, java.util.Arrays.asList(Trabajo.values()).indexOf(t) < 3 ? 0 : 1); });
 
         if (activo) {
-            v.poner(35, Iconos.item(Material.RED_DYE, Iconos.txtNegrita("Abandonar el trabajo", NamedTextColor.RED), List.of(
+            v.poner(53, Iconos.item(Material.RED_DYE, Iconos.txtNegrita("Abandonar el trabajo", NamedTextColor.RED), List.of(
                     linea("Te quedás sin trabajo " + pl.getConfig().getInt("abandonar-horas", 13) + " horas.", GRIS),
                     linea("Las misiones sin cobrar se pierden.", GRIS),
                     Component.empty(),
                     linea("Clic para abandonar", NamedTextColor.RED))), e -> { sonido(p); confirmarAbandono(p, t); });
         } else {
-            v.poner(35, Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Tomar este trabajo", NamedTextColor.GREEN), List.of(
+            v.poner(53, Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Tomar este trabajo", NamedTextColor.GREEN), List.of(
                     linea("Nivel " + g.nivel + " · x" + Msg.num(pl.pago().personal(g), 2), GRIS),
                     Component.empty(),
                     linea("Clic para tomarlo", NamedTextColor.GREEN))), e -> {

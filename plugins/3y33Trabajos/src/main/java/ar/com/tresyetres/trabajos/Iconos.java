@@ -78,16 +78,19 @@ final class Iconos implements Listener {
         return Component.text("" + CORRER_8 + fondo).font(Key.key("3y33", "tienda")).color(NamedTextColor.WHITE);
     }
 
+    /** Como se ve la carta: normal, activa (la del trabajo que tenes) o bloqueada (gris, no se puede tomar ahora). */
+    enum Estado { NORMAL, ACTIVO, BLOQUEADO }
+
     /**
-     * La carta de un trabajo. Con el pack es un item grande (32x48, 2 casilleros de ancho por 3 de alto) que cuelga del casillero
+     * La carta de un trabajo. Con el pack es un item grande (48x72: 3 casilleros de ancho por 4 de alto) que cuelga del casillero
      * donde se pone; "detalle" es la misma carta centrada en la ventana del trabajo. Sin el pack, el item comun.
      */
-    ItemStack carta(Player p, Trabajo t, int prestigio, boolean activo, boolean detalle, Component nombre, List<Component> lore) {
+    ItemStack carta(Player p, Trabajo t, int prestigio, Estado estado, boolean detalle, Component nombre, List<Component> lore) {
         ItemStack it = item(t.icono, nombre, lore);
         if (conPack(p)) {
             ItemMeta meta = it.getItemMeta();
             String marco = MARCOS[Math.max(0, Math.min(3, prestigio))];
-            meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + (detalle ? "detalle_" : "") + "carta_" + t.id + "_" + marco + "_" + (activo ? "activo" : "normal")));
+            meta.setItemModel(new NamespacedKey("3y33", "trabajos/" + (detalle ? "detalle_" : "") + "carta_" + t.id + "_" + marco + "_" + estado.name().toLowerCase(Locale.ROOT)));
             it.setItemMeta(meta);
         }
         return it;
