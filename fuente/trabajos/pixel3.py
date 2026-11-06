@@ -105,6 +105,26 @@ def icono(nombre):
             P(im, M(lambda d: d.polygon(X([(18, 4), (23, 4), (28, 6), (22, 6)]), fill=255)), LUZ)
             P(im, M(lambda d: d.polygon(X([(8, 4), (14, 4), (14, 5), (7, 5)]), fill=255)), LUZ)
             P(im, M(lambda d: d.rectangle(X([(14, 10), (18, 12)]), fill=255)), (160, 50, 52))
+    elif nombre in ('pico_v', 'hacha_v'):
+        # herramientas en vertical (mango recto y centrado, con muescas), a juego con la azada vertical
+        LUZ = (232, 240, 250); SOM = (96, 106, 122)
+        ox = 0 if nombre == 'pico_v' else -4
+        X = lambda pts: [(x + ox, y) for x, y in pts]
+        hx = 16 + ox
+        P(im, M(lambda d: d.rectangle([hx - 1, 9, hx + 1, 30], fill=255)), WOOD)
+        for y in (27, 23, 19, 15): im.putpixel((hx + 1, y), darken(WOOD, .45) + (255,)); im.putpixel((hx + 1, y - 1), darken(WOOD, .45) + (255,))
+        for y in range(10, 30): im.putpixel((hx - 1, y), lighten(WOOD, .25) + (255,))
+        if nombre == 'pico_v':
+            P(im, M(lambda d: d.polygon([(3, 14), (6, 8), (10, 4), (16, 2), (22, 4), (26, 8), (29, 14), (26, 11), (22, 8), (16, 7), (10, 8), (6, 11)], fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon([(8, 8), (11, 5), (16, 3), (21, 5), (24, 8), (21, 6), (16, 5), (11, 6)], fill=255)), (214, 226, 240))
+            P(im, M(lambda d: d.rectangle([13, 4, 19, 12], fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle([14, 7, 18, 8], fill=255)), (200, 70, 60))
+        else:
+            P(im, M(lambda d: d.polygon(X([(9, 5), (15, 4), (16, 12), (10, 12)]), fill=255)), (116, 126, 142))
+            P(im, M(lambda d: d.polygon(X([(15, 3), (22, 1), (27, 3), (30, 7), (30, 13), (28, 18), (25, 22), (22, 21), (23, 16), (20, 13), (16, 12)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(26, 4), (28, 7), (29, 12), (27, 17), (26, 11), (25, 7)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(15, 5), (20, 4), (21, 11), (16, 11)]), fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle(X([(13, 12), (19, 14)]), fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
@@ -125,6 +145,8 @@ def icono(nombre):
         # burbujitas en lugar de la linea de pesca
         for (x, y, r) in ((2, 6, 1), (4, 3, 1)):
             P(im, M(lambda d, x=x, y=y, r=r: d.ellipse([x - r, y - r, x + r, y + r], fill=255)), (200, 240, 252))
+    if nombre == 'pez_v':
+        return icono('pez').rotate(-90, resample=Image.NEAREST)
     return contorno(im)
 
 def fondo(acc, glow, rays, tono, tinte=0.0):
