@@ -350,6 +350,7 @@ final class Menus implements Listener {
             int aporte = pl.misiones().aporteDe(t, p);
             int minimo = pl.misiones().aporteMinimo();
             List<Component> lg = new ArrayList<>();
+            lg.add(linea("Tema: " + pl.misiones().nombreTema(t), NamedTextColor.GOLD));
             lg.add(linea("Todos los " + t.nombre + " entregan al mismo objetivo.", GRIS));
             lg.add(Component.empty());
             lg.add(barra(gl.total / gl.objetivo, t.color).append(Iconos.txt("  " + Msg.num(Math.min(gl.total, gl.objetivo), 0) + "/" + Msg.num(gl.objetivo, 0) + " puntos", BLANCO)));
@@ -370,7 +371,7 @@ final class Menus implements Listener {
                 lg.add(linea("Clic: entregar todo lo que sume", NamedTextColor.GREEN));
                 lg.add(linea("Clic derecho: solo lo que tenés en la mano", NamedTextColor.GREEN));
             }
-            if (!gl.completada) lg.add(linea("Se reinicia en " + Msg.tiempo(pl.misiones().msHastaSemana()), GRIS));
+            if (!gl.completada) lg.add(linea("Cambia de tema en " + Msg.tiempo(pl.misiones().msHastaCiclo()), GRIS));
             String claveG = cobrada ? "mision_global_x_completa" : "mision_global_" + t.id + (cobrable ? "_lista" : "_normal");
             tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global semanal", cobrable ? NamedTextColor.GREEN : t.color), lg), new int[]{1, 2, 3}, e -> {
                 if (pl.misiones().puedeCobrarGlobal(t, p)) {
@@ -395,7 +396,8 @@ final class Menus implements Listener {
 
         List<Component> lt = new ArrayList<>();
         lt.add(linea("Diarias nuevas en " + Msg.tiempo(pl.misiones().msHastaDia()), NamedTextColor.YELLOW));
-        lt.add(linea("Semanal y global: lunes 0:00 (en " + Msg.tiempo(pl.misiones().msHastaSemana()) + ")", NamedTextColor.YELLOW));
+        lt.add(linea("Semanal: lunes 0:00 (en " + Msg.tiempo(pl.misiones().msHastaSemana()) + ")", NamedTextColor.YELLOW));
+        lt.add(linea("Global nueva en " + Msg.tiempo(pl.misiones().msHastaCiclo()), NamedTextColor.YELLOW));
         double bono = pl.misiones().bonoGlobal(t);
         if (bono > 0) { lt.add(Component.empty()); lt.add(linea("Bono global activo: +" + Msg.num(bono * 100, 0) + "% de pago", NamedTextColor.GREEN)); }
         lt.add(Component.empty());
@@ -408,14 +410,14 @@ final class Menus implements Listener {
             la.add(linea("ni encantamientos). Los más raros valen más.", GRIS));
             la.add(Component.empty());
             List<java.util.Map.Entry<Material, Integer>> acep = pl.misiones().aceptados(t);
-            int mostrar = Math.min(14, acep.size());
+            int mostrar = Math.min(16, acep.size());
             for (int i = 0; i < mostrar; i++) {
                 java.util.Map.Entry<Material, Integer> en = acep.get(i);
                 la.add(Iconos.txt(en.getValue() + " pts  ", NamedTextColor.YELLOW)
                         .append(Component.translatable(en.getKey().translationKey()).color(BLANCO).decoration(TextDecoration.ITALIC, false)));
             }
             if (acep.size() > mostrar) la.add(linea("... y " + (acep.size() - mostrar) + " más", GRIS));
-            v.poner(5 * 9 + 7, Iconos.item(Material.BOOK, Iconos.txtNegrita("Qué se entrega", NamedTextColor.GOLD), la));
+            v.poner(5 * 9 + 7, Iconos.item(Material.BOOK, Iconos.txtNegrita("Qué se entrega: " + pl.misiones().nombreTema(t), NamedTextColor.GOLD), la));
         }
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),

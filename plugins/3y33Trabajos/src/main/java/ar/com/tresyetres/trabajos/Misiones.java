@@ -45,6 +45,8 @@ final class Misiones {
         long totalAnterior;
         boolean completada;
         long bonoHasta;
+        String tema;
+        final List<String> historial = new ArrayList<>();
         final Map<UUID, Integer> aportes = new HashMap<>();
         final Set<UUID> cobraron = new HashSet<>();
     }
@@ -57,7 +59,14 @@ final class Misiones {
     private final File archivoEntregas;
     private YamlConfiguration cfg = new YamlConfiguration();
     private YamlConfiguration ent = new YamlConfiguration();
-    private final Map<Trabajo, Map<Material, Integer>> puntos = new EnumMap<>(Trabajo.class);
+    /** Un tema de la mision global: nombre y los items que suman, con sus puntos. */
+    static final class Tema {
+        final String id, nombre;
+        final Map<Material, Integer> puntos = new java.util.LinkedHashMap<>();
+        Tema(String id, String nombre) { this.id = id; this.nombre = nombre; }
+    }
+
+    private final Map<Trabajo, Map<String, Tema>> temas = new EnumMap<>(Trabajo.class);
     private boolean sucio;
 
     Misiones(TrabajosPlugin pl) {
@@ -74,7 +83,7 @@ final class Misiones {
         cfg = YamlConfiguration.loadConfiguration(archivoConfig);
         if (!archivoEntregas.exists()) pl.saveResource("entregas.yml", false);
         ent = YamlConfiguration.loadConfiguration(archivoEntregas);
-        cargarPuntos();
+        cargarTemas();
         YamlConfiguration y = YamlConfiguration.loadConfiguration(archivoGlobal);
         // la global de antes contaba acciones, la de ahora cuenta puntos de items entregados: se empieza de cero una sola vez
         boolean viejo = archivoGlobal.exists() && !"entrega".equals(y.getString("modo"));
@@ -89,6 +98,9 @@ final class Misiones {
             g.totalAnterior = s.getLong("total-anterior", 0L);
             g.completada = s.getBoolean("completada", false);
             g.bonoHasta = s.getLong("bono-hasta", 0L);
+            g.tema = s.getString("tema");
+            g.historial.clear();
+            g.historial.addAll(s.getStringList("historial"));
             g.aportes.clear();
             g.cobraron.clear();
             ConfigurationSection a = s.getConfigurationSection("aportes");
@@ -114,6 +126,8 @@ final class Misiones {
             y.set(b + ".total-anterior", g.totalAnterior);
             y.set(b + ".completada", g.completada);
             y.set(b + ".bono-hasta", g.bonoHasta);
+            y.set(b + ".tema", g.tema);
+            y.set(b + ".historial", g.historial);
             for (Map.Entry<UUID, Integer> a : g.aportes.entrySet()) y.set(b + ".aportes." + a.getKey(), a.getValue());
             List<String> c = new ArrayList<>();
             for (UUID u : g.cobraron) c.add(u.toString());
@@ -135,6 +149,20 @@ final class Misiones {
 
     /** Numero de la semana de misiones: el lunes en que empezo (a las 0:00). */
     long semanaActual() { return LocalDate.now(ZONA).with(DayOfWeek.MONDAY).toEpochDay(); }
+
+    /** Dia (epoch) en que arranco el ciclo actual de la global. Los ciclos arrancan en lunes, cada ciclo-dias dias. */
+    long cicloActual() {
+        long ciclo = Math.max(1, ent.getInt("ciclo-dias", 3));
+        long hoy = LocalDate.now(ZONA).toEpochDay();
+        long ancla = LocalDate.of(2026, 1, 5).toEpochDay();   // un lunes
+        return hoy - Math.floorMod(hoy - ancla, ciclo);
+    }
+
+    long msHastaCiclo() {
+        ZonedDateTime ahora = ZonedDateTime.now(ZONA);
+        long fin = cicloActual() + Math.max(1, ent.getInt("ciclo-dias", 3));
+        return Duration.between(ahora, LocalDate.ofEpochDay(fin).atStartOfDay(ZONA)).toMillis();
+    }
 
     long msHastaDia() {
         ZonedDateTime ahora = ZonedDateTime.now(ZONA);
@@ -335,10 +363,13 @@ final class Misiones {
 
     /** Cambia de semana si hace falta: el objetivo nuevo es el mayor entre el minimo y un % del total de la semana pasada. */
     void revisar() {
-        long semana = semanaActual();
+        long semana = cicloActual();
         for (Trabajo t : Trabajo.values()) {
             Global g = global(t);
-            if (g.semana == semana && g.objetivo > 0) continue;
+            if (g.semana == semana && g.objetivo > 0) {
+                if (temaDe(t) == null && !temas.getOrDefault(t, Map.of()).isEmpty()) { sortearTema(t, g); sucio = true; }
+                continue;
+            }
             long anterior = g.semana == 0 ? 0 : g.total;
             g.totalAnterior = anterior;
             double minimo = ent.getDouble("minimo." + t.id, 5000);
@@ -348,43 +379,101 @@ final class Misiones {
             g.completada = false;
             g.aportes.clear();
             g.cobraron.clear();
+            sortearTema(t, g);
             sucio = true;
-            pl.getLogger().info("Global semanal de " + t.nombre + ": objetivo " + (long) g.objetivo);
+            pl.getLogger().info("Global de " + t.nombre + ": " + (g.tema == null ? "sin tema" : g.tema) + ", objetivo " + (long) g.objetivo);
         }
     }
 
     // ---------- entrega de items a la global ----------
 
-    private void cargarPuntos() {
-        puntos.clear();
-        for (Trabajo t : Trabajo.values()) {
-            Map<Material, Integer> m = new java.util.LinkedHashMap<>();
-            ConfigurationSection s = ent.getConfigurationSection("puntos." + t.id);
-            if (s != null) for (String k : s.getKeys(false)) {
-                int pts = s.getInt(k, 0);
-                if (pts <= 0) continue;
-                if (k.equals("TRONCOS")) {
-                    for (Material mat : Material.values()) {
-                        String n = mat.name();
-                        if (!mat.isItem() || mat.isLegacy()) continue;
-                        if (n.endsWith("_LOG") || n.endsWith("_STEM") || n.endsWith("_WOOD") || n.endsWith("_HYPHAE") || n.equals("BAMBOO_BLOCK") || n.equals("STRIPPED_BAMBOO_BLOCK")) m.put(mat, pts);
-                    }
-                    continue;
-                }
-                Material mat = Material.matchMaterial(k);
-                if (mat == null) pl.getLogger().warning("entregas.yml: material desconocido " + k + " en " + t.id);
-                else m.put(mat, pts);
+    private static final String[] MADERAS = {"OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "DARK_OAK", "MANGROVE", "CHERRY", "PALE_OAK", "BAMBOO", "CRIMSON", "WARPED"};
+
+    private static boolean esItem(Material m) { return m.isItem() && !m.isLegacy(); }
+
+    /** Pone (o saca, con 0) en el tema todos los materiales que cubre una clave: un material, un comodin con * o algo con {M}. */
+    private void aplicar(Tema tema, String clave, int pts, Trabajo t) {
+        if (clave.contains("{M}")) {
+            for (String madera : MADERAS) aplicar(tema, clave.replace("{M}", madera), pts, t);
+            return;
+        }
+        if (clave.contains("*")) {
+            java.util.regex.Pattern pat = java.util.regex.Pattern.compile("^" + clave.toUpperCase(java.util.Locale.ROOT).replace("*", ".*") + "$");
+            for (Material mat : Material.values()) {
+                if (!esItem(mat) || !pat.matcher(mat.name()).matches()) continue;
+                if (pts > 0) tema.puntos.put(mat, pts); else tema.puntos.remove(mat);
             }
-            puntos.put(t, m);
+            return;
+        }
+        Material mat = Material.matchMaterial(clave);
+        if (mat == null || !esItem(mat)) {
+            // las listas se escriben para varias versiones y para las 12 maderas: lo que no existe se saltea sin ruido (salvo que sea un error de tipeo evidente)
+            if (pts > 0 && !clave.contains("_") ) pl.getLogger().warning("entregas.yml: material desconocido " + clave + " (" + t.id + ")");
+            return;
+        }
+        if (pts > 0) tema.puntos.put(mat, pts); else tema.puntos.remove(mat);
+    }
+
+    private void cargarTemas() {
+        temas.clear();
+        for (Trabajo t : Trabajo.values()) {
+            Map<String, Tema> m = new java.util.LinkedHashMap<>();
+            ConfigurationSection s = ent.getConfigurationSection("temas." + t.id);
+            if (s != null) for (String id : s.getKeys(false)) {
+                ConfigurationSection c = s.getConfigurationSection(id);
+                if (c == null) continue;
+                Tema tema = new Tema(id, c.getString("nombre", id));
+                ConfigurationSection items = c.getConfigurationSection("items");
+                if (items != null) for (String k : items.getKeys(false)) aplicar(tema, k, items.getInt(k, 0), t);
+                if (tema.puntos.isEmpty()) { pl.getLogger().warning("entregas.yml: el tema " + t.id + "/" + id + " no tiene items."); continue; }
+                m.put(id, tema);
+            }
+            temas.put(t, m);
         }
     }
 
+    /** Tema actual de la global de ese trabajo (null si no hay ninguno configurado). */
+    Tema temaDe(Trabajo t) {
+        Global g = global(t);
+        return g.tema == null ? null : temas.getOrDefault(t, Map.of()).get(g.tema);
+    }
+
+    String nombreTema(Trabajo t) { Tema x = temaDe(t); return x == null ? "Misión global" : x.nombre; }
+
+    /** Sortea un tema nuevo que no sea ninguno de los dos ultimos. */
+    private void sortearTema(Trabajo t, Global g) {
+        Map<String, Tema> todos = temas.getOrDefault(t, Map.of());
+        if (todos.isEmpty()) { g.tema = null; return; }
+        List<String> ids = new ArrayList<>(todos.keySet());
+        List<String> libres = new ArrayList<>(ids);
+        int evitar = Math.min(2, ids.size() - 1);
+        for (int i = g.historial.size() - 1, n = 0; i >= 0 && n < evitar; i--, n++) libres.remove(g.historial.get(i));
+        if (libres.isEmpty()) libres = ids;
+        g.tema = libres.get(azar.nextInt(libres.size()));
+        g.historial.add(g.tema);
+        while (g.historial.size() > 6) g.historial.remove(0);
+    }
+
+    /** Fuerza un tema (para probar). */
+    boolean fijarTema(Trabajo t, String id) {
+        Tema x = temas.getOrDefault(t, Map.of()).get(id.toLowerCase(java.util.Locale.ROOT));
+        if (x == null) return false;
+        Global g = global(t);
+        g.tema = x.id;
+        g.historial.add(x.id);
+        sucio = true;
+        return true;
+    }
+
+    List<String> idsTemas(Trabajo t) { return new ArrayList<>(temas.getOrDefault(t, Map.of()).keySet()); }
+
     /** Puntos que vale un item para la global de ese trabajo (0 si no sirve). */
-    int puntosDe(Trabajo t, Material m) { return puntos.getOrDefault(t, Map.of()).getOrDefault(m, 0); }
+    int puntosDe(Trabajo t, Material m) { Tema x = temaDe(t); return x == null ? 0 : x.puntos.getOrDefault(m, 0); }
 
     /** Los items que sirven, del que mas vale al que menos. */
     List<Map.Entry<Material, Integer>> aceptados(Trabajo t) {
-        List<Map.Entry<Material, Integer>> l = new ArrayList<>(puntos.getOrDefault(t, Map.of()).entrySet());
+        Tema x = temaDe(t);
+        List<Map.Entry<Material, Integer>> l = x == null ? new ArrayList<>() : new ArrayList<>(x.puntos.entrySet());
         l.sort((a, b) -> b.getValue() != a.getValue().intValue() ? Integer.compare(b.getValue(), a.getValue()) : a.getKey().name().compareTo(b.getKey().name()));
         return l;
     }
@@ -407,7 +496,9 @@ final class Misiones {
         if (!puedeEntregar(p, t)) return 0;
         Global g = global(t);
         if (g.completada) { Msg.error(p, "La misión global de esta semana ya se completó. ¡Cobrá tu parte!"); return 0; }
-        Map<Material, Integer> val = puntos.getOrDefault(t, Map.of());
+        Tema tema = temaDe(t);
+        if (tema == null) { Msg.error(p, "Esta misión global todavía no tiene tema."); return 0; }
+        Map<Material, Integer> val = tema.puntos;
         ItemStack[] cont = p.getInventory().getStorageContents();
         // primero lo que menos vale, asi no se va un diamante cuando faltaban pocos puntos
         List<Integer> idx = new ArrayList<>();

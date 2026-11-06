@@ -1,92 +1,1010 @@
-# Misión global semanal de 3y33Trabajos: se completa ENTREGANDO ítems en el NPC del trabajo.
-# Cada ítem vale puntos (los más difíciles de conseguir valen más). Solo cuentan ítems "limpios" (sin nombre ni encantamientos).
-# Se recarga con /trabajosadmin recargar.
+# Misión global de 3y33Trabajos: se completa ENTREGANDO ítems en el NPC del trabajo.
+#
+# Cada trabajo tiene varios TEMAS. Cuando arranca un ciclo (ver ciclo-dias) se sortea un tema nuevo por trabajo, sin repetir
+# los últimos dos. Cada tema es una lista de ítems con sus puntos (lo más difícil de conseguir o de fabricar vale más).
+# Solo cuentan ítems "limpios" (sin nombre, encantamientos ni uso). Se recarga con /trabajosadmin recargar.
+#
+# En las listas se puede escribir:
+#   MATERIAL: puntos          un ítem
+#   "*_WOOL": 3               comodín: todos los que terminen/empiecen/contengan eso (ej. "*DEEPSLATE*", "*_ORE")
+#   "{M}_DOOR": 4             se repite para cada madera (roble, abeto, abedul, jungla, acacia, roble oscuro, manglar, cerezo,
+#                             roble pálido, bambú, carmesí y distorsionado); las que no existen se saltean
+#   MATERIAL: 0               saca ese ítem (sirve para sacar uno que entró por un comodín)
+# Los que vienen después pisan a los de antes.
 
 # Si es true, las misiones (diarias, semanal y global) solo se entregan estando cerca del NPC del trabajo.
 solo-en-npc: true
 distancia-npc: 8
 
-# Objetivo mínimo de la semana, en puntos (el objetivo de cada semana es el mayor entre este y un % del total de la anterior).
-minimo:
-  minero: 20000
-  lenador: 6000
-  granjero: 8000
-  cazador: 6000
-  pescador: 3000
+# Cada cuántos días cambia la misión global (y su tema). Siempre arranca a las 0:00. Con 7 cambia los lunes.
+ciclo-dias: 3
 
-puntos:
+# Objetivo mínimo de cada ciclo, en puntos (el objetivo es el mayor entre este y un % del total del ciclo anterior).
+minimo:
+  minero: 15000
+  lenador: 6000
+  granjero: 7000
+  cazador: 5000
+  pescador: 2500
+
+temas:
+  # ------------------------------------------------------------------ MINERO
   minero:
-    COBBLESTONE: 1
-    COBBLED_DEEPSLATE: 1
-    STONE: 1
-    DEEPSLATE: 1
-    ANDESITE: 1
-    DIORITE: 1
-    GRANITE: 1
-    TUFF: 1
-    COAL: 4
-    RAW_COPPER: 3
-    RAW_IRON: 6
-    RAW_GOLD: 10
-    REDSTONE: 3
-    LAPIS_LAZULI: 3
-    QUARTZ: 4
-    AMETHYST_SHARD: 5
-    DIAMOND: 60
-    EMERALD: 60
-    ANCIENT_DEBRIS: 120
+    profundo:
+      nombre: "Corazón de Roca Profunda"
+      items:
+        "*DEEPSLATE*": 2
+        COBBLED_DEEPSLATE: 1
+        DEEPSLATE: 1
+        REINFORCED_DEEPSLATE: 0
+        DEEPSLATE_COAL_ORE: 6
+        DEEPSLATE_COPPER_ORE: 6
+        DEEPSLATE_IRON_ORE: 8
+        DEEPSLATE_GOLD_ORE: 12
+        DEEPSLATE_REDSTONE_ORE: 6
+        DEEPSLATE_LAPIS_ORE: 7
+        DEEPSLATE_DIAMOND_ORE: 80
+        DEEPSLATE_EMERALD_ORE: 80
+        COBBLED_DEEPSLATE_WALL: 2
+        POLISHED_DEEPSLATE_WALL: 2
+        CHISELED_DEEPSLATE: 3
+        DEEPSLATE_TILES: 3
+        CRACKED_DEEPSLATE_TILES: 3
+        TUFF: 1
+        CALCITE: 2
+        SCULK: 4
+        SCULK_CATALYST: 40
+    cantera:
+      nombre: "Cantera de Piedra"
+      items:
+        STONE: 1
+        COBBLESTONE: 1
+        SMOOTH_STONE: 2
+        STONE_BRICKS: 2
+        MOSSY_COBBLESTONE: 3
+        MOSSY_STONE_BRICKS: 3
+        CRACKED_STONE_BRICKS: 3
+        CHISELED_STONE_BRICKS: 3
+        ANDESITE: 1
+        DIORITE: 1
+        GRANITE: 1
+        POLISHED_ANDESITE: 2
+        POLISHED_DIORITE: 2
+        POLISHED_GRANITE: 2
+        TUFF: 1
+        POLISHED_TUFF: 2
+        TUFF_BRICKS: 2
+        CALCITE: 2
+        DRIPSTONE_BLOCK: 3
+        POINTED_DRIPSTONE: 2
+        FURNACE: 8
+        STONECUTTER: 10
+        LEVER: 2
+        STONE_BUTTON: 2
+        STONE_PRESSURE_PLATE: 3
+        STONE_PICKAXE: 5
+        STONE_SWORD: 4
+        STONE_AXE: 5
+        STONE_SHOVEL: 3
+        STONE_HOE: 4
+        COBBLESTONE_WALL: 2
+        STONE_BRICK_WALL: 2
+        COBBLESTONE_STAIRS: 1
+        STONE_STAIRS: 1
+        STONE_BRICK_STAIRS: 2
+        COBBLESTONE_SLAB: 1
+        STONE_SLAB: 1
+        STONE_BRICK_SLAB: 1
+    carbon:
+      nombre: "Hornos y Fundición"
+      items:
+        COAL: 3
+        CHARCOAL: 3
+        COAL_BLOCK: 27
+        COAL_ORE: 5
+        IRON_ORE: 7
+        COPPER_ORE: 5
+        GOLD_ORE: 11
+        RAW_IRON: 6
+        RAW_COPPER: 3
+        RAW_GOLD: 10
+        IRON_INGOT: 7
+        COPPER_INGOT: 4
+        GOLD_INGOT: 12
+        IRON_NUGGET: 1
+        GOLD_NUGGET: 2
+        IRON_BLOCK: 63
+        COPPER_BLOCK: 36
+        GOLD_BLOCK: 108
+        FURNACE: 8
+        BLAST_FURNACE: 50
+        SMOKER: 20
+        TORCH: 2
+        LANTERN: 10
+        BUCKET: 20
+        SHEARS: 14
+        IRON_BARS: 3
+        CHAIN: 4
+        ANVIL: 200
+        CAULDRON: 35
+        MINECART: 35
+        HOPPER: 38
+    redstone:
+      nombre: "Ingeniería de Redstone"
+      items:
+        REDSTONE: 3
+        REDSTONE_BLOCK: 27
+        REDSTONE_ORE: 6
+        REDSTONE_TORCH: 5
+        REPEATER: 12
+        COMPARATOR: 28
+        OBSERVER: 20
+        PISTON: 22
+        STICKY_PISTON: 28
+        DISPENSER: 20
+        DROPPER: 16
+        HOPPER: 38
+        LEVER: 2
+        TRIPWIRE_HOOK: 8
+        TARGET: 22
+        DAYLIGHT_DETECTOR: 45
+        LIGHTNING_ROD: 12
+        NOTE_BLOCK: 12
+        JUKEBOX: 70
+        RAIL: 4
+        POWERED_RAIL: 14
+        DETECTOR_RAIL: 12
+        ACTIVATOR_RAIL: 12
+        MINECART: 35
+        TNT: 28
+        SLIME_BALL: 4
+        SLIME_BLOCK: 40
+        QUARTZ: 4
+        GLOWSTONE_DUST: 3
+        "*_PRESSURE_PLATE": 3
+        "*_BUTTON": 2
+    gemas:
+      nombre: "Fiebre de Gemas"
+      items:
+        DIAMOND: 60
+        EMERALD: 60
+        LAPIS_LAZULI: 3
+        AMETHYST_SHARD: 5
+        QUARTZ: 4
+        DIAMOND_ORE: 70
+        EMERALD_ORE: 70
+        LAPIS_ORE: 7
+        NETHER_QUARTZ_ORE: 5
+        AMETHYST_BLOCK: 20
+        BUDDING_AMETHYST: 0
+        AMETHYST_CLUSTER: 25
+        LAPIS_BLOCK: 27
+        QUARTZ_BLOCK: 16
+        CHISELED_QUARTZ_BLOCK: 16
+        QUARTZ_PILLAR: 16
+        QUARTZ_BRICKS: 16
+        SMOOTH_QUARTZ: 16
+        EMERALD_BLOCK: 540
+        DIAMOND_BLOCK: 540
+        SPYGLASS: 15
+        TINTED_GLASS: 25
+        ENCHANTING_TABLE: 250
+    nether:
+      nombre: "Minería del Nether"
+      items:
+        NETHERRACK: 1
+        BASALT: 1
+        BLACKSTONE: 1
+        SOUL_SAND: 1
+        SOUL_SOIL: 1
+        MAGMA_BLOCK: 4
+        GLOWSTONE: 8
+        GLOWSTONE_DUST: 3
+        NETHER_QUARTZ_ORE: 5
+        NETHER_GOLD_ORE: 6
+        GOLD_NUGGET: 2
+        QUARTZ: 4
+        NETHER_BRICKS: 4
+        RED_NETHER_BRICKS: 6
+        CRACKED_NETHER_BRICKS: 5
+        CHISELED_NETHER_BRICKS: 5
+        GILDED_BLACKSTONE: 20
+        POLISHED_BLACKSTONE: 2
+        POLISHED_BLACKSTONE_BRICKS: 2
+        OBSIDIAN: 12
+        CRYING_OBSIDIAN: 20
+        ANCIENT_DEBRIS: 120
+        NETHERITE_SCRAP: 130
+        NETHERITE_INGOT: 600
+        NETHERITE_BLOCK: 5400
+        SOUL_LANTERN: 12
+        SOUL_TORCH: 3
+        CHAIN: 4
+    arena:
+      nombre: "Arena, Vidrio y Ladrillos"
+      items:
+        SAND: 1
+        RED_SAND: 1
+        GRAVEL: 1
+        CLAY_BALL: 1
+        CLAY: 4
+        BRICK: 2
+        BRICKS: 8
+        GLASS: 2
+        GLASS_PANE: 1
+        GLASS_BOTTLE: 3
+        SANDSTONE: 3
+        RED_SANDSTONE: 3
+        SMOOTH_SANDSTONE: 4
+        CUT_SANDSTONE: 4
+        CHISELED_SANDSTONE: 4
+        TERRACOTTA: 4
+        "*_TERRACOTTA": 5
+        "*_GLAZED_TERRACOTTA": 6
+        "*_STAINED_GLASS": 4
+        "*_CONCRETE_POWDER": 3
+        FLOWER_POT: 6
+        DECORATED_POT: 25
+        SUSPICIOUS_SAND: 0
+        SUSPICIOUS_GRAVEL: 0
+        BRICK_STAIRS: 3
+        BRICK_SLAB: 2
+        BRICK_WALL: 4
+    aldea:
+      nombre: "Herramientas y Armaduras"
+      items:
+        IRON_PICKAXE: 22
+        IRON_AXE: 22
+        IRON_SHOVEL: 8
+        IRON_HOE: 15
+        IRON_SWORD: 15
+        IRON_HELMET: 38
+        IRON_CHESTPLATE: 60
+        IRON_LEGGINGS: 52
+        IRON_BOOTS: 30
+        SHIELD: 14
+        BUCKET: 20
+        SHEARS: 14
+        COMPASS: 30
+        CLOCK: 50
+        MAP: 40
+        FLINT_AND_STEEL: 8
+        FLINT: 1
+        GOLDEN_PICKAXE: 40
+        GOLDEN_APPLE: 100
+        DIAMOND_PICKAXE: 190
+        DIAMOND_SWORD: 130
+
+  # ---------------------------------------------------------------- LEÑADOR
   lenador:
-    # todos los troncos, maderas y tallos (OAK_LOG, STRIPPED_CHERRY_LOG, CRIMSON_STEM, BAMBOO_BLOCK...) valen 1
-    TRONCOS: 1
-    APPLE: 3
+    taller:
+      nombre: "Taller de Carpintería"
+      items:
+        "{M}_LOG": 1
+        "{M}_PLANKS": 1
+        CRAFTING_TABLE: 6
+        CHEST: 10
+        BARREL: 10
+        STICK: 1
+        LADDER: 3
+        BOWL: 2
+        COMPOSTER: 6
+        "{M}_SIGN": 4
+        "{M}_HANGING_SIGN": 6
+        "{M}_DOOR": 4
+        "{M}_TRAPDOOR": 4
+        "{M}_FENCE": 3
+        "{M}_FENCE_GATE": 4
+        "{M}_BUTTON": 1
+        "{M}_PRESSURE_PLATE": 2
+        CARTOGRAPHY_TABLE: 14
+        FLETCHING_TABLE: 14
+        SMITHING_TABLE: 14
+        LOOM: 12
+        WOODEN_PICKAXE: 4
+        WOODEN_AXE: 4
+        WOODEN_SWORD: 3
+        WOODEN_SHOVEL: 2
+        WOODEN_HOE: 3
+    escaleras:
+      nombre: "Escalones y Losas"
+      items:
+        "{M}_PLANKS": 1
+        "{M}_STAIRS": 2
+        "{M}_SLAB": 1
+        "STRIPPED_{M}_LOG": 2
+        "STRIPPED_{M}_WOOD": 2
+        "{M}_WOOD": 2
+        LADDER: 3
+        STICK: 1
+        SCAFFOLDING: 6
+        "{M}_FENCE": 3
+        "{M}_FENCE_GATE": 4
+    nobles:
+      nombre: "Maderas Nobles"
+      items:
+        DARK_OAK_LOG: 2
+        ACACIA_LOG: 2
+        JUNGLE_LOG: 2
+        CHERRY_LOG: 2
+        MANGROVE_LOG: 2
+        PALE_OAK_LOG: 3
+        DARK_OAK_WOOD: 2
+        ACACIA_WOOD: 2
+        JUNGLE_WOOD: 2
+        CHERRY_WOOD: 2
+        MANGROVE_WOOD: 2
+        PALE_OAK_WOOD: 3
+        STRIPPED_DARK_OAK_LOG: 3
+        STRIPPED_ACACIA_LOG: 3
+        STRIPPED_JUNGLE_LOG: 3
+        STRIPPED_CHERRY_LOG: 3
+        STRIPPED_MANGROVE_LOG: 3
+        STRIPPED_PALE_OAK_LOG: 4
+        DARK_OAK_PLANKS: 1
+        ACACIA_PLANKS: 1
+        JUNGLE_PLANKS: 1
+        CHERRY_PLANKS: 1
+        MANGROVE_PLANKS: 1
+        PALE_OAK_PLANKS: 1
+        MANGROVE_ROOTS: 1
+        MUDDY_MANGROVE_ROOTS: 2
+    nether:
+      nombre: "Bosque del Nether"
+      items:
+        CRIMSON_STEM: 2
+        WARPED_STEM: 2
+        STRIPPED_CRIMSON_STEM: 3
+        STRIPPED_WARPED_STEM: 3
+        CRIMSON_HYPHAE: 2
+        WARPED_HYPHAE: 2
+        CRIMSON_PLANKS: 1
+        WARPED_PLANKS: 1
+        NETHER_WART_BLOCK: 3
+        WARPED_WART_BLOCK: 3
+        SHROOMLIGHT: 6
+        CRIMSON_FUNGUS: 4
+        WARPED_FUNGUS: 4
+        CRIMSON_ROOTS: 1
+        WARPED_ROOTS: 1
+        WEEPING_VINES: 1
+        TWISTING_VINES: 1
+        "CRIMSON_*": 2
+        "WARPED_*": 2
+        CRIMSON_NYLIUM: 0
+        WARPED_NYLIUM: 0
+    jardin:
+      nombre: "Jardín del Bosque"
+      items:
+        "*_LEAVES": 1
+        "*_SAPLING": 2
+        MANGROVE_PROPAGULE: 2
+        APPLE: 4
+        VINE: 1
+        MOSS_BLOCK: 3
+        MOSS_CARPET: 2
+        AZALEA: 6
+        FLOWERING_AZALEA: 8
+        FLOWERING_AZALEA_LEAVES: 2
+        HANGING_ROOTS: 2
+        BEEHIVE: 40
+        BEE_NEST: 45
+        HONEYCOMB: 8
+        HONEY_BOTTLE: 12
+        STICK: 1
+        BROWN_MUSHROOM: 2
+        RED_MUSHROOM: 2
+        FERN: 1
+        LARGE_FERN: 1
+        TALL_GRASS: 1
+        SWEET_BERRIES: 1
+        PODZOL: 3
+        COARSE_DIRT: 1
+        ROOTED_DIRT: 2
+    biblioteca:
+      nombre: "Biblioteca del Pueblo"
+      items:
+        BOOK: 8
+        PAPER: 3
+        SUGAR_CANE: 1
+        LEATHER: 3
+        BOOKSHELF: 30
+        CHISELED_BOOKSHELF: 20
+        LECTERN: 18
+        WRITABLE_BOOK: 15
+        ITEM_FRAME: 6
+        PAINTING: 6
+        "{M}_SIGN": 4
+        "{M}_HANGING_SIGN": 6
+        "{M}_PLANKS": 1
+        "{M}_SLAB": 1
+        BARREL: 10
+        CHEST: 10
+        LADDER: 3
+        STICK: 1
+        BOWL: 2
+        CANDLE: 6
+    barcos:
+      nombre: "Astillero"
+      items:
+        "{M}_BOAT": 5
+        "{M}_CHEST_BOAT": 15
+        BAMBOO_RAFT: 6
+        BAMBOO_CHEST_RAFT: 16
+        BAMBOO: 1
+        BAMBOO_BLOCK: 2
+        STRIPPED_BAMBOO_BLOCK: 3
+        BAMBOO_PLANKS: 1
+        SCAFFOLDING: 6
+        "{M}_PLANKS": 1
+        "{M}_FENCE": 3
+        "{M}_TRAPDOOR": 4
+        STICK: 1
+        LADDER: 3
+        CHEST: 10
+        BARREL: 10
+        LEAD: 12
+        FISHING_ROD: 6
+    fogata:
+      nombre: "Fogata y Leña"
+      items:
+        "{M}_LOG": 1
+        CHARCOAL: 3
+        COAL: 3
+        STICK: 1
+        TORCH: 2
+        CAMPFIRE: 10
+        SOUL_CAMPFIRE: 14
+        LANTERN: 10
+        BOWL: 2
+        MUSHROOM_STEW: 8
+        BARREL: 10
+        COMPOSTER: 6
+        FLINT_AND_STEEL: 8
+        FLINT: 1
+        CANDLE: 6
+        "*_CANDLE": 8
+        STRING: 2
+        BEEHIVE: 40
+
+  # --------------------------------------------------------------- GRANJERO
   granjero:
-    WHEAT: 2
-    CARROT: 1
-    POTATO: 1
-    BEETROOT: 2
-    PUMPKIN: 3
-    MELON: 4
-    MELON_SLICE: 1
-    NETHER_WART: 2
-    SWEET_BERRIES: 1
-    GLOW_BERRIES: 1
-    COCOA_BEANS: 2
-    SUGAR_CANE: 1
-    CACTUS: 1
-    BEEF: 2
-    PORKCHOP: 2
-    CHICKEN: 2
-    MUTTON: 2
-    RABBIT: 2
-    EGG: 1
-    FEATHER: 1
-    LEATHER: 3
+    panaderia:
+      nombre: "Panadería del Pueblo"
+      items:
+        WHEAT: 2
+        WHEAT_SEEDS: 1
+        BREAD: 6
+        HAY_BLOCK: 20
+        COOKIE: 3
+        CAKE: 45
+        PUMPKIN_PIE: 12
+        SUGAR: 2
+        SUGAR_CANE: 1
+        EGG: 1
+        COCOA_BEANS: 2
+        MILK_BUCKET: 5
+        PUMPKIN: 3
+        HONEY_BOTTLE: 12
+        APPLE: 4
+    huerta:
+      nombre: "La Gran Huerta"
+      items:
+        CARROT: 1
+        POTATO: 1
+        BAKED_POTATO: 3
+        POISONOUS_POTATO: 1
+        BEETROOT: 2
+        BEETROOT_SEEDS: 1
+        BEETROOT_SOUP: 10
+        GOLDEN_CARROT: 15
+        RABBIT_STEW: 16
+        MUSHROOM_STEW: 8
+        WHEAT: 2
+        BREAD: 6
+        PUMPKIN: 3
+        MELON: 6
+        MELON_SLICE: 1
+        BONE_MEAL: 1
+        BOWL: 2
+    granja:
+      nombre: "Granja de Animales"
+      items:
+        BEEF: 2
+        COOKED_BEEF: 4
+        PORKCHOP: 2
+        COOKED_PORKCHOP: 4
+        CHICKEN: 2
+        COOKED_CHICKEN: 4
+        MUTTON: 2
+        COOKED_MUTTON: 4
+        RABBIT: 2
+        COOKED_RABBIT: 4
+        RABBIT_HIDE: 2
+        RABBIT_FOOT: 20
+        LEATHER: 3
+        FEATHER: 1
+        EGG: 1
+        MILK_BUCKET: 5
+        "*_WOOL": 3
+        LEAD: 12
+        HAY_BLOCK: 20
+        WHEAT: 2
+        CARROT: 1
+        BONE: 2
+        NAME_TAG: 25
+    tinte:
+      nombre: "Lana y Colores"
+      items:
+        "*_WOOL": 3
+        "*_CARPET": 2
+        "*_BED": 22
+        "*_BANNER": 20
+        "*_DYE": 3
+        "*_CANDLE": 8
+        "*_TULIP": 1
+        DANDELION: 1
+        POPPY: 1
+        BLUE_ORCHID: 2
+        ALLIUM: 2
+        AZURE_BLUET: 1
+        OXEYE_DAISY: 1
+        CORNFLOWER: 2
+        LILY_OF_THE_VALLEY: 2
+        SUNFLOWER: 2
+        LILAC: 2
+        ROSE_BUSH: 2
+        PEONY: 2
+        PINK_PETALS: 2
+        TORCHFLOWER: 8
+        PITCHER_PLANT: 8
+        BONE_MEAL: 1
+        STRING: 2
+        WHITE_BED: 22
+        SHEARS: 14
+        MOSS_CARPET: 0
+        PALE_MOSS_CARPET: 0
+    dulce:
+      nombre: "Cosecha Dulce"
+      items:
+        SUGAR_CANE: 1
+        SUGAR: 2
+        HONEY_BOTTLE: 12
+        HONEYCOMB: 8
+        HONEY_BLOCK: 45
+        HONEYCOMB_BLOCK: 32
+        SWEET_BERRIES: 1
+        GLOW_BERRIES: 2
+        MELON_SLICE: 1
+        MELON: 6
+        COOKIE: 3
+        PUMPKIN_PIE: 12
+        CAKE: 45
+        APPLE: 4
+        GOLDEN_APPLE: 100
+        CHORUS_FRUIT: 10
+        POPPED_CHORUS_FRUIT: 12
+        COCOA_BEANS: 2
+        MILK_BUCKET: 5
+        BEEHIVE: 40
+        CANDLE: 6
+    calabazas:
+      nombre: "Calabazas y Sandías"
+      items:
+        PUMPKIN: 3
+        CARVED_PUMPKIN: 5
+        JACK_O_LANTERN: 8
+        PUMPKIN_SEEDS: 1
+        PUMPKIN_PIE: 12
+        MELON: 6
+        MELON_SLICE: 1
+        MELON_SEEDS: 1
+        GLISTERING_MELON_SLICE: 14
+        TORCH: 2
+        STICK: 1
+        BOWL: 2
+        SUGAR: 2
+        EGG: 1
+        SHEARS: 14
+        BONE_MEAL: 1
+    raros:
+      nombre: "Cultivos Raros"
+      items:
+        BROWN_MUSHROOM: 2
+        RED_MUSHROOM: 2
+        CRIMSON_FUNGUS: 4
+        WARPED_FUNGUS: 4
+        NETHER_WART: 2
+        NETHER_WART_BLOCK: 3
+        CACTUS: 1
+        BAMBOO: 1
+        KELP: 1
+        DRIED_KELP: 2
+        DRIED_KELP_BLOCK: 18
+        SEA_PICKLE: 3
+        GLOW_LICHEN: 2
+        SPORE_BLOSSOM: 12
+        BIG_DRIPLEAF: 4
+        SMALL_DRIPLEAF: 3
+        TORCHFLOWER_SEEDS: 8
+        PITCHER_POD: 8
+        COCOA_BEANS: 2
+        CHORUS_FLOWER: 15
+        CHORUS_FRUIT: 10
+        SWEET_BERRIES: 1
+        GLOW_BERRIES: 2
+        MUSHROOM_STEW: 8
+        BONE_MEAL: 1
+    banquete:
+      nombre: "Banquete del Pueblo"
+      items:
+        BREAD: 6
+        COOKED_BEEF: 5
+        COOKED_PORKCHOP: 5
+        COOKED_CHICKEN: 5
+        COOKED_MUTTON: 5
+        COOKED_RABBIT: 5
+        COOKED_COD: 4
+        COOKED_SALMON: 4
+        BAKED_POTATO: 3
+        PUMPKIN_PIE: 12
+        CAKE: 45
+        COOKIE: 3
+        MUSHROOM_STEW: 8
+        RABBIT_STEW: 16
+        BEETROOT_SOUP: 10
+        DRIED_KELP: 2
+        HONEY_BOTTLE: 12
+        GOLDEN_CARROT: 15
+        APPLE: 4
+        MELON_SLICE: 1
+        BOWL: 2
+
+  # ---------------------------------------------------------------- CAZADOR
   cazador:
-    ROTTEN_FLESH: 1
-    BONE: 2
-    ARROW: 1
-    STRING: 2
-    SPIDER_EYE: 3
-    GUNPOWDER: 4
-    SLIME_BALL: 4
-    MAGMA_CREAM: 6
-    PRISMARINE_SHARD: 5
-    PRISMARINE_CRYSTALS: 5
-    BREEZE_ROD: 8
-    BLAZE_ROD: 10
-    ENDER_PEARL: 12
-    PHANTOM_MEMBRANE: 12
-    GHAST_TEAR: 25
-    SHULKER_SHELL: 40
-    WITHER_SKELETON_SKULL: 60
-    NETHER_STAR: 300
+    cementerio:
+      nombre: "Noche de Cementerio"
+      items:
+        ROTTEN_FLESH: 1
+        BONE: 2
+        BONE_MEAL: 1
+        BONE_BLOCK: 18
+        ARROW: 1
+        BOW: 8
+        SKELETON_SKULL: 45
+        ZOMBIE_HEAD: 45
+        WITHER_SKELETON_SKULL: 70
+        IRON_INGOT: 7
+        CARROT: 1
+        POTATO: 1
+        COAL: 3
+        GOLD_NUGGET: 2
+        LEATHER: 3
+        STRING: 2
+    telaranas:
+      nombre: "Telarañas y Veneno"
+      items:
+        STRING: 2
+        SPIDER_EYE: 3
+        FERMENTED_SPIDER_EYE: 9
+        COBWEB: 12
+        LEAD: 12
+        BOW: 8
+        CROSSBOW: 22
+        FISHING_ROD: 6
+        TRIPWIRE_HOOK: 8
+        SUGAR: 2
+        BROWN_MUSHROOM: 2
+        BONE: 2
+        ARROW: 1
+        FLINT: 1
+        FEATHER: 1
+        WHITE_WOOL: 6
+    polvora:
+      nombre: "Pólvora y Fuegos Artificiales"
+      items:
+        GUNPOWDER: 4
+        TNT: 28
+        FIREWORK_ROCKET: 9
+        FIREWORK_STAR: 10
+        FIRE_CHARGE: 9
+        CREEPER_HEAD: 45
+        SAND: 1
+        RED_SAND: 1
+        PAPER: 3
+        SUGAR_CANE: 1
+        COAL: 3
+        CHARCOAL: 3
+        BLAZE_POWDER: 5
+        FLINT_AND_STEEL: 8
+        "*_DYE": 3
+    infierno:
+      nombre: "Cacería en el Nether"
+      items:
+        BLAZE_ROD: 10
+        BLAZE_POWDER: 5
+        MAGMA_CREAM: 6
+        GHAST_TEAR: 25
+        GOLD_NUGGET: 2
+        GOLD_INGOT: 12
+        ROTTEN_FLESH: 1
+        BONE: 2
+        QUARTZ: 4
+        FIRE_CHARGE: 9
+        BREWING_STAND: 25
+        SLIME_BALL: 4
+        WITHER_SKELETON_SKULL: 70
+        COAL: 3
+        CRYING_OBSIDIAN: 20
+        OBSIDIAN: 12
+        STRING: 2
+        LEATHER: 3
+        SOUL_SAND: 1
+        NETHER_WART: 2
+        GLOWSTONE_DUST: 3
+        ENDER_PEARL: 12
+        IRON_NUGGET: 1
+        SPECTRAL_ARROW: 5
+    alquimia:
+      nombre: "Laboratorio de Alquimia"
+      items:
+        SPIDER_EYE: 3
+        FERMENTED_SPIDER_EYE: 9
+        GLISTERING_MELON_SLICE: 14
+        GOLDEN_CARROT: 15
+        MAGMA_CREAM: 6
+        BLAZE_POWDER: 5
+        GHAST_TEAR: 25
+        PHANTOM_MEMBRANE: 12
+        SUGAR: 2
+        RABBIT_FOOT: 20
+        GLASS_BOTTLE: 3
+        NETHER_WART: 2
+        GUNPOWDER: 4
+        REDSTONE: 3
+        GLOWSTONE_DUST: 3
+        TURTLE_SCUTE: 12
+        PUFFERFISH: 5
+        BREWING_STAND: 25
+        CAULDRON: 35
+        SLIME_BALL: 4
+        FEATHER: 1
+        HONEY_BOTTLE: 12
+    ender:
+      nombre: "Caza Rara"
+      items:
+        ENDER_PEARL: 12
+        ENDER_EYE: 25
+        SHULKER_SHELL: 40
+        SHULKER_BOX: 90
+        PHANTOM_MEMBRANE: 12
+        CHORUS_FRUIT: 10
+        POPPED_CHORUS_FRUIT: 12
+        END_ROD: 12
+        PURPUR_BLOCK: 4
+        PRISMARINE_SHARD: 5
+        PRISMARINE_CRYSTALS: 5
+        BREEZE_ROD: 8
+        WIND_CHARGE: 5
+        TOTEM_OF_UNDYING: 150
+        NETHER_STAR: 300
+        BEACON: 400
+        WITHER_SKELETON_SKULL: 70
+        GHAST_TEAR: 25
+        BLAZE_ROD: 10
+    arsenal:
+      nombre: "Arsenal del Cazador"
+      items:
+        BOW: 8
+        CROSSBOW: 22
+        ARROW: 1
+        SPECTRAL_ARROW: 5
+        SHIELD: 14
+        STONE_SWORD: 4
+        IRON_SWORD: 15
+        GOLDEN_SWORD: 40
+        DIAMOND_SWORD: 130
+        IRON_AXE: 22
+        IRON_HELMET: 38
+        IRON_CHESTPLATE: 60
+        IRON_LEGGINGS: 52
+        IRON_BOOTS: 30
+        LEATHER_HELMET: 15
+        LEATHER_CHESTPLATE: 24
+        LEATHER_LEGGINGS: 21
+        LEATHER_BOOTS: 12
+        FLINT: 1
+        FEATHER: 1
+        STRING: 2
+        BONE: 2
+        GUNPOWDER: 4
+        COOKED_BEEF: 5
+    pantano:
+      nombre: "Pantano de Slimes"
+      items:
+        SLIME_BALL: 4
+        SLIME_BLOCK: 38
+        STICKY_PISTON: 30
+        PISTON: 22
+        LEAD: 12
+        MAGMA_CREAM: 6
+        MAGMA_BLOCK: 4
+        LILY_PAD: 1
+        VINE: 1
+        MUD: 1
+        MUD_BRICKS: 3
+        PACKED_MUD: 2
+        CLAY_BALL: 1
+        SUGAR_CANE: 1
+        INK_SAC: 2
+        ROTTEN_FLESH: 1
+        BONE: 2
+        STRING: 2
+        BLUE_ORCHID: 2
+        OCHRE_FROGLIGHT: 40
+        VERDANT_FROGLIGHT: 40
+        PEARLESCENT_FROGLIGHT: 40
+
+  # --------------------------------------------------------------- PESCADOR
   pescador:
-    COD: 2
-    SALMON: 2
-    TROPICAL_FISH: 5
-    PUFFERFISH: 5
-    LILY_PAD: 1
-    INK_SAC: 2
-    NAUTILUS_SHELL: 20
-    NAME_TAG: 20
-    SADDLE: 25
+    dia:
+      nombre: "Pesca del Día"
+      items:
+        COD: 2
+        SALMON: 2
+        TROPICAL_FISH: 5
+        PUFFERFISH: 5
+        COOKED_COD: 4
+        COOKED_SALMON: 4
+        INK_SAC: 2
+        GLOW_INK_SAC: 6
+        KELP: 1
+        DRIED_KELP: 2
+        BONE: 2
+        BONE_MEAL: 1
+        SEAGRASS: 1
+        LILY_PAD: 1
+        BUCKET: 20
+        WATER_BUCKET: 22
+        COD_BUCKET: 25
+        SALMON_BUCKET: 25
+        TROPICAL_FISH_BUCKET: 28
+        PUFFERFISH_BUCKET: 28
+    tesoros:
+      nombre: "Tesoros del Mar"
+      items:
+        NAUTILUS_SHELL: 20
+        NAME_TAG: 20
+        SADDLE: 25
+        LILY_PAD: 1
+        BOWL: 2
+        STICK: 1
+        STRING: 2
+        BONE: 2
+        LEATHER: 3
+        INK_SAC: 2
+        TRIPWIRE_HOOK: 8
+        BAMBOO: 1
+        COCOA_BEANS: 2
+        ROTTEN_FLESH: 1
+        GLASS_BOTTLE: 3
+        LEATHER_BOOTS: 12
+        FISHING_ROD: 0
+        PRISMARINE_SHARD: 5
+        HEART_OF_THE_SEA: 200
+    ahumadero:
+      nombre: "Ahumadero del Puerto"
+      items:
+        COOKED_COD: 4
+        COOKED_SALMON: 4
+        COD: 2
+        SALMON: 2
+        DRIED_KELP: 2
+        DRIED_KELP_BLOCK: 18
+        KELP: 1
+        SEA_PICKLE: 3
+        SMOKER: 22
+        CAMPFIRE: 10
+        BARREL: 10
+        BOWL: 2
+        FISHING_ROD: 6
+        CHARCOAL: 3
+        COAL: 3
+        MUSHROOM_STEW: 8
+        BEETROOT_SOUP: 10
+        BREAD: 6
+        BAKED_POTATO: 3
+    arrecife:
+      nombre: "Arrecife de Coral"
+      items:
+        "*_CORAL": 5
+        "*_CORAL_BLOCK": 8
+        "*_CORAL_FAN": 4
+        "DEAD_*": 0
+        SEA_PICKLE: 3
+        SEAGRASS: 1
+        KELP: 1
+        SPONGE: 25
+        WET_SPONGE: 25
+        TROPICAL_FISH: 5
+        PUFFERFISH: 5
+        TUBE_CORAL: 5
+        TURTLE_EGG: 20
+        SEA_LANTERN: 25
+        GLOW_INK_SAC: 6
+        INK_SAC: 2
+        CLAY_BALL: 1
+        SAND: 1
+        PRISMARINE_SHARD: 5
+    monumento:
+      nombre: "Monumento Submarino"
+      items:
+        PRISMARINE_SHARD: 5
+        PRISMARINE_CRYSTALS: 5
+        PRISMARINE: 8
+        PRISMARINE_BRICKS: 12
+        DARK_PRISMARINE: 14
+        SEA_LANTERN: 25
+        SPONGE: 25
+        WET_SPONGE: 25
+        NAUTILUS_SHELL: 20
+        HEART_OF_THE_SEA: 200
+        CONDUIT: 420
+        PRISMARINE_STAIRS: 6
+        PRISMARINE_SLAB: 4
+        PRISMARINE_WALL: 8
+        COD: 2
+        SALMON: 2
+        INK_SAC: 2
+        GLOW_INK_SAC: 6
+        TURTLE_SCUTE: 12
+    playa:
+      nombre: "Playa y Tortugas"
+      items:
+        SAND: 1
+        SEAGRASS: 1
+        KELP: 1
+        SEA_PICKLE: 3
+        TURTLE_EGG: 20
+        TURTLE_SCUTE: 12
+        TURTLE_HELMET: 80
+        CLAY_BALL: 1
+        CLAY: 4
+        SUGAR_CANE: 1
+        BAMBOO: 1
+        COCOA_BEANS: 2
+        GLASS_BOTTLE: 3
+        WATER_BUCKET: 22
+        COD: 2
+        SALMON: 2
+        TROPICAL_FISH: 5
+        LILY_PAD: 1
+        SANDSTONE: 3
+        GLASS: 2
+        "*_TERRACOTTA": 5
+        SUSPICIOUS_SAND: 0
+    hielo:
+      nombre: "Pesca en el Hielo"
+      items:
+        COD: 2
+        SALMON: 2
+        ICE: 3
+        PACKED_ICE: 5
+        BLUE_ICE: 40
+        SNOWBALL: 1
+        SNOW_BLOCK: 4
+        POWDER_SNOW_BUCKET: 12
+        SWEET_BERRIES: 1
+        SPRUCE_LOG: 1
+        SPRUCE_PLANKS: 1
+        FISHING_ROD: 6
+        COOKED_COD: 4
+        COOKED_SALMON: 4
+        SPRUCE_BOAT: 5
+        STRING: 2
+        LEATHER_HELMET: 15
+        LEATHER_CHESTPLATE: 24
+        LEATHER_LEGGINGS: 21
+        LEATHER_BOOTS: 12
+        CAMPFIRE: 10
+        BONE: 2
