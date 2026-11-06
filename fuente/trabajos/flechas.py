@@ -13,13 +13,13 @@ PALETAS = {
 }
 
 
-def flecha(derecha, tips=(3, 6), alto=11, trazo=3, paleta='rojo', dx=0):
+def flecha(derecha, tips=(3, 6), alto=11, trazo=3, paleta='rojo', dx=0, dy=1):
     """Dos chevrones pegados. alto: filas del chevron (impar); trazo: grosor horizontal; tips: x de la punta de cada uno."""
     luz, medio, sombra, contorno = PALETAS[paleta]
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     forma = set()
     mitad = alto // 2
-    y0 = (16 - alto) // 2
+    y0 = (16 - alto) // 2 + dy
     for tip in tips:
         for r in range(alto):
             d = abs(r - mitad)
