@@ -156,8 +156,10 @@ if __name__ == '__main__':
     print(generar(4, 'ADMINS', admins, os.path.join(carpeta, 'admins_gui.png'), [(1, 1, 2, 7)]))
     historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
+    tema('crema')
     trabajos = {(4, 3), (4, 5)}
     print(generar(5, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(1, 0, 3, 8)], toldo=False))
     detalle = {(1, 2), (2, 2), (3, 2), (1, 6), (3, 0), (3, 8)}
     print(generar(4, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(1, 3, 3, 5)], toldo=False))
+    tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))

@@ -51,47 +51,61 @@ final class Menus implements Listener {
 
     // ---------- principal ----------
 
+    /** Columna del casillero de la fila 2 de donde cuelga la carta de cada trabajo, y las columnas que ocupa su zona de clic. */
+    private static final int[] COLUMNA_CARTA = {0, 2, 4, 6, 8};
+    private static final int[][] ZONA = {{0, 1}, {2, 3}, {4}, {5, 6}, {7, 8}};
+
     void principal(Player p) {
         Perfil f = pl.perfiles().de(p);
-        Ventana v = new Ventana(4, titulo("Trabajos"));
-        SkullMeta sm;
-        ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
-        sm = (SkullMeta) cabeza.getItemMeta();
-        sm.setOwningPlayer(p);
-        sm.displayName(Iconos.txtNegrita(p.getName(), BLANCO));
-        List<Component> lc = new ArrayList<>();
-        lc.add(linea(f.activo == null ? "Sin trabajo" : "Trabajo activo: " + f.activo.nombre, f.activo == null ? NamedTextColor.RED : f.activo.color));
-        long ahora = System.currentTimeMillis();
-        if (f.activo == null && ahora < f.libreHasta) lc.add(linea("Podés tomar otro en " + Msg.tiempo(f.libreHasta - ahora), NamedTextColor.RED));
-        lc.add(Component.empty());
-        lc.add(linea("Clic derecho en un trabajo para tomarlo.", GRIS));
-        lc.add(linea("Clic izquierdo para ver sus detalles.", GRIS));
-        sm.lore(lc);
-        cabeza.setItemMeta(sm);
-        v.poner(4, cabeza);
-
-        int[] slots = {11, 12, 13, 14, 15};
+        boolean pack = pl.iconos().conPack(p);
+        Ventana v = new Ventana(5, pl.iconos().titulo(p, Iconos.FONDO_TRABAJOS, "Trabajos"));
         Trabajo[] ts = Trabajo.values();
         for (int i = 0; i < ts.length; i++) {
             Trabajo t = ts[i];
-            v.poner(slots[i], cartaDe(p, f, t), e -> {
+            ItemStack carta = cartaDe(p, f, t, false);
+            java.util.function.Consumer<InventoryClickEvent> alClic = e -> {
                 if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {
                     if (pl.servicio().unirse(p, t)) principal(p);
                 } else {
                     sonido(p);
                     trabajo(p, t);
                 }
-            });
+            };
+            int principal = 2 * 9 + COLUMNA_CARTA[i];
+            if (pack) {
+                // la carta ocupa 2x3 casilleros: el item grande va en uno y el resto lleva un relleno invisible con el mismo texto
+                ItemStack vacio = pl.iconos().relleno(carta);
+                for (int fila = 1; fila <= 3; fila++)
+                    for (int col : ZONA[i]) {
+                        int slot = fila * 9 + col;
+                        if (slot == principal) continue;
+                        v.poner(slot, vacio, alClic);
+                    }
+            }
+            v.poner(principal, carta, alClic);
         }
-        v.poner(31, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Rarezas de hoy", NamedTextColor.GOLD), List.of(
-                linea("Cada acción tiene una rareza que cambia", GRIS),
-                linea("todos los días y suma al multiplicador.", GRIS),
-                Component.empty(),
-                linea("Se renuevan en " + Msg.tiempo(pl.rarezas().msRestantes()), NamedTextColor.YELLOW))));
+
+        List<Component> lc = new ArrayList<>();
+        lc.add(linea(f.activo == null ? "Sin trabajo" : "Trabajo activo: " + f.activo.nombre, f.activo == null ? NamedTextColor.RED : f.activo.color));
+        long ahora = System.currentTimeMillis();
+        if (f.activo == null && ahora < f.libreHasta) lc.add(linea("Podés tomar otro en " + Msg.tiempo(f.libreHasta - ahora), NamedTextColor.RED));
+        lc.add(Component.empty());
+        lc.add(linea("Clic derecho en una carta: tomar el trabajo.", GRIS));
+        lc.add(linea("Clic izquierdo: ver sus detalles.", GRIS));
+        v.poner(39, Iconos.item(Material.PAPER, Iconos.txtNegrita(p.getName(), BLANCO), lc));
+        v.poner(41, relojRarezas());
         v.abrir(p);
     }
 
-    private ItemStack cartaDe(Player p, Perfil f, Trabajo t) {
+    private ItemStack relojRarezas() {
+        return Iconos.item(Material.CLOCK, Iconos.txtNegrita("Rarezas de hoy", NamedTextColor.GOLD), List.of(
+                linea("Cada acción tiene una rareza que cambia", GRIS),
+                linea("todos los días y suma al multiplicador.", GRIS),
+                Component.empty(),
+                linea("Se renuevan en " + Msg.tiempo(pl.rarezas().msRestantes()), NamedTextColor.YELLOW)));
+    }
+
+    private ItemStack cartaDe(Player p, Perfil f, Trabajo t, boolean detalle) {
         Perfil.Progreso g = f.de(t);
         boolean activo = f.activo == t;
         Component nombre = Iconos.txtNegrita(t.nombre + (activo ? "  (activo)" : ""), t.color);
@@ -106,9 +120,9 @@ final class Menus implements Listener {
         if (activo) lore.add(linea("Es tu trabajo ahora.", NamedTextColor.GREEN));
         else if (f.activo != null) lore.add(linea("Ya tenés otro trabajo.", NamedTextColor.RED));
         else if (ahora < f.libreHasta) lore.add(linea("Disponible en " + Msg.tiempo(f.libreHasta - ahora), NamedTextColor.RED));
-        else lore.add(linea("Clic derecho: tomar este trabajo", NamedTextColor.GREEN));
-        lore.add(linea("Clic izquierdo: ver detalles", GRIS));
-        return pl.iconos().carta(p, t, g.prestigio, activo, nombre, lore);
+        else if (!detalle) lore.add(linea("Clic derecho: tomar este trabajo", NamedTextColor.GREEN));
+        if (!detalle) lore.add(linea("Clic izquierdo: ver detalles", GRIS));
+        return pl.iconos().carta(p, t, g.prestigio, activo, detalle, nombre, lore);
     }
 
     private Component barraNivel(Trabajo t, Perfil.Progreso g) {
@@ -126,10 +140,16 @@ final class Menus implements Listener {
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         boolean activo = f.activo == t;
-        Ventana v = new Ventana(4, Component.text(t.nombre, ROJO, TextDecoration.BOLD));
-        v.poner(13, cartaDe(p, f, t));
+        Ventana v = new Ventana(4, pl.iconos().titulo(p, Iconos.FONDO_TRABAJO, t.nombre));
+        ItemStack carta = cartaDe(p, f, t, true);
+        if (pl.iconos().conPack(p)) {
+            ItemStack vacio = pl.iconos().relleno(carta);
+            v.poner(13, vacio);
+            v.poner(31, vacio);
+        }
+        v.poner(22, carta);
 
-        v.poner(20, Iconos.item(Material.BOOK, Iconos.txtNegrita("Acciones del trabajo", NamedTextColor.GREEN), List.of(
+        v.poner(11, Iconos.item(Material.BOOK, Iconos.txtNegrita("Acciones del trabajo", NamedTextColor.GREEN), List.of(
                 linea("Todo lo que paga en " + t.nombre + ", con su rareza de hoy.", GRIS),
                 Component.empty(),
                 linea("Acciones: " + pl.catalogo().de(t).size(), NamedTextColor.YELLOW),
@@ -137,26 +157,27 @@ final class Menus implements Listener {
                 Component.empty(),
                 linea("Clic para ver", NamedTextColor.GREEN))), e -> { sonido(p); acciones(p, t, 0); });
 
-        v.poner(22, Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Misiones", NamedTextColor.GOLD), List.of(
+        v.poner(20, Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Misiones", NamedTextColor.GOLD), List.of(
                 linea("Diarias, semanales y globales de " + t.nombre + ".", GRIS),
                 Component.empty(),
                 linea("Muy pronto.", NamedTextColor.RED))));
 
-        v.poner(24, Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), List.of(
+        v.poner(29, Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), List.of(
                 linea("Premios por nivel, hasta el 100.", GRIS),
                 Component.empty(),
                 linea("Muy pronto.", NamedTextColor.RED))));
 
-        v.poner(29, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p); });
+        v.poner(15, relojRarezas());
+        v.poner(27, Iconos.item(Material.ARROW, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p); });
 
         if (activo) {
-            v.poner(33, Iconos.item(Material.RED_DYE, Iconos.txtNegrita("Abandonar el trabajo", NamedTextColor.RED), List.of(
+            v.poner(35, Iconos.item(Material.RED_DYE, Iconos.txtNegrita("Abandonar el trabajo", NamedTextColor.RED), List.of(
                     linea("Te quedás sin trabajo " + pl.getConfig().getInt("abandonar-horas", 13) + " horas.", GRIS),
                     linea("Las misiones sin cobrar se pierden.", GRIS),
                     Component.empty(),
                     linea("Clic para abandonar", NamedTextColor.RED))), e -> { sonido(p); confirmarAbandono(p, t); });
         } else {
-            v.poner(33, Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Tomar este trabajo", NamedTextColor.GREEN), List.of(
+            v.poner(35, Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Tomar este trabajo", NamedTextColor.GREEN), List.of(
                     linea("Nivel " + g.nivel + " · x" + Msg.num(pl.pago().personal(g), 2), GRIS),
                     Component.empty(),
                     linea("Clic para tomarlo", NamedTextColor.GREEN))), e -> {
