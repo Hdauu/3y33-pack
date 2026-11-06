@@ -1,0 +1,38 @@
+# Hora del dia (0-23, hora de Buenos Aires) en que se renuevan las rarezas de todas las acciones.
+reroll-hora: 6
+
+# Horas sin trabajo al abandonar uno (no se puede tomar otro hasta que pasen).
+abandonar-horas: 13
+
+# Iconos y marcos del resource pack en los menus: todos, staff o no. Bedrock siempre ve los items comunes.
+iconos-pack: todos
+
+# XP de cada accion = su pago base por este numero (salvo que acciones.yml diga otra cosa).
+xp-por-peso: 15
+
+# Pago por tiempo: cada tanto, si hubo al menos una accion que paga, se suma esta plata (por el multiplicador personal).
+pago-por-tiempo:
+  cada-minutos: 10
+  pesos: 15
+
+# El momentum sube con cada accion que paga y baja si te quedas quieto.
+momentum:
+  maximo: 3.0
+  por-accion: 0.02
+  quieto-segundos: 10
+  baja-por-segundo: 0.01
+
+# Si el jugador no se mueve ni mira durante tanto tiempo, el momentum vuelve a x1 y se corta el pago por tiempo.
+afk-segundos: 60
+
+topes:
+  mobs-por-hora: 120
+  crias-por-hora: 20
+
+# Probabilidad relativa de cada rareza en el sorteo diario.
+rarezas:
+  pesos:
+    COMUN: 55
+    RARA: 28
+    EPICA: 13
+    LEGENDARIA: 4

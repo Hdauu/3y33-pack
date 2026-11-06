@@ -1,0 +1,130 @@
+# Acciones que pagan, por trabajo, con su pago base en pesos. Se puede tocar y recargar con /trabajosadmin recargar.
+# Las rarezas (comun, rara, epica, legendaria) se sortean aparte cada dia.
+minero:
+  bloques:
+    STONE: 0.03
+    GRANITE: 0.03
+    DIORITE: 0.03
+    ANDESITE: 0.03
+    TUFF: 0.03
+    CALCITE: 0.04
+    DRIPSTONE_BLOCK: 0.04
+    BASALT: 0.04
+    BLACKSTONE: 0.04
+    NETHERRACK: 0.01
+    END_STONE: 0.05
+    DEEPSLATE: 0.06
+    CLAY: 0.12
+    AMETHYST_BLOCK: 0.5
+    OBSIDIAN: 0.9
+    CRYING_OBSIDIAN: 1.2
+    COAL_ORE: 0.6
+    DEEPSLATE_COAL_ORE: 1.1
+    COPPER_ORE: 0.7
+    DEEPSLATE_COPPER_ORE: 1.3
+    IRON_ORE: 1.0
+    DEEPSLATE_IRON_ORE: 1.8
+    GOLD_ORE: 1.6
+    DEEPSLATE_GOLD_ORE: 2.8
+    NETHER_GOLD_ORE: 0.8
+    REDSTONE_ORE: 1.0
+    DEEPSLATE_REDSTONE_ORE: 1.8
+    LAPIS_ORE: 1.1
+    DEEPSLATE_LAPIS_ORE: 2.0
+    NETHER_QUARTZ_ORE: 0.8
+    DIAMOND_ORE: 6.0
+    DEEPSLATE_DIAMOND_ORE: 10.0
+    EMERALD_ORE: 7.0
+    DEEPSLATE_EMERALD_ORE: 12.0
+    ANCIENT_DEBRIS: 14.0
+lenador:
+  bloques:
+    OAK_LOG: 0.45
+    SPRUCE_LOG: 0.45
+    BIRCH_LOG: 0.45
+    JUNGLE_LOG: 0.45
+    ACACIA_LOG: 0.45
+    DARK_OAK_LOG: 0.45
+    MANGROVE_LOG: 0.45
+    CHERRY_LOG: 0.45
+    PALE_OAK_LOG: 0.45
+    CRIMSON_STEM: 0.45
+    WARPED_STEM: 0.45
+    MUSHROOM_STEM: 0.45
+    BROWN_MUSHROOM_BLOCK: 0.45
+    RED_MUSHROOM_BLOCK: 0.45
+    MANGROVE_ROOTS: 0.2
+    NETHER_WART_BLOCK: 0.1
+    WARPED_WART_BLOCK: 0.1
+    SHROOMLIGHT: 0.2
+    OAK_LEAVES: 0.02
+    SPRUCE_LEAVES: 0.02
+    BIRCH_LEAVES: 0.02
+    JUNGLE_LEAVES: 0.02
+    ACACIA_LEAVES: 0.02
+    DARK_OAK_LEAVES: 0.02
+    MANGROVE_LEAVES: 0.02
+    CHERRY_LEAVES: 0.02
+    PALE_OAK_LEAVES: 0.02
+granjero:
+  # Los cultivos solo pagan maduros.
+  bloques:
+    WHEAT: 0.35
+    CARROTS: 0.35
+    POTATOES: 0.35
+    BEETROOTS: 0.35
+    NETHER_WART: 0.45
+    COCOA: 0.4
+    SWEET_BERRY_BUSH: 0.25
+    PUMPKIN: 0.5
+    MELON: 0.5
+  animales:
+    COW: 0.4
+    PIG: 0.4
+    SHEEP: 0.4
+    CHICKEN: 0.3
+    RABBIT: 0.4
+    MOOSHROOM: 0.6
+  crias: 2.0
+cazador:
+  mobs:
+    ZOMBIE: 2.0
+    HUSK: 2.0
+    DROWNED: 2.2
+    ZOMBIFIED_PIGLIN: 2.5
+    SKELETON: 2.0
+    STRAY: 2.2
+    BOGGED: 2.4
+    CREEPER: 2.4
+    SPIDER: 2.0
+    CAVE_SPIDER: 2.2
+    SILVERFISH: 1.2
+    ENDERMITE: 1.5
+    WITCH: 3.0
+    PILLAGER: 3.0
+    VINDICATOR: 3.2
+    EVOKER: 6.0
+    RAVAGER: 10.0
+    VEX: 2.0
+    PHANTOM: 2.5
+    SLIME: 1.8
+    MAGMA_CUBE: 2.2
+    ENDERMAN: 3.5
+    BLAZE: 4.0
+    GHAST: 5.0
+    WITHER_SKELETON: 5.0
+    PIGLIN_BRUTE: 6.0
+    HOGLIN: 3.0
+    ZOGLIN: 4.0
+    GUARDIAN: 3.0
+    ELDER_GUARDIAN: 25.0
+    SHULKER: 4.0
+    BREEZE: 4.0
+    CREAKING: 5.0
+    WARDEN: 60.0
+pescador:
+  pesca:
+    PESCADO: 0.7
+    TROPICAL: 2.0
+    TESORO: 8.0
+    BASURA: 0.1
