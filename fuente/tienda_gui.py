@@ -86,35 +86,50 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
     for (r, c) in botones:
         marco(7 + 18 * c, 17 + 18 * r)
 
-    # cartel
-    font = ImageFont.truetype(FONT, px(16))
-    tw = d.textlength(texto, font=font) / S
-    ancho = max(100, tw + 20)
-    cy0, cy1 = (16, 36) if toldo else (6, 26)
-    cx0, cx1 = (W - ancho) / 2, (W + ancho) / 2
-    d.rounded_rectangle(box(cx0 + 0.6, cy0 + 1, cx1 + 0.6, cy1 + 1), radius=px(3), fill=(0, 0, 0, 110))
-    pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), T['cartel1'], T['cartel2'])
-    pm = Image.new('L', pl.size, 0)
-    ImageDraw.Draw(pm).rounded_rectangle([0, 0, pl.size[0] - 1, pl.size[1] - 1], radius=px(3), fill=255)
-    img.paste(pl, (px(cx0), px(cy0)), pm)
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle(box(cx0, cy0, cx1, cy1), radius=px(3), outline=(214, 164, 65, 255), width=px(1))
-    d.rounded_rectangle(box(cx0 + 1.6, cy0 + 1.6, cx1 - 1.6, cy1 - 1.6), radius=px(2), outline=(120, 80, 30, 255), width=px(1))
-    for rx, ry in ((cx0 + 3.2, cy0 + 3.2), (cx1 - 3.2, cy0 + 3.2), (cx0 + 3.2, cy1 - 3.2), (cx1 - 3.2, cy1 - 3.2)):
-        d.ellipse(box(rx - 0.9, ry - 0.9, rx + 0.9, ry + 0.9), fill=(238, 190, 80, 255), outline=(120, 80, 30, 255), width=px(1))
-    tx = (W * S - tw * S) / 2; ty = px(cy0 + 2.2)
-    d.text((tx + px(0.9), ty + px(0.9)), texto, font=font, fill=(0, 0, 0, 200))
-    tm = Image.new('L', img.size, 0); ImageDraw.Draw(tm).text((tx, ty), texto, font=font, fill=255)
-    img.paste(vgrad(img.size[0], img.size[1], (255, 232, 140), (226, 150, 42)), (0, 0), tm)
-    d = ImageDraw.Draw(img)
-    def moneda(cx, cy, r):
-        d.ellipse(box(cx - r - 0.5, cy - r + 0.2, cx + r + 0.5, cy + r + 0.9), fill=(0, 0, 0, 90))
-        d.ellipse(box(cx - r, cy - r, cx + r, cy + r), fill=(176, 121, 34, 255), outline=(92, 58, 14, 255), width=px(1))
-        d.ellipse(box(cx - r + 0.7, cy - r + 0.7, cx + r - 0.7, cy + r - 0.7), fill=(246, 196, 76, 255))
-        d.ellipse(box(cx - r + 2.0, cy - r + 2.0, cx + r - 2.0, cy + r - 2.0), outline=(190, 134, 40, 255), width=px(1))
-        d.line([px(cx - r * 0.45), px(cy + r * 0.25), px(cx + r * 0.1), px(cy - r * 0.5)], fill=(255, 238, 170, 255), width=px(1))
-    if cx0 > 32:
-        moneda(19, 28.5, 6.2); moneda(11, 25.5, 4.2); moneda(157, 28.5, 6.2); moneda(165, 25.5, 4.2)
+    # cartel con el nombre de la ventana (si no hay texto, solo un ornamento dorado: la ventana es obvia sin titulo)
+    if texto:
+        font = ImageFont.truetype(FONT, px(16))
+        tw = d.textlength(texto, font=font) / S
+        ancho = max(100, tw + 20)
+        cy0, cy1 = (16, 36) if toldo else (6, 26)
+        cx0, cx1 = (W - ancho) / 2, (W + ancho) / 2
+        d.rounded_rectangle(box(cx0 + 0.6, cy0 + 1, cx1 + 0.6, cy1 + 1), radius=px(3), fill=(0, 0, 0, 110))
+        pl = vgrad(px(cx1 - cx0), px(cy1 - cy0), T['cartel1'], T['cartel2'])
+        pm = Image.new('L', pl.size, 0)
+        ImageDraw.Draw(pm).rounded_rectangle([0, 0, pl.size[0] - 1, pl.size[1] - 1], radius=px(3), fill=255)
+        img.paste(pl, (px(cx0), px(cy0)), pm)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle(box(cx0, cy0, cx1, cy1), radius=px(3), outline=(214, 164, 65, 255), width=px(1))
+        d.rounded_rectangle(box(cx0 + 1.6, cy0 + 1.6, cx1 - 1.6, cy1 - 1.6), radius=px(2), outline=(120, 80, 30, 255), width=px(1))
+        for rx, ry in ((cx0 + 3.2, cy0 + 3.2), (cx1 - 3.2, cy0 + 3.2), (cx0 + 3.2, cy1 - 3.2), (cx1 - 3.2, cy1 - 3.2)):
+            d.ellipse(box(rx - 0.9, ry - 0.9, rx + 0.9, ry + 0.9), fill=(238, 190, 80, 255), outline=(120, 80, 30, 255), width=px(1))
+        tx = (W * S - tw * S) / 2; ty = px(cy0 + 2.2)
+        d.text((tx + px(0.9), ty + px(0.9)), texto, font=font, fill=(0, 0, 0, 200))
+        tm = Image.new('L', img.size, 0); ImageDraw.Draw(tm).text((tx, ty), texto, font=font, fill=255)
+        img.paste(vgrad(img.size[0], img.size[1], (255, 232, 140), (226, 150, 42)), (0, 0), tm)
+        d = ImageDraw.Draw(img)
+        def moneda(cx, cy, r):
+            d.ellipse(box(cx - r - 0.5, cy - r + 0.2, cx + r + 0.5, cy + r + 0.9), fill=(0, 0, 0, 90))
+            d.ellipse(box(cx - r, cy - r, cx + r, cy + r), fill=(176, 121, 34, 255), outline=(92, 58, 14, 255), width=px(1))
+            d.ellipse(box(cx - r + 0.7, cy - r + 0.7, cx + r - 0.7, cy + r - 0.7), fill=(246, 196, 76, 255))
+            d.ellipse(box(cx - r + 2.0, cy - r + 2.0, cx + r - 2.0, cy + r - 2.0), outline=(190, 134, 40, 255), width=px(1))
+            d.line([px(cx - r * 0.45), px(cy + r * 0.25), px(cx + r * 0.1), px(cy - r * 0.5)], fill=(255, 238, 170, 255), width=px(1))
+        if cx0 > 32:
+            moneda(19, 28.5, 6.2); moneda(11, 25.5, 4.2); moneda(157, 28.5, 6.2); moneda(165, 25.5, 4.2)
+    else:
+        oro, oro_o, rojo = (238, 190, 80, 255), (120, 80, 30, 255), (210, 40, 60, 255)
+        cy = 20
+        for lado in (-1, 1):
+            x0, x1 = 88 + lado * 8, 88 + lado * 46
+            d.line([px(x0), px(cy), px(x1), px(cy)], fill=oro, width=px(1))
+            d.line([px(x0 + lado * 2), px(cy + 1.4), px(x1 - lado * 6), px(cy + 1.4)], fill=oro_o, width=px(0.8))
+            for k, r in ((46, 1.5), (34, 1.0), (22, 0.8)):
+                d.polygon([(px(88 + lado * k), px(cy - r - .4)), (px(88 + lado * k + r + .4), px(cy)), (px(88 + lado * k), px(cy + r + .4)), (px(88 + lado * k - r - .4), px(cy))], fill=oro)
+        d.polygon([(px(88), px(cy - 5)), (px(88 + 5), px(cy)), (px(88), px(cy + 5)), (px(88 - 5), px(cy))], fill=(40, 12, 18, 255), outline=oro, width=px(1))
+        d.polygon([(px(88), px(cy - 2.6)), (px(88 + 2.6), px(cy)), (px(88), px(cy + 2.6)), (px(88 - 2.6), px(cy))], fill=rojo)
+        for (sx, sy) in ((60, 13), (116, 13), (74, 26), (102, 26)):
+            d.line([px(sx), px(sy - 1.6), px(sx), px(sy + 1.6)], fill=(255, 236, 170, 255), width=px(0.6))
+            d.line([px(sx - 1.6), px(sy), px(sx + 1.6), px(sy)], fill=(255, 236, 170, 255), width=px(0.6))
 
     # separador y etiqueta clara para el "Inventory" que escribe el juego
     sep = 17 + 18 * filas + 2
@@ -150,8 +165,8 @@ if __name__ == '__main__':
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
     trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
-    print(generar(6, 'TRABAJOS', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.85, 0, 4, 8)], toldo=False))
+    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.85, 0, 4, 8)], toldo=False))
     detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
-    print(generar(6, 'TRABAJO', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.85, 3, 4, 5)], toldo=False))
+    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.85, 3, 4, 5)], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
