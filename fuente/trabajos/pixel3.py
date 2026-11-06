@@ -193,6 +193,34 @@ def icono(nombre):
             P(im, M(lambda d: d.polygon([(19, 9), (25, 8), (28, 11), (27, 17), (23, 22), (16, 24), (14, 21), (19, 19), (22, 15), (21, 12)], fill=255)), STEEL)
             P(im, M(lambda d: d.polygon([(25, 10), (27, 12), (26, 17), (23, 20), (24, 15)], fill=255)), LUZ)
             P(im, M(lambda d: d.rectangle([18, 9, 21, 11], fill=255)), (160, 50, 52))
+    elif nombre in ('pico_16', 'hacha_16', 'azada_16'):
+        # herramientas a 16x16 (pixeles grandes, agrandados x2), mango a 45 grados con puntitos dorados
+        n = 16
+        im16 = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+        def M16(fn): return mask(n, n, fn)
+        LUZ = (232, 240, 250); SOM = (116, 126, 142); ORO = (214, 150, 66)
+        P(im16, M16(lambda d: d.line([(2, 13), (10, 5)], fill=255, width=2)), WOOD)
+        for (x, y) in ((3, 12), (5, 10), (7, 8)): im16.putpixel((x, y), ORO + (255,))
+        for (x, y) in ((4, 12), (6, 10), (8, 8)): im16.putpixel((x, y), darken(WOOD, .4) + (255,))
+        if nombre == 'pico_16':
+            P(im16, M16(lambda d: d.polygon([(2, 3), (5, 1), (9, 1), (12, 3), (14, 6), (14, 10), (13, 9), (12, 5), (10, 4), (6, 4)], fill=255)), STEEL)
+            P(im16, M16(lambda d: d.polygon([(5, 2), (9, 2), (12, 4), (9, 3), (6, 3)], fill=255)), LUZ)
+            P(im16, M16(lambda d: d.rectangle([9, 4, 11, 6], fill=255)), SOM)
+            im16.putpixel((10, 5), (200, 70, 60, 255))
+        elif nombre == 'hacha_16':
+            P(im16, M16(lambda d: d.polygon([(3, 2), (7, 1), (9, 3), (12, 5), (14, 8), (12, 11), (9, 10), (7, 7), (3, 6), (2, 4)], fill=255)), STEEL)
+            P(im16, M16(lambda d: d.polygon([(4, 2), (7, 2), (6, 4), (4, 4)], fill=255)), LUZ)
+            P(im16, M16(lambda d: d.polygon([(12, 7), (13, 8), (12, 10), (11, 9)], fill=255)), LUZ)
+            P(im16, M16(lambda d: d.rectangle([8, 5, 10, 7], fill=255)), SOM)
+            im16.putpixel((9, 6), (200, 70, 60, 255))
+        else:
+            P(im16, M16(lambda d: d.rectangle([5, 1, 8, 4], fill=255)), SOM)
+            P(im16, M16(lambda d: d.rectangle([5, 1, 7, 2], fill=255)), STEEL)
+            P(im16, M16(lambda d: d.polygon([(9, 4), (12, 4), (14, 6), (13, 10), (10, 12), (7, 12), (7, 11), (10, 9), (11, 7)], fill=255)), STEEL)
+            P(im16, M16(lambda d: d.polygon([(12, 5), (13, 6), (12, 9), (11, 10)], fill=255)), LUZ)
+        out = Image.new('RGBA', (s, s), (0, 0, 0, 0))
+        out.alpha_composite(contorno(im16).resize((n * 2, n * 2), Image.NEAREST), (0, 0))
+        return out
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 2), (20, 6), (20, 20), (12, 20), (12, 6)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 4), (17, 7), (17, 19), (15, 19), (15, 7)], fill=255)), (240, 246, 252))
