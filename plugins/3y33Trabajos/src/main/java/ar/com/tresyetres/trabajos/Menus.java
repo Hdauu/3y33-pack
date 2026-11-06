@@ -248,8 +248,9 @@ final class Menus implements Listener {
 
     // ---------- misiones ----------
 
-    private static final int SLOT_ALEATORIA = 1 * 9 + 2, SLOT_ELEGIDA = 1 * 9 + 4, SLOT_RACHA = 1 * 9 + 6,
-            SLOT_SEMANAL = 3 * 9 + 2, SLOT_GLOBAL = 3 * 9 + 4, SLOT_RELOJ = 3 * 9 + 6;
+    private static final String[] NOMBRE_TIPO = {"Diaria aleatoria", "Diaria elegida", "Semanal personal"};
+    private static final String[] CLAVE_TIPO = {"diaria", "elegida", "semanal"};
+    private static final int PAGINAS_MISIONES = 2;
 
     private Component barra(double frac, TextColor color) {
         int lleno = (int) Math.round(Math.max(0, Math.min(1, frac)) * 10);
@@ -258,7 +259,7 @@ final class Menus implements Listener {
         return b.append(Iconos.txt(" " + Msg.num(Math.max(0, Math.min(1, frac)) * 100, 0) + "%", GRIS));
     }
 
-    private static final String[] NOMBRE_TIPO = {"Diaria aleatoria", "Diaria elegida", "Semanal personal"};
+    private static String claveRareza(Rareza r) { return r.name().toLowerCase(java.util.Locale.ROOT); }
 
     /** Un item de mision: el material que piden, con su progreso y lo que pagan. */
     private ItemStack itemMision(Player p, Perfil f, Trabajo t, int tipo, Perfil.Mision m) {
@@ -284,71 +285,102 @@ final class Menus implements Listener {
         return Iconos.item(mat, Iconos.txtNegrita(NOMBRE_TIPO[tipo], m.estado == Perfil.Mision.COMPLETA ? NamedTextColor.GREEN : m.rareza.color), lore);
     }
 
-    void misiones(Player p, Trabajo t) {
+    /**
+     * Pone una tarjeta de mision. Con el pack: la tarjeta grande (34x54, 2 casilleros de ancho y 3 de alto) cuelga del casillero de la fila 1
+     * y el item de verdad va en el de la fila 2, encima de la ventanita del medio; el resto de la zona lleva relleno invisible para el clic.
+     * Sin el pack, solo el item de verdad.
+     */
+    private void tarjeta(Ventana v, Player p, int col, String clave, ItemStack real, int[] zona, java.util.function.Consumer<InventoryClickEvent> alClic) {
+        if (pl.iconos().conPack(p)) {
+            ItemStack carta = pl.iconos().modelo(real.clone(), clave);
+            ItemStack vacio = pl.iconos().relleno(carta);
+            for (int fila = 1; fila <= 3; fila++)
+                for (int c : zona) {
+                    if (c == col && (fila == 1 || fila == 2)) continue;
+                    v.poner(fila * 9 + c, vacio, alClic);
+                }
+            v.poner(1 * 9 + col, carta, alClic);
+        }
+        v.poner(2 * 9 + col, real, alClic);
+    }
+
+    void misiones(Player p, Trabajo t) { misiones(p, t, 0); }
+
+    void misiones(Player p, Trabajo t, int pagina) {
+        final int pag = ((pagina % PAGINAS_MISIONES) + PAGINAS_MISIONES) % PAGINAS_MISIONES;
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         pl.misiones().revisar(g, t);
         Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_MISIONES, "Misiones · " + t.nombre));
 
-        v.poner(SLOT_ALEATORIA, itemMision(p, f, t, Misiones.ALEATORIA, g.aleatoria), e -> {
-            if (pl.misiones().entregar(p, t, Misiones.ALEATORIA, g.aleatoria)) misiones(p, t);
-        });
-
-        if (g.elegida != null) {
-            v.poner(SLOT_ELEGIDA, itemMision(p, f, t, Misiones.ELEGIDA, g.elegida), e -> {
-                if (pl.misiones().entregar(p, t, Misiones.ELEGIDA, g.elegida)) misiones(p, t);
+        if (pag == 0) {
+            // diaria aleatoria (columna 1), diaria elegida (columna 4) y semanal personal (columna 7)
+            Perfil.Mision a = g.aleatoria;
+            tarjeta(v, p, 1, claveCarta(0, a), itemMision(p, f, t, Misiones.ALEATORIA, a), new int[]{0, 1, 2}, e -> {
+                if (pl.misiones().entregar(p, t, Misiones.ALEATORIA, g.aleatoria)) misiones(p, t, pag);
             });
-        } else if (g.elegidaPerdida) {
-            v.poner(SLOT_ELEGIDA, Iconos.item(Material.BARRIER, Iconos.txtNegrita("Diaria elegida", NamedTextColor.RED), List.of(
-                    linea("Perdida: abandonaste el trabajo.", NamedTextColor.RED),
-                    linea("Vuelve a elegirse en " + Msg.tiempo(pl.misiones().msHastaDia()), GRIS))));
+
+            if (g.elegida != null) {
+                tarjeta(v, p, 4, claveCarta(1, g.elegida), itemMision(p, f, t, Misiones.ELEGIDA, g.elegida), new int[]{3, 4, 5}, e -> {
+                    if (pl.misiones().entregar(p, t, Misiones.ELEGIDA, g.elegida)) misiones(p, t, pag);
+                });
+            } else if (g.elegidaPerdida) {
+                tarjeta(v, p, 4, "mision_elegida_x_perdida", Iconos.item(Material.BARRIER, Iconos.txtNegrita("Diaria elegida", NamedTextColor.RED), List.of(
+                        linea("Perdida: abandonaste el trabajo.", NamedTextColor.RED),
+                        linea("Se puede volver a elegir en " + Msg.tiempo(pl.misiones().msHastaDia()), GRIS))), new int[]{3, 4, 5}, e -> { });
+            } else {
+                tarjeta(v, p, 4, "mision_elegir_x_normal", Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Diaria elegida", NamedTextColor.GOLD), List.of(
+                        linea("Elegís 1 de 4 misiones, una por rareza.", GRIS),
+                        linea("Cuanto más rara, más paga.", GRIS),
+                        Component.empty(),
+                        linea("Clic para elegir", NamedTextColor.GREEN))), new int[]{3, 4, 5}, e -> {
+                    if (f.activo != t) { Msg.error(p, "Tomá el trabajo de " + t.nombre + " para elegir."); return; }
+                    sonido(p);
+                    elegir(p, t);
+                });
+            }
+
+            tarjeta(v, p, 7, claveCarta(2, g.semanal), itemMision(p, f, t, Misiones.SEMANAL, g.semanal), new int[]{6, 7, 8}, e -> {
+                if (pl.misiones().entregar(p, t, Misiones.SEMANAL, g.semanal)) misiones(p, t, pag);
+            });
         } else {
-            v.poner(SLOT_ELEGIDA, Iconos.item(Material.WRITABLE_BOOK, Iconos.txtNegrita("Diaria elegida", NamedTextColor.GOLD), List.of(
-                    linea("Elegís 1 de 4 misiones, una por rareza.", GRIS),
-                    linea("Cuanto más rara, más paga.", GRIS),
-                    Component.empty(),
-                    linea("Clic para elegir", NamedTextColor.GREEN))), e -> {
-                if (f.activo != t) { Msg.error(p, "Tomá el trabajo de " + t.nombre + " para elegir."); return; }
-                sonido(p);
-                elegir(p, t);
+            // global semanal (columna 2) y racha (columna 5)
+            Misiones.Global gl = pl.misiones().global(t);
+            int aporte = pl.misiones().aporteDe(t, p);
+            int minimo = pl.misiones().aporteMinimo();
+            List<Component> lg = new ArrayList<>();
+            lg.add(linea("Todos los " + t.nombre + " suman al mismo objetivo.", GRIS));
+            lg.add(Component.empty());
+            lg.add(barra(gl.total / gl.objetivo, t.color).append(Iconos.txt("  " + Msg.num(gl.total, 0) + "/" + Msg.num(gl.objetivo, 0), BLANCO)));
+            lg.add(linea("Tu aporte: " + aporte + " (hacen falta " + minimo + " para cobrar)", aporte >= minimo ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
+            lg.add(Component.empty());
+            lg.add(linea("Al completarse:", GRIS));
+            lg.add(linea(" · Cada colaborador cobra " + Msg.dinero(pl.misiones().pagoGlobal()), NamedTextColor.GREEN));
+            lg.add(linea(" · Todos los " + t.nombre + " tienen +20% de pago por 48 horas", NamedTextColor.GREEN));
+            lg.add(Component.empty());
+            boolean cobrable = pl.misiones().puedeCobrarGlobal(t, p);
+            boolean cobrada = gl.completada && gl.cobraron.contains(p.getUniqueId());
+            if (cobrada) lg.add(linea("¡Completada y cobrada!", NamedTextColor.GREEN));
+            else if (cobrable) lg.add(linea("Clic para cobrar tu parte", NamedTextColor.GREEN));
+            else if (gl.completada) lg.add(linea("Completada. Sin " + minimo + " acciones no cobrás.", NamedTextColor.RED));
+            else lg.add(linea("Se reinicia en " + Msg.tiempo(pl.misiones().msHastaSemana()), NamedTextColor.YELLOW));
+            String claveG = cobrada ? "mision_global_x_completa" : "mision_global_" + t.id + (cobrable ? "_lista" : "_normal");
+            tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global semanal", cobrable ? NamedTextColor.GREEN : t.color), lg), new int[]{1, 2, 3}, e -> {
+                if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t, pag);
             });
+
+            int racha = pl.misiones().racha(g);
+            List<Component> lr = new ArrayList<>();
+            lr.add(linea("Días seguidos con las dos diarias hechas.", GRIS));
+            lr.add(Component.empty());
+            lr.add(linea("Racha: " + racha + (racha == 1 ? " día" : " días"), NamedTextColor.GOLD));
+            lr.add(linea("Bono: +" + Msg.num(pl.misiones().bonoRacha(g) * 100, 0) + "% al multiplicador (tope +20%)", NamedTextColor.YELLOW));
+            lr.add(Component.empty());
+            lr.add(pl.misiones().diariasHechas(g) ? linea("Hoy ya sumaste tu día.", NamedTextColor.GREEN) : linea("Hoy te faltan diarias por cumplir.", NamedTextColor.RED));
+            ItemStack ir = Iconos.item(Material.BLAZE_POWDER, Iconos.txtNegrita("Racha de misiones", NamedTextColor.GOLD), lr);
+            ir.setAmount(Math.max(1, Math.min(64, racha)));
+            tarjeta(v, p, 5, "mision_racha_x_normal", ir, new int[]{4, 5, 6}, e -> { });
         }
-
-        int racha = pl.misiones().racha(g);
-        List<Component> lr = new ArrayList<>();
-        lr.add(linea("Días seguidos con las dos diarias hechas.", GRIS));
-        lr.add(Component.empty());
-        lr.add(linea("Racha: " + racha + (racha == 1 ? " día" : " días"), NamedTextColor.GOLD));
-        lr.add(linea("Bono: +" + Msg.num(pl.misiones().bonoRacha(g) * 100, 0) + "% al multiplicador (tope +20%)", NamedTextColor.YELLOW));
-        lr.add(Component.empty());
-        lr.add(pl.misiones().diariasHechas(g) ? linea("Hoy ya sumaste tu día.", NamedTextColor.GREEN) : linea("Hoy te faltan diarias por cumplir.", NamedTextColor.RED));
-        v.poner(SLOT_RACHA, Iconos.item(Material.BLAZE_POWDER, Iconos.txtNegrita("Racha de misiones", NamedTextColor.GOLD), lr));
-
-        v.poner(SLOT_SEMANAL, itemMision(p, f, t, Misiones.SEMANAL, g.semanal), e -> {
-            if (pl.misiones().entregar(p, t, Misiones.SEMANAL, g.semanal)) misiones(p, t);
-        });
-
-        Misiones.Global gl = pl.misiones().global(t);
-        int aporte = pl.misiones().aporteDe(t, p);
-        int minimo = pl.misiones().aporteMinimo();
-        List<Component> lg = new ArrayList<>();
-        lg.add(linea("Todos los " + t.nombre + " suman al mismo objetivo.", GRIS));
-        lg.add(Component.empty());
-        lg.add(barra(gl.total / gl.objetivo, t.color).append(Iconos.txt("  " + Msg.num(gl.total, 0) + "/" + Msg.num(gl.objetivo, 0), BLANCO)));
-        lg.add(linea("Tu aporte: " + aporte + " (hacen falta " + minimo + " para cobrar)", aporte >= minimo ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
-        lg.add(Component.empty());
-        lg.add(linea("Al completarse:", GRIS));
-        lg.add(linea(" · Cada colaborador cobra " + Msg.dinero(pl.misiones().pagoGlobal()), NamedTextColor.GREEN));
-        lg.add(linea(" · Todos los " + t.nombre + " tienen +20% de pago por 48 horas", NamedTextColor.GREEN));
-        lg.add(Component.empty());
-        boolean cobrable = pl.misiones().puedeCobrarGlobal(t, p);
-        if (gl.completada && gl.cobraron.contains(p.getUniqueId())) lg.add(linea("¡Completada y cobrada!", NamedTextColor.GREEN));
-        else if (cobrable) lg.add(linea("Clic para cobrar tu parte", NamedTextColor.GREEN));
-        else if (gl.completada) lg.add(linea("Completada. Sin " + minimo + " acciones no cobrás.", NamedTextColor.RED));
-        else lg.add(linea("Se reinicia en " + Msg.tiempo(pl.misiones().msHastaSemana()), NamedTextColor.YELLOW));
-        v.poner(SLOT_GLOBAL, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global semanal", cobrable ? NamedTextColor.GREEN : t.color), lg), e -> {
-            if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t);
-        });
 
         List<Component> lt = new ArrayList<>();
         lt.add(linea("Diarias nuevas en " + Msg.tiempo(pl.misiones().msHastaDia()), NamedTextColor.YELLOW));
@@ -358,10 +390,20 @@ final class Menus implements Listener {
         lt.add(Component.empty());
         lt.add(linea("Las misiones valen solo con el trabajo puesto:", GRIS));
         lt.add(linea("si lo abandonás, las que no cobraste se pierden.", GRIS));
-        v.poner(SLOT_RELOJ, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Reinicios", NamedTextColor.GOLD), lt));
-
-        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
+        v.poner(5 * 9 + 4, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Reinicios", NamedTextColor.GOLD), lt));
+        v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
+        v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
+                e -> { sonido(p); misiones(p, t, pag - 1); });
+        v.poner(5 * 9 + 5, pl.iconos().flecha(p, true, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
+                e -> { sonido(p); misiones(p, t, pag + 1); });
         v.abrir(p);
+    }
+
+    /** Nombre del modelo de la tarjeta segun el tipo (0 aleatoria, 1 elegida, 2 semanal) y como va esa mision. */
+    private static String claveCarta(int tipo, Perfil.Mision m) {
+        if (m.estado == Perfil.Mision.COMPLETA) return "mision_" + CLAVE_TIPO[tipo] + "_x_completa";
+        if (m.estado == Perfil.Mision.PERDIDA) return "mision_" + CLAVE_TIPO[tipo] + "_x_perdida";
+        return "mision_" + CLAVE_TIPO[tipo] + "_" + claveRareza(m.rareza) + "_normal";
     }
 
     /** Elegir 1 de las 4 misiones del dia (una por rareza). */
@@ -369,8 +411,10 @@ final class Menus implements Listener {
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         pl.misiones().revisar(g, t);
-        Ventana v = new Ventana(3, pl.iconos().titulo(p, Iconos.FONDO_ELEGIR, "Elegí tu misión · " + t.nombre));
-        int[] slots = {1 * 9 + 1, 1 * 9 + 3, 1 * 9 + 5, 1 * 9 + 7};
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_ELEGIR, "Elegí tu misión · " + t.nombre));
+        int[] columnas = {1, 3, 5, 7};
+        // las tarjetas vecinas se pisan un poco en las columnas del medio (2, 4 y 6): ahi no hay clic para no elegir la que no era
+        int[][] zonas = {{0, 1}, {3}, {5}, {7, 8}};
         for (int i = 0; i < 4; i++) {
             final int idx = i;
             Perfil.Mision m = g.opciones[i];
@@ -383,14 +427,15 @@ final class Menus implements Listener {
             lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(Misiones.ELEGIDA, m, g)), NamedTextColor.GREEN));
             lore.add(Component.empty());
             lore.add(linea("Clic para elegirla (no se puede cambiar)", NamedTextColor.GREEN));
-            v.poner(slots[i], Iconos.item(m.item, Iconos.txtNegrita("Misión " + m.rareza.nombre.toLowerCase(java.util.Locale.ROOT), m.rareza.color), lore), e -> {
+            ItemStack real = Iconos.item(m.item, Iconos.txtNegrita("Misión " + m.rareza.nombre.toLowerCase(java.util.Locale.ROOT), m.rareza.color), lore);
+            tarjeta(v, p, columnas[i], "elegir_" + claveRareza(m.rareza), real, zonas[i], e -> {
                 if (pl.misiones().elegir(p, t, idx)) {
                     p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.6f);
                     misiones(p, t);
                 }
             });
         }
-        v.poner(2 * 9 + 4, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); misiones(p, t); });
+        v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); misiones(p, t); });
         v.abrir(p);
     }
 
