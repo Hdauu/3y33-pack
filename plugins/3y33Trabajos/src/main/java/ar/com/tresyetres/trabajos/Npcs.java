@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.Material;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mannequin;
@@ -22,6 +23,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
@@ -82,12 +85,15 @@ final class Npcs implements Listener {
 
     private final TrabajosPlugin pl;
     private final NamespacedKey marca;
+    private final NamespacedKey yaw0;
     private final Map<UUID, Carteles> carteles = new HashMap<>();
 
     Npcs(TrabajosPlugin pl) {
         this.pl = pl;
         this.marca = new NamespacedKey(pl, "npc-trabajos");
+        this.yaw0 = new NamespacedKey(pl, "npc-yaw0");
         Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 20L);
+        Bukkit.getScheduler().runTaskTimer(pl, this::mirar, 40L, 2L);
     }
 
     // ---------- el aldeano general ----------
@@ -226,6 +232,50 @@ final class Npcs implements Listener {
         return base.clone().add(-Math.sin(ang) * 1.5, 1.15, Math.cos(ang) * 1.5);
     }
 
+    /** Le pone el gorro 3D del pack (item_model 3y33:gorro/<trabajo>) si todavia no lo tiene. */
+    private void ponerGorro(Mannequin m, Trabajo t) {
+        ItemStack ya = m.getEquipment().getHelmet();
+        NamespacedKey modelo = new NamespacedKey("3y33", "gorro/" + t.id);
+        if (ya != null && ya.hasItemMeta() && ya.getItemMeta().hasItemModel() && modelo.equals(ya.getItemMeta().getItemModel())) return;
+        ItemStack it = new ItemStack(Material.PAPER);
+        ItemMeta im = it.getItemMeta();
+        im.setItemModel(modelo);
+        it.setItemMeta(im);
+        m.getEquipment().setHelmet(it);
+        m.getEquipment().setHelmetDropChance(0f);
+    }
+
+    /** Cada 2 ticks: el NPC mira al jugador mas cercano (a menos de 8 bloques); si no hay nadie, vuelve a su direccion. */
+    private void mirar() {
+        for (World w : Bukkit.getWorlds()) {
+            if (w.getPlayers().isEmpty()) continue;
+            for (Mannequin m : w.getEntitiesByClass(Mannequin.class)) {
+                if (!m.getScoreboardTags().contains(TAG)) continue;
+                Location o = m.getLocation();
+                Float guardado = m.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
+                if (guardado == null) { guardado = o.getYaw(); m.getPersistentDataContainer().set(yaw0, PersistentDataType.FLOAT, guardado); }
+                float inicial = guardado;
+                Player cerca = null;
+                double mejor = 8 * 8;
+                for (Player p : w.getPlayers()) {
+                    double d = p.getLocation().distanceSquared(o);
+                    if (d < mejor) { mejor = d; cerca = p; }
+                }
+                float yaw = inicial, pitch = 0f;
+                if (cerca != null) {
+                    Location ojos = cerca.getEyeLocation();
+                    double dx = ojos.getX() - o.getX(), dz = ojos.getZ() - o.getZ();
+                    double dy = ojos.getY() - (o.getY() + 1.6);
+                    yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                    pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+                }
+                if (Math.abs(o.getPitch() - pitch) < 1.5f && Math.abs(((o.getYaw() - yaw + 540f) % 360f) - 180f) < 1.5f) continue;
+                m.setRotation(yaw, pitch);
+                m.setBodyYaw(yaw);
+            }
+        }
+    }
+
     /** Cada segundo: crea o saca los carteles de cada NPC y actualiza el panel de cada jugador cercano. */
     private void actualizar() {
         List<UUID> vistos = new ArrayList<>();
@@ -237,6 +287,7 @@ final class Npcs implements Listener {
                 vistos.add(m.getUniqueId());
                 Carteles c = carteles.computeIfAbsent(m.getUniqueId(), k -> new Carteles());
                 Location base = m.getLocation();
+                ponerGorro(m, t);
                 if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.5, 0), true, titulo(t), 1.3f, 0);
                 Iterator<Map.Entry<UUID, Panel>> it = c.paneles.entrySet().iterator();
                 while (it.hasNext()) {
