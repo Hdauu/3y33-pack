@@ -127,7 +127,7 @@ def generar(filas, texto, botones, salida, grupos=(), toldo=True):
                 d.polygon([(px(88 + lado * k), px(cy - r - .4)), (px(88 + lado * k + r + .4), px(cy)), (px(88 + lado * k), px(cy + r + .4)), (px(88 + lado * k - r - .4), px(cy))], fill=oro)
         d.polygon([(px(88), px(cy - 5)), (px(88 + 5), px(cy)), (px(88), px(cy + 5)), (px(88 - 5), px(cy))], fill=(40, 12, 18, 255), outline=oro, width=px(1))
         d.polygon([(px(88), px(cy - 2.6)), (px(88 + 2.6), px(cy)), (px(88), px(cy + 2.6)), (px(88 - 2.6), px(cy))], fill=rojo)
-        for (sx, sy) in ((60, 13), (116, 13), (74, 26), (102, 26)):
+        for (sx, sy) in ((60, 13), (116, 13)):
             d.line([px(sx), px(sy - 1.6), px(sx), px(sy + 1.6)], fill=(255, 236, 170, 255), width=px(0.6))
             d.line([px(sx - 1.6), px(sy), px(sx + 1.6), px(sy)], fill=(255, 236, 170, 255), width=px(0.6))
 
@@ -164,9 +164,9 @@ if __name__ == '__main__':
     historial = {(1, c) for c in range(1, 8)} | {(2, c) for c in range(1, 8)} | {(3, c) for c in range(1, 8)} | {(4, 0)}
     # trabajos: principal (cartas en las filas 1 a 3, pie con info y reloj) y detalle (carta al centro)
     tema('crema')
-    trabajos = set()   # sin marcos: solo los items y las flechas sobre el fondo
-    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [], toldo=False))
-    detalle = set()
-    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [], toldo=False))
+    trabajos = {(5, 0), (5, 3), (5, 5), (5, 8)}
+    print(generar(6, '', trabajos, os.path.join(carpeta, 'trabajos_gui.png'), [(0.6278, 0, 3.8333, 8)], toldo=False))
+    detalle = {(1, 1), (2, 1), (3, 1), (1, 7), (5, 0), (5, 8)}
+    print(generar(6, '', detalle, os.path.join(carpeta, 'trabajo_gui.png'), [(0.6278, 3, 3.8333, 5)], toldo=False))
     tema('oscuro')
     print(generar(5, 'HISTORIAL', historial, os.path.join(carpeta, 'historial_gui.png'), [(1, 1, 3, 7)]))
