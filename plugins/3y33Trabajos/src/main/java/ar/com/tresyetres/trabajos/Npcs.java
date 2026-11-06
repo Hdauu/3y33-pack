@@ -38,6 +38,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
  * Los NPC de Trabajos.
@@ -70,23 +75,137 @@ final class Npcs implements Listener {
         UNIDAD.put(Trabajo.PESCADOR, "pescas");
     }
 
-    /** Los carteles de un NPC: el titulo (lo ve todo el mundo) y un panel por jugador cercano. */
-    private static final class Carteles {
-        TextDisplay titulo;
-        final Map<UUID, TextDisplay> paneles = new HashMap<>();
+    /** Un holograma guardado: un titulo ("Misiones / Trabajo") o un panel de la mision global. Se puede poner y mover donde sea. */
+    private static final class Holo {
+        final String id;
+        final boolean panel;
+        final Trabajo trabajo;
+        Location loc;
+        TextDisplay titulo;                                   // solo los titulos
+        final Map<UUID, TextDisplay> paneles = new HashMap<>(); // un panel por jugador cercano
+        Holo(String id, boolean panel, Trabajo trabajo, Location loc) { this.id = id; this.panel = panel; this.trabajo = trabajo; this.loc = loc; }
     }
 
     private final TrabajosPlugin pl;
     private final NamespacedKey marca;
     private final NamespacedKey yaw0;
-    private final Map<UUID, Carteles> carteles = new HashMap<>();
+    private final File archivo;
+    private final Map<String, Holo> holos = new java.util.LinkedHashMap<>();
 
     Npcs(TrabajosPlugin pl) {
         this.pl = pl;
         this.marca = new NamespacedKey(pl, "npc-trabajos");
         this.yaw0 = new NamespacedKey(pl, "npc-yaw0");
+        this.archivo = new File(pl.getDataFolder(), "hologramas.yml");
+        cargar();
         Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 20L);
         Bukkit.getScheduler().runTaskTimer(pl, this::mirar, 40L, 2L);
+        Bukkit.getScheduler().runTaskLater(pl, this::migrar, 100L);
+    }
+
+    // ---------- hologramas guardados ----------
+
+    private void cargar() {
+        holos.clear();
+        YamlConfiguration y = YamlConfiguration.loadConfiguration(archivo);
+        ConfigurationSection s = y.getConfigurationSection("hologramas");
+        if (s == null) return;
+        for (String id : s.getKeys(false)) {
+            ConfigurationSection h = s.getConfigurationSection(id);
+            Trabajo t = h == null ? null : Trabajo.de(h.getString("trabajo"));
+            World w = h == null ? null : Bukkit.getWorld(h.getString("mundo", ""));
+            if (t == null || w == null) continue;
+            holos.put(id, new Holo(id, "panel".equals(h.getString("tipo")), t, new Location(w, h.getDouble("x"), h.getDouble("y"), h.getDouble("z"))));
+        }
+    }
+
+    private void guardar() {
+        YamlConfiguration y = new YamlConfiguration();
+        for (Holo h : holos.values()) {
+            String b = "hologramas." + h.id;
+            y.set(b + ".tipo", h.panel ? "panel" : "titulo");
+            y.set(b + ".trabajo", h.trabajo.id);
+            y.set(b + ".mundo", h.loc.getWorld().getName());
+            y.set(b + ".x", h.loc.getX());
+            y.set(b + ".y", h.loc.getY());
+            y.set(b + ".z", h.loc.getZ());
+        }
+        try { y.save(archivo); } catch (IOException e) { pl.getLogger().warning("No pude guardar hologramas.yml: " + e.getMessage()); }
+    }
+
+    /** La primera vez (sin hologramas.yml): le arma titulo y panel a los NPC que ya estaban puestos. */
+    private void migrar() {
+        if (archivo.exists()) return;
+        for (World w : Bukkit.getWorlds()) {
+            for (Mannequin m : w.getEntitiesByClass(Mannequin.class)) {
+                Trabajo t = trabajoDe(m);
+                if (t == null || !m.getScoreboardTags().contains(TAG)) continue;
+                Float y = m.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
+                crearHolos(m.getLocation(), y != null ? y : m.getLocation().getYaw(), t);
+            }
+        }
+        guardar();
+    }
+
+    private String nuevoId() {
+        int n = 1;
+        while (holos.containsKey("h" + n)) n++;
+        return "h" + n;
+    }
+
+    /** Titulo arriba del NPC y panel a la izquierda de como se lo ve de frente (yaw = hacia donde mira el NPC). */
+    private void crearHolos(Location base, float yaw, Trabajo t) {
+        String a = nuevoId();
+        holos.put(a, new Holo(a, false, t, base.clone().add(0, 2.75, 0)));
+        double r = Math.toRadians(yaw);
+        String b = nuevoId();
+        holos.put(b, new Holo(b, true, t, base.clone().add(-Math.cos(r) * 2.1, 1.7, -Math.sin(r) * 2.1)));
+    }
+
+    /** Pone un holograma suelto donde esta el jugador (a la altura de los ojos). */
+    String crearHolo(Player p, boolean panel, Trabajo t) {
+        String id = nuevoId();
+        holos.put(id, new Holo(id, panel, t, p.getEyeLocation().clone()));
+        guardar();
+        actualizar();
+        return id;
+    }
+
+    private Holo masCercano(Player p, Boolean panel) {
+        Holo mejor = null; double d = 12 * 12;
+        for (Holo h : holos.values()) {
+            if (panel != null && h.panel != panel) continue;
+            if (!h.loc.getWorld().equals(p.getWorld())) continue;
+            double x = h.loc.distanceSquared(p.getEyeLocation());
+            if (x < d) { d = x; mejor = h; }
+        }
+        return mejor;
+    }
+
+    /** Mueve el holograma mas cercano (a menos de 12 bloques) a donde esta el jugador. Devuelve su id o null. */
+    String moverHolo(Player p, Boolean panel) {
+        Holo h = masCercano(p, panel);
+        if (h == null) return null;
+        h.loc = p.getEyeLocation().clone();
+        if (h.titulo != null) h.titulo.teleport(h.loc);
+        for (TextDisplay d : h.paneles.values()) d.teleport(h.loc);
+        guardar();
+        return h.id + " (" + (h.panel ? "panel" : "titulo") + " de " + h.trabajo.nombre + ")";
+    }
+
+    String quitarHolo(Player p, Boolean panel) {
+        Holo h = masCercano(p, panel);
+        if (h == null) return null;
+        sacarCarteles(h);
+        holos.remove(h.id);
+        guardar();
+        return h.id + " (" + (h.panel ? "panel" : "titulo") + " de " + h.trabajo.nombre + ")";
+    }
+
+    List<String> listaHolos() {
+        List<String> l = new ArrayList<>();
+        for (Holo h : holos.values()) l.add(h.id + ": " + (h.panel ? "panel" : "titulo") + " de " + h.trabajo.nombre + " en " + h.loc.getWorld().getName() + " " + h.loc.getBlockX() + ", " + h.loc.getBlockY() + ", " + h.loc.getBlockZ());
+        return l;
     }
 
     // ---------- el aldeano general ----------
@@ -124,7 +243,7 @@ final class Npcs implements Listener {
 
     private static String num(double d) { return String.format(Locale.GERMANY, "%,d", (long) d); }
 
-    /** Crea el NPC del trabajo donde esta parado el jugador, mirando hacia el. Va por consola porque el skin sale del pack. */
+    /** Crea el NPC del trabajo donde esta parado el jugador, mirando hacia el, con su titulo y su panel. Va por consola porque el skin sale del pack. */
     void crear(Player p, Trabajo t) {
         Location l = p.getLocation();
         float yaw = l.getYaw() + 180f;
@@ -136,30 +255,46 @@ final class Npcs implements Listener {
                         + "equipment:{mainhand:{id:\"minecraft:%s\",count:1}}}",
                 dim, l.getX(), l.getY(), l.getZ(), yaw, t.id, TAG, tag, HERRAMIENTA.get(t));
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-        Msg.ok(p, "Listo: puse el NPC de " + t.nombre + " en " + l.getBlockX() + ", " + l.getBlockY() + ", " + l.getBlockZ() + ". Ponele un pedestal abajo.");
+        crearHolos(l, yaw, t);
+        guardar();
+        Msg.ok(p, "Listo: puse el NPC de " + t.nombre + " en " + l.getBlockX() + ", " + l.getBlockY() + ", " + l.getBlockZ() + " con su titulo y su panel. Los hologramas se mueven con /trabajosadmin holo mover.");
         Bukkit.getScheduler().runTaskLater(pl, this::actualizar, 5L);
     }
 
-    /** Saca los NPC de Trabajos (de trabajo y el aldeano general) que esten a menos de 4 bloques del jugador. Devuelve cuantos saco. */
+    /** Saca los NPC de Trabajos (de trabajo y el aldeano general) a menos de 4 bloques, y los hologramas a menos de 6. Devuelve cuantos saco. */
     int quitar(Player p) {
         int n = 0;
         for (Entity e : p.getNearbyEntities(4, 4, 4)) {
             if (esNpc(e)) { e.remove(); n++; }
-            else if (trabajoDe(e) != null && e.getScoreboardTags().contains(TAG)) { sacarCarteles(e.getUniqueId()); e.remove(); n++; }
+            else if (trabajoDe(e) != null && e.getScoreboardTags().contains(TAG)) { e.remove(); n++; }
+        }
+        if (n > 0) {
+            for (Holo h : new ArrayList<>(holos.values())) {
+                if (h.loc.getWorld().equals(p.getWorld()) && h.loc.distanceSquared(p.getLocation()) <= 36) { sacarCarteles(h); holos.remove(h.id); }
+            }
+            guardar();
         }
         return n;
     }
 
-    private void sacarCarteles(UUID id) {
-        Carteles c = carteles.remove(id);
-        if (c == null) return;
-        if (c.titulo != null) c.titulo.remove();
-        for (TextDisplay pa : c.paneles.values()) pa.remove();
+    private void sacarCarteles(Holo h) {
+        if (h.titulo != null) { h.titulo.remove(); h.titulo = null; }
+        for (TextDisplay d : h.paneles.values()) d.remove();
+        h.paneles.clear();
     }
 
     /** Saca todos los carteles (al apagar el plugin). */
     void apagar() {
-        for (UUID id : new ArrayList<>(carteles.keySet())) sacarCarteles(id);
+        for (Holo h : holos.values()) sacarCarteles(h);
+    }
+
+    @EventHandler
+    public void alSalir(PlayerQuitEvent e) {
+        UUID u = e.getPlayer().getUniqueId();
+        for (Holo h : holos.values()) {
+            TextDisplay d = h.paneles.remove(u);
+            if (d != null) d.remove();
+        }
     }
 
     private TextDisplay texto(Location l, boolean visible, Component c, float escala, int fondo, Display.Billboard billboard) {
@@ -222,18 +357,6 @@ final class Npcs implements Listener {
         return c;
     }
 
-    /** El yaw con el que se creo el NPC (no cambia aunque mire a los jugadores). */
-    private float yawFijo(Mannequin m) {
-        Float g = m.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
-        return g != null ? g : m.getLocation().getYaw();
-    }
-
-    /** El panel queda fijo a la izquierda de como se ve al NPC de frente (el NPC mira hacia donde se creo). */
-    private static Location posPanel(Location base, float yaw) {
-        double r = Math.toRadians(yaw);
-        return base.clone().add(-Math.cos(r) * 2.1, 1.7, -Math.sin(r) * 2.1);
-    }
-
     /** Saca el gorro 3D de prueba (3y33:gorro/...) si algun NPC todavia lo tiene puesto. */
     private void sacarGorroViejo(Mannequin m) {
         ItemStack ya = m.getEquipment().getHelmet();
@@ -272,42 +395,35 @@ final class Npcs implements Listener {
         }
     }
 
-    /** Cada segundo: crea o saca los carteles de cada NPC y actualiza el panel de cada jugador cercano. */
+    /** Cada segundo: pone, saca y actualiza los hologramas: el titulo lo ve todo el mundo y el panel es uno por jugador cercano. */
     private void actualizar() {
-        List<UUID> vistos = new ArrayList<>();
-        for (World w : Bukkit.getWorlds()) {
-            for (Mannequin m : w.getEntitiesByClass(Mannequin.class)) {
-                if (!m.getScoreboardTags().contains(TAG)) continue;
-                Trabajo t = trabajoDe(m);
-                if (t == null) continue;
-                vistos.add(m.getUniqueId());
-                Carteles c = carteles.computeIfAbsent(m.getUniqueId(), k -> new Carteles());
-                Location base = m.getLocation();
-                sacarGorroViejo(m);
-                if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.75, 0), true, titulo(t), 2.0f, 0, Display.Billboard.CENTER);
-                Location lp = posPanel(base, yawFijo(m));
-                Iterator<Map.Entry<UUID, TextDisplay>> it = c.paneles.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<UUID, TextDisplay> en = it.next();
-                    Player p = Bukkit.getPlayer(en.getKey());
-                    if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE || !en.getValue().isValid()) {
-                        en.getValue().remove();
-                        it.remove();
-                    }
-                }
-                for (Player p : w.getPlayers()) {
-                    if (p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE) continue;
-                    TextDisplay d = c.paneles.get(p.getUniqueId());
-                    Component txt = panel(t, p);
-                    if (d == null) {
-                        d = texto(lp, false, txt, 0.85f, 0, Display.Billboard.VERTICAL);
-                        c.paneles.put(p.getUniqueId(), d);
-                        p.showEntity(pl, d);
-                    } else d.text(txt);
+        for (Holo h : holos.values()) {
+            World w = h.loc.getWorld();
+            if (w == null || !w.isChunkLoaded(h.loc.getBlockX() >> 4, h.loc.getBlockZ() >> 4)) { sacarCarteles(h); continue; }
+            if (!h.panel) {
+                if (h.titulo == null || !h.titulo.isValid()) h.titulo = texto(h.loc, true, titulo(h.trabajo), 2.0f, 0, Display.Billboard.CENTER);
+                continue;
+            }
+            Iterator<Map.Entry<UUID, TextDisplay>> it = h.paneles.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<UUID, TextDisplay> en = it.next();
+                Player p = Bukkit.getPlayer(en.getKey());
+                if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(h.loc) > ALCANCE * ALCANCE || !en.getValue().isValid()) {
+                    en.getValue().remove();
+                    it.remove();
                 }
             }
+            for (Player p : w.getPlayers()) {
+                if (p.getLocation().distanceSquared(h.loc) > ALCANCE * ALCANCE) continue;
+                TextDisplay d = h.paneles.get(p.getUniqueId());
+                Component txt = panel(h.trabajo, p);
+                if (d == null) {
+                    d = texto(h.loc, false, txt, 0.85f, 0, Display.Billboard.VERTICAL);
+                    h.paneles.put(p.getUniqueId(), d);
+                    p.showEntity(pl, d);
+                } else d.text(txt);
+            }
         }
-        for (UUID id : new ArrayList<>(carteles.keySet())) if (!vistos.contains(id)) sacarCarteles(id);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

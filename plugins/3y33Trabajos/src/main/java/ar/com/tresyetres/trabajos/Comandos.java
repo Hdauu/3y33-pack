@@ -38,7 +38,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|holo|info|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -113,6 +113,27 @@ final class Comandos implements CommandExecutor, TabCompleter {
                     if (n == 0) Msg.error(s, "No hay ningún NPC de Trabajos a menos de 4 bloques."); else Msg.ok(s, "Saqué " + n + " NPC de Trabajos.");
                 } else Msg.error(s, "Uso: /trabajosadmin npc <crear <trabajo|general>|quitar>");
             }
+            case "holo" -> {
+                // /trabajosadmin holo crear <titulo|panel> <trabajo> | mover [titulo|panel] | quitar [titulo|panel] | lista
+                if (!(s instanceof Player pj) || a.length < 2) { Msg.error(s, "Uso: /trabajosadmin holo <crear <titulo|panel> <trabajo>|mover [titulo|panel]|quitar [titulo|panel]|lista>"); return true; }
+                switch (a[1].toLowerCase()) {
+                    case "crear" -> {
+                        Trabajo t = a.length > 3 ? Trabajo.de(a[3]) : null;
+                        boolean titulo = a.length > 2 && a[2].equalsIgnoreCase("titulo"), panel = a.length > 2 && a[2].equalsIgnoreCase("panel");
+                        if (t == null || (!titulo && !panel)) { Msg.error(s, "Uso: /trabajosadmin holo crear <titulo|panel> <minero|lenador|granjero|cazador|pescador>"); return true; }
+                        Msg.ok(s, "Holograma " + pl.npcs().crearHolo(pj, panel, t) + " puesto donde estás. Para moverlo: /trabajosadmin holo mover.");
+                    }
+                    case "mover", "quitar" -> {
+                        Boolean panel = a.length > 2 ? (a[2].equalsIgnoreCase("panel") ? Boolean.TRUE : a[2].equalsIgnoreCase("titulo") ? Boolean.FALSE : null) : null;
+                        boolean mover = a[1].equalsIgnoreCase("mover");
+                        String r = mover ? pl.npcs().moverHolo(pj, panel) : pl.npcs().quitarHolo(pj, panel);
+                        if (r == null) Msg.error(s, "No hay ningún holograma a menos de 12 bloques. Acercate al que querés " + (mover ? "mover" : "sacar") + ".");
+                        else Msg.ok(s, (mover ? "Moví el holograma " : "Saqué el holograma ") + r + ".");
+                    }
+                    case "lista" -> { for (String l : pl.npcs().listaHolos()) Msg.info(s, l); }
+                    default -> Msg.error(s, "Uso: /trabajosadmin holo <crear|mover|quitar|lista>");
+                }
+            }
             case "misiones" -> {
                 // /trabajosadmin misiones [jugador]: vuelve a generar las misiones del jugador (para probar)
                 Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
@@ -153,7 +174,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "npc", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "npc", "holo", "info", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
@@ -162,6 +183,9 @@ final class Comandos implements CommandExecutor, TabCompleter {
             for (Trabajo t : Trabajo.values()) out.add(t.id);
         } else if (admin && s.hasPermission("tresyetres.staff")) {
             if (a.length == 2 && a[0].equalsIgnoreCase("npc")) out.addAll(List.of("crear", "quitar"));
+            else if (a.length == 2 && a[0].equalsIgnoreCase("holo")) out.addAll(List.of("crear", "mover", "quitar", "lista"));
+            else if (a.length == 3 && a[0].equalsIgnoreCase("holo")) out.addAll(List.of("titulo", "panel"));
+            else if (a.length == 4 && a[0].equalsIgnoreCase("holo") && a[1].equalsIgnoreCase("crear")) { for (Trabajo t : Trabajo.values()) out.add(t.id); }
             else if (a.length == 3 && a[0].equalsIgnoreCase("npc") && a[1].equalsIgnoreCase("crear")) out.addAll(List.of("minero", "lenador", "granjero", "cazador", "pescador", "general"));
             else if (a.length == 2 && (a[0].equalsIgnoreCase("tomar") || a[0].equalsIgnoreCase("global"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
             else if (a.length == 3 && a[0].equalsIgnoreCase("tomar")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
