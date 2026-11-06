@@ -3,32 +3,41 @@ Uso: python3 flechas.py hoja <salida.png> | python3 flechas.py <carpeta_pack>"""
 import sys, os, json
 from PIL import Image
 
-ROJO_L, ROJO_M, ROJO_O = (255, 120, 132), (226, 40, 58), (150, 18, 36)
-BORDE = (60, 6, 14)
 
 
-def flecha(derecha, tips=(1, 7)):
+PALETAS = {
+    'rojo': ((255, 120, 132), (226, 40, 58), (150, 18, 36), (60, 6, 14)),
+    'oro': ((255, 240, 160), (240, 190, 70), (170, 112, 28), (70, 40, 8)),
+    'rojo_dorado': ((255, 120, 132), (226, 40, 58), (150, 18, 36), (214, 164, 65)),
+    'blanco': ((255, 255, 255), (226, 226, 236), (150, 150, 170), (50, 40, 60)),
+}
+
+
+def flecha(derecha, tips=(3, 6), alto=11, trazo=3, paleta='rojo', dx=0):
+    """Dos chevrones pegados. alto: filas del chevron (impar); trazo: grosor horizontal; tips: x de la punta de cada uno."""
+    luz, medio, sombra, contorno = PALETAS[paleta]
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     forma = set()
-    for tip in tips:                      # dos chevrones
-        for r in range(11):
-            d = abs(r - 5)
-            for k in range(3):              # trazo de 3 px
-                forma.add((tip + d + k, 2 + r))
+    mitad = alto // 2
+    y0 = (16 - alto) // 2
+    for tip in tips:
+        for r in range(alto):
+            d = abs(r - mitad)
+            for k in range(trazo):
+                forma.add((tip + dx + d + k, y0 + r))
     if derecha: forma = {(15 - x, y) for (x, y) in forma}
-    # borde oscuro de 1 px
+    forma = {(x, y) for (x, y) in forma if 0 <= x < 16}
     borde = set()
     for (x, y) in forma:
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            p = (x + dx, y + dy)
+        for ddx, ddy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            p = (x + ddx, y + ddy)
             if p not in forma and 0 <= p[0] < 16 and 0 <= p[1] < 16: borde.add(p)
-    for p in borde: im.putpixel(p, BORDE + (255,))
+    for p in borde: im.putpixel(p, contorno + (255,))
     for (x, y) in forma:
-        # luz arriba y a la izquierda del trazo, sombra abajo
         arriba = (x, y - 1) not in forma
         izq = (x - 1, y) not in forma if not derecha else (x + 1, y) not in forma
         abajo = (x, y + 1) not in forma
-        col = ROJO_L if (arriba or izq) and not abajo else ROJO_O if abajo and not arriba else ROJO_M
+        col = luz if (arriba or izq) and not abajo else sombra if abajo and not arriba else medio
         im.putpixel((x, y), col + (255,))
     return im
 
