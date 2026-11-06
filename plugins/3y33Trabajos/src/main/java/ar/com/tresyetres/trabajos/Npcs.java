@@ -73,14 +73,7 @@ final class Npcs implements Listener {
     /** Los carteles de un NPC: el titulo (lo ve todo el mundo) y un panel por jugador cercano. */
     private static final class Carteles {
         TextDisplay titulo;
-        final Map<UUID, Panel> paneles = new HashMap<>();
-    }
-
-    /** El panel de un jugador: se acomoda del lado izquierdo de como el jugador ve al NPC, y solo se mueve si el jugador cambia bastante de lado. */
-    private static final class Panel {
-        final TextDisplay d;
-        double lado;
-        Panel(TextDisplay d, double lado) { this.d = d; this.lado = lado; }
+        final Map<UUID, TextDisplay> paneles = new HashMap<>();
     }
 
     private final TrabajosPlugin pl;
@@ -161,7 +154,7 @@ final class Npcs implements Listener {
         Carteles c = carteles.remove(id);
         if (c == null) return;
         if (c.titulo != null) c.titulo.remove();
-        for (Panel pa : c.paneles.values()) pa.d.remove();
+        for (TextDisplay pa : c.paneles.values()) pa.remove();
     }
 
     /** Saca todos los carteles (al apagar el plugin). */
@@ -169,17 +162,18 @@ final class Npcs implements Listener {
         for (UUID id : new ArrayList<>(carteles.keySet())) sacarCarteles(id);
     }
 
-    private TextDisplay texto(Location l, boolean visible, Component c, float escala, int fondo) {
+    private TextDisplay texto(Location l, boolean visible, Component c, float escala, int fondo, Display.Billboard billboard) {
         return l.getWorld().spawn(l, TextDisplay.class, d -> {
             d.setPersistent(false);
             d.setVisibleByDefault(visible);
-            d.setBillboard(Display.Billboard.CENTER);
+            d.setBillboard(billboard);
             d.setSeeThrough(false);
-            d.setShadowed(false);
-            d.setLineWidth(300);
+            d.setShadowed(true);
+            d.setDefaultBackground(false);
+            d.setLineWidth(400);
             d.setBrightness(new Display.Brightness(15, 15));
             d.setTeleportDuration(6);
-            d.setBackgroundColor(Color.fromARGB(fondo, 24, 6, 10));
+            d.setBackgroundColor(Color.fromARGB(fondo, 0, 0, 0));
             d.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(), new Vector3f(escala, escala, escala), new AxisAngle4f()));
             d.text(c);
         });
@@ -204,7 +198,7 @@ final class Npcs implements Listener {
         String puesto = "—";
         for (int i = 0; i < top.size(); i++) if (top.get(i).getKey().equals(p.getUniqueId())) { puesto = "#" + (i + 1); break; }
         NamedTextColor gris = NamedTextColor.GRAY;
-        Component c = Component.text("MISIÓN GLOBAL", NamedTextColor.GOLD, TextDecoration.BOLD).appendNewline()
+        Component c = Component.text("MISIÓN GLOBAL", TextColor.color(0xFFAA00), TextDecoration.BOLD).appendNewline()
                 .append(Component.text(MISION.get(t), t.color, TextDecoration.BOLD)).appendNewline();
         if (g.completada) {
             c = c.append(Component.text("¡Completada!", NamedTextColor.GREEN, TextDecoration.BOLD)).appendNewline();
@@ -212,37 +206,40 @@ final class Npcs implements Listener {
             c = c.append(Component.text(num(g.total) + " / " + num(g.objetivo) + " " + UNIDAD.get(t), NamedTextColor.WHITE))
                     .append(Component.text(" (" + pct + "%)", pct >= 100 ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).appendNewline();
         }
-        c = c.append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), NamedTextColor.WHITE)).appendNewline()
-                .append(Component.text("Tu puesto: ", gris)).append(Component.text(puesto, NamedTextColor.GOLD)).appendNewline()
-                .append(Component.text("— Top 5 —", NamedTextColor.RED, TextDecoration.BOLD));
+        TextColor naranja = TextColor.color(0xFFAA00), verde = TextColor.color(0x55FF55);
+        c = c.append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), verde)).appendNewline()
+                .append(Component.text("Tu puesto ", gris)).append(Component.text(puesto, naranja, TextDecoration.BOLD)).appendNewline();
         for (int i = 0; i < 5; i++) {
-            c = c.appendNewline();
+            if (i > 0) c = c.appendNewline();
             if (i < top.size()) {
-                c = c.append(Component.text("#" + (i + 1) + " — ", i == 0 ? NamedTextColor.GOLD : gris))
+                c = c.append(Component.text("#" + (i + 1), naranja, TextDecoration.BOLD))
+                        .append(Component.text(" — ", NamedTextColor.DARK_GRAY))
                         .append(Component.text(nombreDe(top.get(i).getKey()), NamedTextColor.WHITE))
-                        .append(Component.text(" — " + num(top.get(i).getValue()), gris));
+                        .append(Component.text(" — ", NamedTextColor.DARK_GRAY))
+                        .append(Component.text(num(top.get(i).getValue()), verde));
             } else c = c.append(Component.text("#" + (i + 1) + " — vacío", NamedTextColor.DARK_GRAY));
         }
         return c;
     }
 
-    /** El panel queda al costado del NPC, a la izquierda de un jugador que lo mira desde el angulo ang (NPC -> jugador). */
-    private static Location posPanel(Location base, double ang) {
-        // el jugador mira hacia -(cos, sin); su izquierda es (-sin, cos) en (x, z)
-        return base.clone().add(-Math.sin(ang) * 1.5, 1.15, Math.cos(ang) * 1.5);
+    /** El yaw con el que se creo el NPC (no cambia aunque mire a los jugadores). */
+    private float yawFijo(Mannequin m) {
+        Float g = m.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
+        return g != null ? g : m.getLocation().getYaw();
     }
 
-    /** Le pone el gorro 3D del pack (item_model 3y33:gorro/<trabajo>) si todavia no lo tiene. */
-    private void ponerGorro(Mannequin m, Trabajo t) {
+    /** El panel queda fijo a la izquierda de como se ve al NPC de frente (el NPC mira hacia donde se creo). */
+    private static Location posPanel(Location base, float yaw) {
+        double r = Math.toRadians(yaw);
+        return base.clone().add(-Math.cos(r) * 2.1, 1.7, -Math.sin(r) * 2.1);
+    }
+
+    /** Saca el gorro 3D de prueba (3y33:gorro/...) si algun NPC todavia lo tiene puesto. */
+    private void sacarGorroViejo(Mannequin m) {
         ItemStack ya = m.getEquipment().getHelmet();
-        NamespacedKey modelo = new NamespacedKey("3y33", "gorro/" + t.id);
-        if (ya != null && ya.hasItemMeta() && ya.getItemMeta().hasItemModel() && modelo.equals(ya.getItemMeta().getItemModel())) return;
-        ItemStack it = new ItemStack(Material.PAPER);
-        ItemMeta im = it.getItemMeta();
-        im.setItemModel(modelo);
-        it.setItemMeta(im);
-        m.getEquipment().setHelmet(it);
-        m.getEquipment().setHelmetDropChance(0f);
+        if (ya != null && ya.hasItemMeta() && ya.getItemMeta().hasItemModel() && "3y33".equals(ya.getItemMeta().getItemModel().getNamespace())) {
+            m.getEquipment().setHelmet(null);
+        }
     }
 
     /** Cada 2 ticks: el NPC mira al jugador mas cercano (a menos de 8 bloques); si no hay nadie, vuelve a su direccion. */
@@ -271,7 +268,6 @@ final class Npcs implements Listener {
                 }
                 if (Math.abs(o.getPitch() - pitch) < 1.5f && Math.abs(((o.getYaw() - yaw + 540f) % 360f) - 180f) < 1.5f) continue;
                 m.setRotation(yaw, pitch);
-                m.setBodyYaw(yaw);
             }
         }
     }
@@ -287,33 +283,27 @@ final class Npcs implements Listener {
                 vistos.add(m.getUniqueId());
                 Carteles c = carteles.computeIfAbsent(m.getUniqueId(), k -> new Carteles());
                 Location base = m.getLocation();
-                ponerGorro(m, t);
-                if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.5, 0), true, titulo(t), 1.3f, 0);
-                Iterator<Map.Entry<UUID, Panel>> it = c.paneles.entrySet().iterator();
+                sacarGorroViejo(m);
+                if (c.titulo == null || !c.titulo.isValid()) c.titulo = texto(base.clone().add(0, 2.75, 0), true, titulo(t), 2.0f, 0, Display.Billboard.CENTER);
+                Location lp = posPanel(base, yawFijo(m));
+                Iterator<Map.Entry<UUID, TextDisplay>> it = c.paneles.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry<UUID, Panel> en = it.next();
+                    Map.Entry<UUID, TextDisplay> en = it.next();
                     Player p = Bukkit.getPlayer(en.getKey());
-                    if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE || !en.getValue().d.isValid()) {
-                        en.getValue().d.remove();
+                    if (p == null || !p.isOnline() || !p.getWorld().equals(w) || p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE || !en.getValue().isValid()) {
+                        en.getValue().remove();
                         it.remove();
                     }
                 }
                 for (Player p : w.getPlayers()) {
                     if (p.getLocation().distanceSquared(base) > ALCANCE * ALCANCE) continue;
-                    // direccion del NPC hacia el jugador; el panel va a la izquierda de como el jugador ve al NPC
-                    double ang = Math.atan2(p.getLocation().getZ() - base.getZ(), p.getLocation().getX() - base.getX());
-                    Panel pa = c.paneles.get(p.getUniqueId());
+                    TextDisplay d = c.paneles.get(p.getUniqueId());
                     Component txt = panel(t, p);
-                    if (pa == null) {
-                        TextDisplay d = texto(posPanel(base, ang), false, txt, 0.5f, 140);
-                        pa = new Panel(d, ang);
-                        c.paneles.put(p.getUniqueId(), pa);
+                    if (d == null) {
+                        d = texto(lp, false, txt, 0.85f, 0, Display.Billboard.VERTICAL);
+                        c.paneles.put(p.getUniqueId(), d);
                         p.showEntity(pl, d);
-                    } else {
-                        pa.d.text(txt);
-                        double dif = Math.abs(Math.atan2(Math.sin(ang - pa.lado), Math.cos(ang - pa.lado)));
-                        if (dif > 0.6) { pa.lado = ang; pa.d.teleport(posPanel(base, ang)); }
-                    }
+                    } else d.text(txt);
                 }
             }
         }
