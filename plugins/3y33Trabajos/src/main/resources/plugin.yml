@@ -1,0 +1,16 @@
+name: 3y33Trabajos
+version: 1.0.0
+main: ar.com.tresyetres.trabajos.TrabajosPlugin
+api-version: '1.21'
+author: 3y33 SMP
+description: Trabajos de 3y33 SMP (minero, leñador, granjero, cazador y pescador)
+depend: [Vault]
+softdepend: [Essentials]
+commands:
+  trabajos:
+    description: Trabajos de 3y33 SMP
+    usage: /trabajos [unirse|abandonar] [trabajo]
+    aliases: [jobs, trabajo, job]
+  trabajosadmin:
+    description: Herramientas de staff para los trabajos
+    usage: /trabajosadmin [reroll|nivel|xp|espera|info|recargar]
