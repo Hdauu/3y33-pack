@@ -148,14 +148,34 @@ def icono(nombre):
                 P(im, M(lambda d, f=f, lz=lz: d.polygon([(f(x), y) for x, y in lz], fill=255)), LUZ)
             P(im, M(lambda d: d.rectangle([13, 3, 19, 12], fill=255)), SOM)
             P(im, M(lambda d: d.rectangle([14, 12, 18, 14], fill=255)), (160, 50, 52))
+    elif nombre in ('hacha_v4', 'hacha_v5'):
+        LUZ = (232, 240, 250); SOM = (96, 106, 122)
+        ox = -4
+        X = lambda pts: [(x + ox, y) for x, y in pts]
+        hx = 16 + ox
+        P(im, M(lambda d: d.rectangle([hx - 1, 9, hx + 1, 30], fill=255)), WOOD)
+        for y in (27, 23, 19, 15): im.putpixel((hx + 1, y), darken(WOOD, .45) + (255,)); im.putpixel((hx + 1, y - 1), darken(WOOD, .45) + (255,))
+        for y in range(10, 30): im.putpixel((hx - 1, y), lighten(WOOD, .25) + (255,))
+        if nombre == 'hacha_v4':     # compacta: nuca cuadrada con agujero y media luna de filo a la derecha
+            for r in ([11, 4, 18, 5], [11, 11, 18, 12], [11, 4, 12, 12], [17, 4, 18, 12]):
+                P(im, M(lambda d, r=r: d.rectangle(X([(r[0], r[1]), (r[2], r[3])]), fill=255)), SOM)
+            P(im, M(lambda d: d.polygon(X([(18, 2), (23, 1), (27, 4), (29, 9), (27, 15), (23, 18), (20, 17), (24, 13), (25, 8), (22, 5), (18, 5)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(24, 3), (27, 6), (28, 10), (26, 14), (26, 9), (25, 5)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle(X([(13, 12), (19, 14)]), fill=255)), (160, 50, 52))
+        else:                        # clasica: cuello corto y hoja ancha con el filo recto
+            P(im, M(lambda d: d.polygon(X([(11, 5), (17, 4), (22, 2), (28, 2), (29, 10), (28, 18), (22, 18), (17, 13), (11, 12)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(26, 3), (28, 4), (28, 16), (26, 16)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(12, 5), (17, 5), (22, 3), (24, 3), (18, 7), (12, 7)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(12, 9), (18, 10), (18, 13), (12, 12)]), fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle(X([(13, 12), (19, 14)]), fill=255)), (160, 50, 52))
     elif nombre == 'espada':
-        P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
-        P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
-        P(im, M(lambda d: d.polygon([(4, 21), (8, 23), (24, 23), (28, 21), (28, 25), (24, 26), (8, 26), (4, 25)], fill=255)), GOLD)
-        P(im, M(lambda d: d.ellipse([14, 22, 18, 26], fill=255)), RED)
-        P(im, M(lambda d: d.rectangle([14, 26, 18, 30], fill=255)), (110, 62, 38))
-        for y in (27, 29): im.putpixel((15, y), darken((110, 62, 38), .5) + (255,)); im.putpixel((17, y), darken((110, 62, 38), .5) + (255,))
-        P(im, M(lambda d: d.ellipse([13, 29, 19, 32], fill=255)), GOLD)
+        P(im, M(lambda d: d.polygon([(16, 2), (20, 6), (20, 20), (12, 20), (12, 6)], fill=255)), (206, 218, 232))
+        P(im, M(lambda d: d.polygon([(16, 4), (17, 7), (17, 19), (15, 19), (15, 7)], fill=255)), (240, 246, 252))
+        P(im, M(lambda d: d.polygon([(4, 20), (8, 22), (24, 22), (28, 20), (28, 24), (24, 25), (8, 25), (4, 24)], fill=255)), GOLD)
+        P(im, M(lambda d: d.ellipse([14, 21, 18, 25], fill=255)), RED)
+        P(im, M(lambda d: d.rectangle([14, 25, 18, 28], fill=255)), (110, 62, 38))
+        for y in (26, 28): im.putpixel((15, y), darken((110, 62, 38), .5) + (255,)); im.putpixel((17, y), darken((110, 62, 38), .5) + (255,))
+        P(im, M(lambda d: d.ellipse([13, 28, 19, 30], fill=255)), GOLD)
     elif nombre == 'pez':
         P(im, M(lambda d: d.polygon([(21, 14), (29, 7), (29, 21), (22, 18)], fill=255)), (30, 130, 178))
         P(im, M(lambda d: d.ellipse([3, 8, 26, 24], fill=255)), (86, 200, 238))
