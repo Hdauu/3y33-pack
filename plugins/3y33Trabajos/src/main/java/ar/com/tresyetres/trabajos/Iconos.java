@@ -107,6 +107,17 @@ final class Iconos implements Listener {
         return it;
     }
 
+    /** El libro rojo de "Qué se entrega": el del pack o el libro comun. */
+    ItemStack libro(Player p, Component nombre, List<Component> lore) {
+        ItemStack it = item(org.bukkit.Material.BOOK, nombre, lore);
+        if (conPack(p)) {
+            ItemMeta meta = it.getItemMeta();
+            meta.setItemModel(new NamespacedKey("3y33", "trabajos/libro"));
+            it.setItemMeta(meta);
+        }
+        return it;
+    }
+
     /** Le pone a un item el modelo de una tarjeta de mision del pack (solo se ve con el pack). */
     ItemStack modelo(ItemStack it, String clave) {
         ItemMeta meta = it.getItemMeta();

@@ -579,6 +579,16 @@ final class Misiones {
 
     double pagoGlobal(Trabajo t, UUID u) { return Math.floor(pozo(t) * parte(t, u)); }
 
+    /** XP total de la global actual (el "fondo XP"): un % del pozo de plata, repartido igual que la plata. */
+    double pozoXp(Trabajo t) { return Math.floor(pozo(t) * ent.getDouble("xp-ratio", 0.25)); }
+
+    double xpGlobal(Trabajo t, UUID u) { return Math.floor(pozoXp(t) * parte(t, u)); }
+
+    /** Horas que dura el bono global despues de completarse. */
+    long bonoHoras() { return cfg.getLong("global.bono-horas", 48); }
+
+    int bonoPorcentaje() { return (int) Math.round(cfg.getDouble("global.bono", 0.20) * 100); }
+
     boolean puedeCobrarGlobal(Trabajo t, Player p) {
         Global g = global(t);
         return g.completada && aporteDe(t, p) >= aporteMinimo() && !g.cobraron.contains(p.getUniqueId());
@@ -591,10 +601,13 @@ final class Misiones {
         global(t).cobraron.add(p.getUniqueId());
         sucio = true;
         double pesos = pagoGlobal(t, p.getUniqueId());
+        double xp = xpGlobal(t, p.getUniqueId());
         pl.pago().depositar(p, f, pesos);
+        if (xp > 0) pl.pago().subirXp(p, f, t, xp);
         pl.perfiles().guardar(f);
         Msg.aviso(p, Component.text("Cobraste tu parte de la misión global: ", NamedTextColor.GRAY)
-                .append(Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN)));
+                .append(Component.text("+$" + Msg.num(pesos, 0), NamedTextColor.GREEN))
+                .append(Component.text("  +" + Msg.num(xp, 0) + " XP", NamedTextColor.AQUA)));
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.5f);
         return true;
     }
