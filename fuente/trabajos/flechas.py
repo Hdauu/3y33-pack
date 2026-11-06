@@ -7,10 +7,10 @@ ROJO_L, ROJO_M, ROJO_O = (255, 120, 132), (226, 40, 58), (150, 18, 36)
 BORDE = (60, 6, 14)
 
 
-def flecha(derecha):
+def flecha(derecha, tips=(1, 7)):
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     forma = set()
-    for tip in (1, 7):                      # dos chevrones
+    for tip in tips:                      # dos chevrones
         for r in range(11):
             d = abs(r - 5)
             for k in range(3):              # trazo de 3 px
