@@ -72,6 +72,39 @@ def icono(nombre):
             P(im, M(lambda d: d.polygon([(16, 5), (27, 4), (29, 6), (22, 6)], fill=255)), LUZ)
             P(im, M(lambda d: d.polygon([(28, 7), (29, 7), (29, 13), (28, 13)], fill=255)), LUZ)
         P(im, M(lambda d: d.rectangle([14, 10, 18, 12], fill=255)), (160, 50, 52))
+    elif nombre in ('azada_v1', 'azada_v2', 'azada_v3', 'azada_v4'):
+        # azadas en vertical: mango recto y centrado, con muescas; cuatro cabezas distintas para elegir
+        LUZ = (232, 240, 250); SOM = (116, 126, 142)
+        ox = {'azada_v1': -4, 'azada_v2': -4, 'azada_v3': 0, 'azada_v4': 0}[nombre]
+        X = lambda pts: [(x + ox, y) for x, y in pts]
+        hx = 16 + ox
+        P(im, M(lambda d: d.rectangle([hx - 1, 9, hx + 1, 30], fill=255)), WOOD)
+        for y in (27, 23, 19, 15): im.putpixel((hx + 1, y), darken(WOOD, .45) + (255,)); im.putpixel((hx + 1, y - 1), darken(WOOD, .45) + (255,))
+        for y in range(10, 30): im.putpixel((hx - 1, y), lighten(WOOD, .25) + (255,))
+        if nombre == 'azada_v1':     # anillo arriba y hoja curva que sale de costado
+            for r in ([10, 1, 15, 2], [10, 8, 15, 9], [10, 1, 11, 9], [14, 1, 15, 9]):
+                P(im, M(lambda d, r=r: d.rectangle(X([(r[0] + 0, r[1]), (r[2] + 0, r[3])]), fill=255)), SOM)
+            P(im, M(lambda d: d.polygon(X([(15, 2), (21, 0), (27, 2), (29, 6), (27, 12), (26, 8), (22, 6), (15, 8)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(16, 2), (21, 1), (26, 3), (21, 3)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(26, 6), (28, 6), (27, 10)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle(X([(11, 9), (15, 11)]), fill=255)), (160, 50, 52))
+        elif nombre == 'azada_v2':   # barra con una hoja que baja en la punta
+            P(im, M(lambda d: d.polygon(X([(12, 10), (14, 5), (28, 4), (30, 6), (30, 15), (26, 15), (26, 9), (19, 10)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(15, 5), (27, 5), (29, 7), (20, 7)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(28, 8), (29, 8), (29, 14), (28, 14)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle(X([(13, 10), (19, 12)]), fill=255)), (160, 50, 52))
+        elif nombre == 'azada_v3':   # hoja en corazon, de frente
+            P(im, M(lambda d: d.polygon(X([(8, 3), (24, 3), (27, 6), (23, 12), (16, 17), (9, 12), (5, 6)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(9, 4), (23, 4), (25, 6), (7, 6)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(17, 8), (23, 7), (22, 11), (17, 15)]), fill=255)), SOM)
+            P(im, M(lambda d: d.rectangle(X([(13, 16), (19, 18)]), fill=255)), (160, 50, 52))
+        else:                        # azadon: punta de un lado y hoja plana del otro
+            P(im, M(lambda d: d.polygon(X([(3, 8), (8, 3), (15, 3), (15, 9), (8, 8)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.polygon(X([(17, 3), (23, 3), (29, 5), (29, 13), (23, 11), (17, 9)]), fill=255)), STEEL)
+            P(im, M(lambda d: d.rectangle(X([(14, 3), (18, 10)]), fill=255)), SOM)
+            P(im, M(lambda d: d.polygon(X([(18, 4), (23, 4), (28, 6), (22, 6)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.polygon(X([(8, 4), (14, 4), (14, 5), (7, 5)]), fill=255)), LUZ)
+            P(im, M(lambda d: d.rectangle(X([(14, 10), (18, 12)]), fill=255)), (160, 50, 52))
     elif nombre == 'espada':
         P(im, M(lambda d: d.polygon([(16, 0), (20, 4), (20, 21), (12, 21), (12, 4)], fill=255)), (206, 218, 232))
         P(im, M(lambda d: d.polygon([(16, 3), (17, 5), (17, 19), (15, 19), (15, 5)], fill=255)), (240, 246, 252))
