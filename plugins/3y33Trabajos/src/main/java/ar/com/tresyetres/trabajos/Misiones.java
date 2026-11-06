@@ -63,6 +63,7 @@ final class Misiones {
     static final class Tema {
         final String id, nombre;
         final Map<Material, Integer> puntos = new java.util.LinkedHashMap<>();
+        double pozo;
         Tema(String id, String nombre) { this.id = id; this.nombre = nombre; }
     }
 
@@ -392,9 +393,11 @@ final class Misiones {
     private static boolean esItem(Material m) { return m.isItem() && !m.isLegacy(); }
 
     /** Pone (o saca, con 0) en el tema todos los materiales que cubre una clave: un material, un comodin con * o algo con {M}. */
-    private void aplicar(Tema tema, String clave, int pts, Trabajo t) {
+    private void aplicar(Tema tema, String clave, int pts, Trabajo t) { aplicar(tema, clave, pts, t, false); }
+
+    private void aplicar(Tema tema, String clave, int pts, Trabajo t, boolean silencio) {
         if (clave.contains("{M}")) {
-            for (String madera : MADERAS) aplicar(tema, clave.replace("{M}", madera), pts, t);
+            for (String madera : MADERAS) aplicar(tema, clave.replace("{M}", madera), pts, t, true);
             return;
         }
         if (clave.contains("*")) {
@@ -407,8 +410,8 @@ final class Misiones {
         }
         Material mat = Material.matchMaterial(clave);
         if (mat == null || !esItem(mat)) {
-            // las listas se escriben para varias versiones y para las 12 maderas: lo que no existe se saltea sin ruido (salvo que sea un error de tipeo evidente)
-            if (pts > 0 && !clave.contains("_") ) pl.getLogger().warning("entregas.yml: material desconocido " + clave + " (" + t.id + ")");
+            // con {M} es normal que algunas maderas no tengan ese item; lo demas, avisa para corregir el nombre
+            if (pts > 0 && !silencio) pl.getLogger().warning("entregas.yml: material desconocido " + clave + " (" + t.id + "/" + tema.id + ")");
             return;
         }
         if (pts > 0) tema.puntos.put(mat, pts); else tema.puntos.remove(mat);
@@ -423,6 +426,7 @@ final class Misiones {
                 ConfigurationSection c = s.getConfigurationSection(id);
                 if (c == null) continue;
                 Tema tema = new Tema(id, c.getString("nombre", id));
+                tema.pozo = c.getDouble("pozo", ent.getDouble("pozo-base." + t.id, 6000));
                 ConfigurationSection items = c.getConfigurationSection("items");
                 if (items != null) for (String k : items.getKeys(false)) aplicar(tema, k, items.getInt(k, 0), t);
                 if (tema.puntos.isEmpty()) { pl.getLogger().warning("entregas.yml: el tema " + t.id + "/" + id + " no tiene items."); continue; }
@@ -560,7 +564,20 @@ final class Misiones {
 
     int aporteMinimo() { return cfg.getInt("global.aporte-minimo", 100); }
 
-    double pagoGlobal() { return cfg.getDouble("global.pago", 600); }
+    /** Plata total de la global actual: un pozo fijo segun la dificultad del tema, que se reparte segun lo que aporto cada uno. */
+    double pozo(Trabajo t) { Tema x = temaDe(t); return x == null ? 0 : x.pozo; }
+
+    /** Parte (0 a 1) de este jugador en el reparto: su aporte sobre el de todos los que llegaron al minimo. */
+    double parte(Trabajo t, UUID u) {
+        Global g = global(t);
+        int min = aporteMinimo();
+        long suma = 0;
+        for (int a : g.aportes.values()) if (a >= min) suma += a;
+        int mio = g.aportes.getOrDefault(u, 0);
+        return suma <= 0 || mio < min ? 0 : (double) mio / suma;
+    }
+
+    double pagoGlobal(Trabajo t, UUID u) { return Math.floor(pozo(t) * parte(t, u)); }
 
     boolean puedeCobrarGlobal(Trabajo t, Player p) {
         Global g = global(t);
@@ -573,7 +590,7 @@ final class Misiones {
         if (!puedeCobrarGlobal(t, p)) { Msg.error(p, "Todavía no podés cobrar la misión global."); return false; }
         global(t).cobraron.add(p.getUniqueId());
         sucio = true;
-        double pesos = pagoGlobal();
+        double pesos = pagoGlobal(t, p.getUniqueId());
         pl.pago().depositar(p, f, pesos);
         pl.perfiles().guardar(f);
         Msg.aviso(p, Component.text("Cobraste tu parte de la misión global: ", NamedTextColor.GRAY)
