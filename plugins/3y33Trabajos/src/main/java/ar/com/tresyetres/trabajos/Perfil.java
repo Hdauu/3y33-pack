@@ -1,5 +1,6 @@
 package ar.com.tresyetres.trabajos;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -14,10 +15,52 @@ import java.util.UUID;
 final class Perfil {
     static final int NIVEL_MAX = 100;
 
+    /** Una mision de entregar items. estado: 0 activa, 1 cobrada, 2 perdida (por abandonar el trabajo). */
+    static final class Mision {
+        static final int ACTIVA = 0, COMPLETA = 1, PERDIDA = 2;
+        final Material item;
+        int meta;
+        int entregado;
+        final Rareza rareza;
+        int estado;
+
+        Mision(Material item, int meta, Rareza rareza) { this.item = item; this.meta = meta; this.rareza = rareza; }
+
+        void guardar(ConfigurationSection s) {
+            s.set("item", item.name());
+            s.set("meta", meta);
+            s.set("entregado", entregado);
+            s.set("rareza", rareza.name());
+            s.set("estado", estado);
+        }
+
+        static Mision cargar(ConfigurationSection s) {
+            if (s == null) return null;
+            Material m = Material.matchMaterial(s.getString("item", ""));
+            if (m == null) return null;
+            Rareza r;
+            try { r = Rareza.valueOf(s.getString("rareza", "COMUN")); } catch (IllegalArgumentException e) { r = Rareza.COMUN; }
+            Mision x = new Mision(m, Math.max(1, s.getInt("meta", 1)), r);
+            x.entregado = s.getInt("entregado", 0);
+            x.estado = s.getInt("estado", 0);
+            return x;
+        }
+    }
+
     static final class Progreso {
         int nivel = 1;
         double xp = 0;
         int prestigio = 0;
+        // misiones: la diaria (a la hora del reroll) y la semanal (lunes 0:00) se generan al mirarlas
+        long dia;
+        Mision aleatoria;
+        final Mision[] opciones = new Mision[4];
+        Mision elegida;
+        boolean elegidaPerdida;
+        long semana;
+        Mision semanal;
+        int racha;
+        long rachaDia;
     }
 
     final UUID id;
@@ -71,6 +114,15 @@ final class Perfil {
                 g.nivel = Math.max(1, Math.min(NIVEL_MAX, c.getInt("nivel", 1)));
                 g.xp = c.getDouble("xp", 0);
                 g.prestigio = Math.max(0, Math.min(3, c.getInt("prestigio", 0)));
+                g.dia = c.getLong("dia", 0L);
+                g.semana = c.getLong("semana", 0L);
+                g.racha = c.getInt("racha", 0);
+                g.rachaDia = c.getLong("racha-dia", 0L);
+                g.elegidaPerdida = c.getBoolean("elegida-perdida", false);
+                g.aleatoria = Mision.cargar(c.getConfigurationSection("aleatoria"));
+                g.elegida = Mision.cargar(c.getConfigurationSection("elegida"));
+                g.semanal = Mision.cargar(c.getConfigurationSection("semanal"));
+                for (int i = 0; i < 4; i++) g.opciones[i] = Mision.cargar(c.getConfigurationSection("opcion" + i));
             }
         }
     }
@@ -87,6 +139,16 @@ final class Perfil {
             y.set(base + ".nivel", e.getValue().nivel);
             y.set(base + ".xp", e.getValue().xp);
             y.set(base + ".prestigio", e.getValue().prestigio);
+            Progreso g = e.getValue();
+            y.set(base + ".dia", g.dia);
+            y.set(base + ".semana", g.semana);
+            y.set(base + ".racha", g.racha);
+            y.set(base + ".racha-dia", g.rachaDia);
+            y.set(base + ".elegida-perdida", g.elegidaPerdida);
+            if (g.aleatoria != null) g.aleatoria.guardar(y.createSection(base + ".aleatoria"));
+            if (g.elegida != null) g.elegida.guardar(y.createSection(base + ".elegida"));
+            if (g.semanal != null) g.semanal.guardar(y.createSection(base + ".semanal"));
+            for (int i = 0; i < 4; i++) if (g.opciones[i] != null) g.opciones[i].guardar(y.createSection(base + ".opcion" + i));
         }
         try { y.save(f); } catch (IOException ex) { System.err.println("[3y33Trabajos] No pude guardar " + f + ": " + ex); }
     }

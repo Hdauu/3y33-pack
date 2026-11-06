@@ -39,6 +39,7 @@ final class Servicio {
         Perfil f = pl.perfiles().de(p);
         if (f.activo == null) { Msg.error(p, "No tenés ningún trabajo."); return false; }
         Trabajo t = f.activo;
+        pl.misiones().perderPendientes(f, t);
         long horas = pl.getConfig().getLong("abandonar-horas", 13);
         f.activo = null;
         f.libreHasta = System.currentTimeMillis() + horas * 3_600_000L;

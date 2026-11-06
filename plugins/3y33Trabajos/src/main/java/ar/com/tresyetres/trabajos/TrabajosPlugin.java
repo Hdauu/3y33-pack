@@ -16,6 +16,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     private Colocados colocados;
     private Servicio servicio;
     private Menus menus;
+    private Misiones misiones;
 
     Pago pago() { return pago; }
     Catalogo catalogo() { return catalogo; }
@@ -25,6 +26,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     Colocados colocados() { return colocados; }
     Servicio servicio() { return servicio; }
     Menus menus() { return menus; }
+    Misiones misiones() { return misiones; }
 
     @Override
     public void onEnable() {
@@ -41,6 +43,8 @@ public final class TrabajosPlugin extends JavaPlugin {
         rarezas = new Rarezas(this);
         rarezas.cargar();
         perfiles = new Perfiles(this);
+        misiones = new Misiones(this);
+        misiones.cargar();
         iconos = new Iconos(this);
         colocados = new Colocados(this);
         servicio = new Servicio(this);
@@ -58,6 +62,7 @@ public final class TrabajosPlugin extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimer(this, () -> perfiles.guardarTodo(), 6000L, 6000L);
         Bukkit.getScheduler().runTaskTimer(this, () -> rarezas.revisar(), 400L, 400L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> { misiones.revisar(); misiones.guardarSiHaceFalta(); }, 600L, 600L);
         Bukkit.getScheduler().runTaskTimer(this, () -> pago.porTiempo(), 1200L, 1200L);
         getLogger().info("3y33Trabajos listo: " + catalogo.todas().size() + " acciones en 5 trabajos.");
     }
@@ -66,5 +71,6 @@ public final class TrabajosPlugin extends JavaPlugin {
     public void onDisable() {
         if (perfiles != null) perfiles.guardarTodo();
         if (rarezas != null) rarezas.guardar();
+        if (misiones != null) misiones.guardar();
     }
 }

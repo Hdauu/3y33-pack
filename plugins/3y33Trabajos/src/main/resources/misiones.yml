@@ -1,0 +1,119 @@
+# Misiones de 3y33Trabajos. Se puede tocar y recargar con /trabajosadmin recargar.
+# Todas son de entregar items: el jugador los junta con su trabajo y los entrega desde el menu (item "limpio", sin nombre ni encantamientos).
+# La plata de cada mision se multiplica por el multiplicador personal del jugador (nivel + prestigio + racha).
+
+recompensas:
+  # Plata base por rareza: comun, rara, epica, legendaria.
+  aleatoria: [150, 225, 300, 450]
+  elegida: [200, 300, 450, 700]
+  # La semanal paga esto por el multiplicador de la rareza (x1, x1,5, x2, x3).
+  semanal-base: 1500
+
+# La semanal pide tantas veces la cantidad de una diaria.
+semanal-factor: 8
+
+racha:
+  por-dia: 0.02
+  maximo-dias: 10
+
+# Mision global semanal (reinicia el lunes 0:00): todos los de un trabajo suman al mismo objetivo.
+global:
+  aporte-minimo: 100          # acciones del trabajo para contar como colaborador
+  pago: 600                   # lo que cobra cada colaborador al completarse
+  bono: 0.20                  # +20% de pago por acciones y por tiempo a todos los del trabajo
+  bono-horas: 48
+  porcentaje-anterior: 0.6    # el objetivo de cada semana es el mayor entre el minimo y este % del total de la anterior
+  minimo:
+    minero: 2000              # menas rotas
+    lenador: 6000             # troncos y hongos gigantes
+    granjero: 5000            # cultivos y animales
+    cazador: 1500             # mobs hostiles
+    pescador: 1000            # pescas
+
+# Que se pide, por trabajo y rareza: material: cantidad (de una diaria).
+pools:
+  minero:
+    COMUN:
+      COBBLESTONE: 256
+      COAL: 64
+      RAW_COPPER: 64
+    RARA:
+      RAW_IRON: 48
+      REDSTONE: 96
+      LAPIS_LAZULI: 64
+    EPICA:
+      RAW_GOLD: 32
+      AMETHYST_SHARD: 48
+      QUARTZ: 48
+    LEGENDARIA:
+      DIAMOND: 8
+      EMERALD: 6
+      ANCIENT_DEBRIS: 2
+  lenador:
+    COMUN:
+      OAK_LOG: 128
+      SPRUCE_LOG: 128
+      BIRCH_LOG: 128
+    RARA:
+      JUNGLE_LOG: 96
+      ACACIA_LOG: 96
+      DARK_OAK_LOG: 96
+    EPICA:
+      CHERRY_LOG: 96
+      MANGROVE_LOG: 96
+      CRIMSON_STEM: 96
+    LEGENDARIA:
+      PALE_OAK_LOG: 64
+      WARPED_STEM: 64
+      SHROOMLIGHT: 32
+  granjero:
+    COMUN:
+      WHEAT: 128
+      CARROT: 96
+      POTATO: 96
+    RARA:
+      BEETROOT: 64
+      MELON_SLICE: 160
+      SWEET_BERRIES: 96
+    EPICA:
+      PUMPKIN: 48
+      COCOA_BEANS: 64
+      NETHER_WART: 64
+    LEGENDARIA:
+      HAY_BLOCK: 24
+      GOLDEN_CARROT: 24
+      PUMPKIN_PIE: 16
+  cazador:
+    COMUN:
+      BONE: 64
+      ROTTEN_FLESH: 96
+      STRING: 64
+    RARA:
+      GUNPOWDER: 64
+      SPIDER_EYE: 48
+      ARROW: 96
+    EPICA:
+      ENDER_PEARL: 16
+      SLIME_BALL: 48
+      BLAZE_ROD: 24
+    LEGENDARIA:
+      GHAST_TEAR: 8
+      PHANTOM_MEMBRANE: 24
+      WITHER_SKELETON_SKULL: 2
+  pescador:
+    COMUN:
+      COD: 64
+      SALMON: 64
+      STICK: 64
+    RARA:
+      TROPICAL_FISH: 24
+      PUFFERFISH: 24
+      BOWL: 32
+    EPICA:
+      LILY_PAD: 32
+      LEATHER: 24
+      TRIPWIRE_HOOK: 16
+    LEGENDARIA:
+      NAUTILUS_SHELL: 6
+      NAME_TAG: 4
+      SADDLE: 3

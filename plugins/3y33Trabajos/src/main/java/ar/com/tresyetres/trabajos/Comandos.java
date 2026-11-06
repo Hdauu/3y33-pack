@@ -38,7 +38,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|info|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -46,6 +46,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.reloadConfig();
                 pl.catalogo().cargar();
                 pl.rarezas().cargar();
+                pl.misiones().cargar();
                 Msg.ok(s, "Configuración y acciones recargadas.");
             }
             case "nivel", "xp" -> {
@@ -97,6 +98,24 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.perfiles().guardar(f);
                 Msg.ok(s, p.getName() + " quedó sin trabajo y sin espera.");
             }
+            case "misiones" -> {
+                // /trabajosadmin misiones [jugador]: vuelve a generar las misiones del jugador (para probar)
+                Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
+                if (p == null) { Msg.error(s, "Uso: /trabajosadmin misiones [jugador]"); return true; }
+                Perfil f = pl.perfiles().de(p);
+                pl.misiones().reiniciar(f);
+                pl.perfiles().guardar(f);
+                Msg.ok(s, "Se renovaron las misiones de " + p.getName() + ".");
+            }
+            case "global" -> {
+                // /trabajosadmin global <trabajo> <cantidad>: suma esa cantidad a la mision global (para probar)
+                Trabajo t = a.length > 1 ? Trabajo.de(a[1]) : null;
+                if (t == null || a.length < 3) { Msg.error(s, "Uso: /trabajosadmin global <trabajo> <cantidad>"); return true; }
+                long n;
+                try { n = Long.parseLong(a[2]); } catch (NumberFormatException e) { Msg.error(s, "Número inválido."); return true; }
+                pl.misiones().sumarGlobal(t, n);
+                Msg.ok(s, "Sumé " + n + " a la misión global de " + t.nombre + ".");
+            }
             case "info" -> {
                 Player p = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : (s instanceof Player pj ? pj : null);
                 if (p == null) { Msg.error(s, "Uso: /trabajosadmin info <jugador>"); return true; }
@@ -119,7 +138,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "info", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
@@ -127,7 +146,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         } else if (a.length == 2 && !admin && a[0].equalsIgnoreCase("unirse")) {
             for (Trabajo t : Trabajo.values()) out.add(t.id);
         } else if (admin && s.hasPermission("tresyetres.staff")) {
-            if (a.length == 2 && a[0].equalsIgnoreCase("tomar")) for (Trabajo t : Trabajo.values()) out.add(t.id);
+            if (a.length == 2 && (a[0].equalsIgnoreCase("tomar") || a[0].equalsIgnoreCase("global"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
             else if (a.length == 3 && a[0].equalsIgnoreCase("tomar")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 2) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (a.length == 3 && (a[0].equalsIgnoreCase("nivel") || a[0].equalsIgnoreCase("xp"))) for (Trabajo t : Trabajo.values()) out.add(t.id);
