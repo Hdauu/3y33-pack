@@ -17,6 +17,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     private Servicio servicio;
     private Menus menus;
     private Misiones misiones;
+    private Npcs npcs;
 
     Pago pago() { return pago; }
     Catalogo catalogo() { return catalogo; }
@@ -27,6 +28,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     Servicio servicio() { return servicio; }
     Menus menus() { return menus; }
     Misiones misiones() { return misiones; }
+    Npcs npcs() { return npcs; }
 
     @Override
     public void onEnable() {
@@ -53,6 +55,8 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new Escucha(this), this);
         Bukkit.getPluginManager().registerEvents(iconos, this);
         Bukkit.getPluginManager().registerEvents(menus, this);
+        npcs = new Npcs(this);
+        Bukkit.getPluginManager().registerEvents(npcs, this);
 
         Comandos cmd = new Comandos(this);
         for (String nombre : new String[]{"trabajos", "trabajosadmin"}) {
