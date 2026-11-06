@@ -28,8 +28,8 @@ final class Pago {
     /** XP que hace falta para pasar del nivel n al siguiente. */
     static double xpNecesaria(int n) { return 200 + 40.0 * n + 0.9 * n * n; }
 
-    /** Multiplicador personal: +1% por nivel y +25% por prestigio. (La racha de misiones se suma en la etapa de misiones.) */
-    double personal(Perfil.Progreso g) { return 1.0 + 0.01 * (g.nivel - 1) + 0.25 * g.prestigio; }
+    /** Multiplicador personal: +1% por nivel, +25% por prestigio y hasta +20% por la racha de misiones. */
+    double personal(Perfil.Progreso g) { return 1.0 + 0.01 * (g.nivel - 1) + 0.25 * g.prestigio + pl.misiones().bonoRacha(g); }
 
     /** Momentum de ahora: el guardado menos lo que bajo por estar quieto. */
     double momentum(Perfil f, long ahora) {
@@ -52,7 +52,7 @@ final class Pago {
             f.momentumT = ahora;
         }
         double mom = momentum(f, ahora);
-        double pesos = a.pago() * (personal(g) + r.bono()) * mom;
+        double pesos = a.pago() * (personal(g) + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo()));
         double xp = a.xp() * (1.0 + r.bono()) * mom;
         f.momentum = Math.min(pl.getConfig().getDouble("momentum.maximo", 3.0), mom + pl.getConfig().getDouble("momentum.por-accion", 0.02));
         f.momentumT = ahora;
@@ -60,6 +60,7 @@ final class Pago {
         if (f.ultimoPagoTiempo == 0) f.ultimoPagoTiempo = ahora;
         depositar(p, f, pesos);
         subirXp(p, f, a.trabajo(), xp);
+        pl.misiones().aporte(p, a);
         p.sendActionBar(Component.text(r.nombre + "  ", r.color)
                 .append(Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN))
                 .append(Component.text("  +" + Msg.num(xp, 2) + " XP", NamedTextColor.AQUA))
@@ -81,7 +82,7 @@ final class Pago {
                 f.ultimoPagoTiempo = ahora;
                 continue;
             }
-            double pesos = base * personal(f.de(f.activo));
+            double pesos = base * personal(f.de(f.activo)) * (1.0 + pl.misiones().bonoGlobal(f.activo));
             depositar(p, f, pesos);
             f.accionesVentana = 0;
             f.ultimoPagoTiempo = ahora;
