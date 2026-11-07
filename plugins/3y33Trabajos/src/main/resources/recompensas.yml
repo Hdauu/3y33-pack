@@ -1,8 +1,11 @@
-# Recompensas por subir de nivel de un trabajo.
-# Cada vez que subís de nivel te ofrecen 3 opciones: un boost de XP, un boost de plata y XP instantánea, cada una con su rareza sorteada.
-# Elegís una (hay que hacer clic dos veces para confirmar) y las otras se pierden. La oferta queda hasta que subas el siguiente nivel.
+# Recompensas del camino de cada trabajo.
+# Cada "cada-niveles" niveles aparece un nodo en el camino con 3 opciones: un boost de XP, un boost de plata y XP instantánea, cada una con su rareza sorteada.
+# Elegís una (hay que hacer clic dos veces para confirmar) y las otras dos se pierden. El nodo espera hasta que lo elijas, aunque sigas subiendo.
 # Los boosts elegidos se guardan en tu perfil y se activan desde el menú de Recompensas. Pueden andar dos a la vez (uno de XP y uno de plata),
 # pero dos del mismo tipo no se acumulan. El tiempo cuenta mientras estás conectado con ese trabajo puesto.
+
+# Cada cuántos niveles hay un nodo en el camino.
+cada-niveles: 5
 
 # Chance de que una opción de boost salga como MEGA (XP y plata juntos). 0,001 = 0,1%.
 probabilidad-mega: 0.001

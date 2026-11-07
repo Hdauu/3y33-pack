@@ -33,7 +33,10 @@ final class Comandos implements CommandExecutor, TabCompleter {
         if (sub.equals("recompensas")) {
             Trabajo rt = a.length > 1 ? Trabajo.de(a[1]) : pl.perfiles().de(p).activo;
             if (rt == null) { Msg.error(p, "Uso: /trabajos recompensas <minero|leñador|granjero|cazador|pescador>"); return true; }
-            pl.menus().recompensas(p, rt);
+            int nodo = -1;
+            if (a.length > 2) { try { nodo = Integer.parseInt(a[2]); } catch (NumberFormatException ignorada) { } }
+            if (nodo > 0 && pl.perfiles().de(p).de(rt).pend.containsKey(nodo)) pl.menus().elegirRecompensa(p, rt, nodo);
+            else pl.menus().recompensas(p, rt);
             return true;
         }
         Trabajo t = Trabajo.de(a[0]);
@@ -49,12 +52,14 @@ final class Comandos implements CommandExecutor, TabCompleter {
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
             case "ofrecer" -> {
-                // /trabajosadmin ofrecer <jugador> <trabajo>: le arma una oferta de recompensa de nivel (para probar)
+                // /trabajosadmin ofrecer <jugador> <trabajo>: deja pendientes las recompensas del camino que ya alcanzo y no tienen (para probar)
                 Player op = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : null;
                 Trabajo ot = a.length > 2 ? Trabajo.de(a[2]) : null;
                 if (op == null || ot == null) { Msg.error(s, "Uso: /trabajosadmin ofrecer <jugador> <trabajo>"); return true; }
-                pl.recompensas().ofrecer(op, ot, pl.perfiles().de(op).de(ot));
-                Msg.ok(s, "Le armé una oferta de recompensa a " + op.getName() + " en " + ot.nombre + ".");
+                Perfil of = pl.perfiles().de(op);
+                int n = pl.recompensas().alcanzar(of.de(ot));
+                pl.perfiles().guardar(of);
+                Msg.ok(s, "Le dejé " + n + " recompensa(s) del camino pendientes a " + op.getName() + " en " + ot.nombre + ".");
             }
             case "balance" -> {
                 int horas = 24;

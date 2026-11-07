@@ -10,12 +10,14 @@ import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
@@ -51,8 +53,9 @@ final class Recompensas {
     private final Random azar = new Random();
     private final List<Rar> rarezas = new ArrayList<>();
     private double probMega = 0.001;
-    /** Opcion marcada (primer clic) de cada jugador; el segundo clic sobre la misma la confirma. */
-    private final Map<UUID, Integer> seleccion = new HashMap<>();
+    private int cada = 5;
+    /** Opcion marcada (primer clic) de cada jugador: {nivel, opcion}; el segundo clic sobre la misma la confirma. */
+    private final Map<UUID, int[]> seleccion = new HashMap<>();
 
     Recompensas(TrabajosPlugin pl) { this.pl = pl; }
 
@@ -61,6 +64,7 @@ final class Recompensas {
         if (!f.exists()) pl.saveResource("recompensas.yml", false);
         YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
         probMega = y.getDouble("probabilidad-mega", 0.001);
+        cada = Math.max(1, y.getInt("cada-niveles", 5));
         rarezas.clear();
         for (int i = 0; i < IDS.length; i++) {
             ConfigurationSection c = y.getConfigurationSection("rarezas." + IDS[i]);
@@ -100,7 +104,7 @@ final class Recompensas {
         return switch (tipo(k)) {
             case "XP" -> Material.EXPERIENCE_BOTTLE;
             case "PLATA" -> Material.GOLD_INGOT;
-            case "XPDIRECTA" -> Material.ENCHANTED_BOOK;
+            case "XPDIRECTA" -> Material.EXPERIENCE_BOTTLE;
             default -> Material.NETHER_STAR;
         };
     }
@@ -139,27 +143,57 @@ final class Recompensas {
         return l;
     }
 
-    // ---------- oferta por nivel ----------
+    // ---------- el camino: una recompensa cada "cada-niveles" niveles ----------
 
-    int seleccionada(Player p) { return seleccion.getOrDefault(p.getUniqueId(), -1); }
+    int cada() { return cada; }
 
-    void seleccionar(Player p, int i) { seleccion.put(p.getUniqueId(), i); }
+    /** Modelo del pack para el icono del boost (botella o monedas con flechas del color de la rareza). */
+    String modeloIcono(String k) { return tipo(k).equals("MEGA") ? "boost_mega" : "boost_" + tipo(k).toLowerCase(Locale.ROOT) + "_" + rarezas.get(idx(k)).id; }
 
-    /** Al subir de nivel: arma las 3 opciones (la oferta anterior que no se eligio se pierde) y avisa. */
-    void ofrecer(Player p, Trabajo t, Perfil.Progreso g) {
-        g.oferta = sortear();
-        seleccion.remove(p.getUniqueId());
-        Msg.aviso(p, Component.text("¡Tenés una recompensa para elegir en " + t.nombre + "! ", NamedTextColor.GREEN)
-                .append(Component.text("[Abrir]", NamedTextColor.YELLOW, TextDecoration.BOLD).clickEvent(ClickEvent.runCommand("/trabajos recompensas " + t.id)))
-                .append(Component.text("  (si subís otro nivel sin elegir, se pierde)", NamedTextColor.GRAY)));
+    /** Modelo del pack para la carta donde se ofrece. */
+    String modeloCarta(String k) { return tipo(k).equals("MEGA") ? "recompensa_mega" : "recompensa_" + tipo(k).toLowerCase(Locale.ROOT) + "_" + rarezas.get(idx(k)).id; }
+
+    /** El item de una recompensa: con el pack, la botella o las monedas con flechas; sin el pack, el item comun. */
+    ItemStack icono(Player p, String k, List<Component> lore) {
+        ItemStack it = Iconos.item(material(k), nombre(k), lore);
+        if (pl.iconos().conPack(p)) pl.iconos().modelo(it, modeloIcono(k));
+        return it;
     }
 
-    boolean reclamar(Player p, Trabajo t, int i) {
+    int seleccionada(Player p, int nivel) {
+        int[] s = seleccion.get(p.getUniqueId());
+        return s != null && s[0] == nivel ? s[1] : -1;
+    }
+
+    void seleccionar(Player p, int nivel, int i) { seleccion.put(p.getUniqueId(), new int[]{nivel, i}); }
+
+    /** Al subir de nivel: si toca nodo del camino, deja 3 opciones esperando (no se pierden aunque sigas subiendo) y avisa. */
+    void alSubir(Player p, Trabajo t, Perfil.Progreso g) {
+        if (g.nivel % cada != 0 || g.pend.containsKey(g.nivel) || g.hechas.containsKey(g.nivel)) return;
+        g.pend.put(g.nivel, sortear());
+        Msg.aviso(p, Component.text("¡Tenés una recompensa para elegir en " + t.nombre + " (nivel " + g.nivel + ")! ", NamedTextColor.GREEN)
+                .append(Component.text("[Elegir]", NamedTextColor.YELLOW, TextDecoration.BOLD).clickEvent(ClickEvent.runCommand("/trabajos recompensas " + t.id + " " + g.nivel))));
+    }
+
+    /** Para el staff: deja pendientes los nodos que ya alcanzaste y no tienen recompensa. Devuelve cuantos agrego. */
+    int alcanzar(Perfil.Progreso g) {
+        int n = 0;
+        for (int nv = cada; nv <= g.nivel; nv += cada) {
+            if (g.pend.containsKey(nv) || g.hechas.containsKey(nv)) continue;
+            g.pend.put(nv, sortear());
+            n++;
+        }
+        return n;
+    }
+
+    boolean reclamar(Player p, Trabajo t, int nivel, int i) {
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
-        if (g.oferta == null || i < 0 || i >= g.oferta.length) { Msg.error(p, "Esa recompensa ya no está."); return false; }
-        String k = g.oferta[i];
-        g.oferta = null;
+        String[] of = g.pend.get(nivel);
+        if (of == null || i < 0 || i >= of.length) { Msg.error(p, "Esa recompensa ya no está."); return false; }
+        String k = of[i];
+        g.pend.remove(nivel);
+        g.hechas.put(nivel, k);
         seleccion.remove(p.getUniqueId());
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.4f);
         if (tipo(k).equals("XPDIRECTA")) {
@@ -168,7 +202,7 @@ final class Recompensas {
             pl.pago().subirXp(p, f, t, xp);
         } else {
             g.boosts.merge(k, 1, Integer::sum);
-            Msg.aviso(p, Component.text("Elegiste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(". Lo guardé: activalo desde Recompensas.", NamedTextColor.GRAY)));
+            Msg.aviso(p, Component.text("Elegiste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(". Lo guardé en tus Boosts.", NamedTextColor.GRAY)));
         }
         pl.perfiles().guardar(f);
         return true;

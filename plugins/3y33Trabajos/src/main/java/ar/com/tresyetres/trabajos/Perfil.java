@@ -61,8 +61,10 @@ final class Perfil {
         Mision semanal;
         int racha;
         long rachaDia;
-        /** Las 3 opciones que te ofrecieron al subir de nivel (null si no hay), y los boosts que guardaste: clave -> cantidad. */
-        String[] oferta;
+        /** Camino de recompensas: las que esperan que elijas (nivel -> 3 opciones) y las que ya elegiste (nivel -> opcion). */
+        final java.util.TreeMap<Integer, String[]> pend = new java.util.TreeMap<>();
+        final java.util.TreeMap<Integer, String> hechas = new java.util.TreeMap<>();
+        /** Boosts que guardaste: clave -> cantidad. */
         final Map<String, Integer> boosts = new java.util.LinkedHashMap<>();
     }
 
@@ -131,8 +133,15 @@ final class Perfil {
                 g.elegida = Mision.cargar(c.getConfigurationSection("elegida"));
                 g.semanal = Mision.cargar(c.getConfigurationSection("semanal"));
                 for (int i = 0; i < 4; i++) g.opciones[i] = Mision.cargar(c.getConfigurationSection("opcion" + i));
-                java.util.List<String> of = c.getStringList("oferta");
-                g.oferta = of.size() == 3 ? of.toArray(new String[0]) : null;
+                ConfigurationSection ps = c.getConfigurationSection("pendientes");
+                if (ps != null) for (String k : ps.getKeys(false)) {
+                    java.util.List<String> l = ps.getStringList(k);
+                    if (l.size() == 3) { try { g.pend.put(Integer.parseInt(k), l.toArray(new String[0])); } catch (NumberFormatException ignorada) { } }
+                }
+                ConfigurationSection hs = c.getConfigurationSection("hechas");
+                if (hs != null) for (String k : hs.getKeys(false)) {
+                    try { g.hechas.put(Integer.parseInt(k), hs.getString(k, "")); } catch (NumberFormatException ignorada) { }
+                }
                 ConfigurationSection bs = c.getConfigurationSection("boosts");
                 if (bs != null) for (String k : bs.getKeys(false)) {
                     int n = bs.getInt(k, 0);
@@ -191,7 +200,8 @@ final class Perfil {
             if (g.elegida != null) g.elegida.guardar(y.createSection(base + ".elegida"));
             if (g.semanal != null) g.semanal.guardar(y.createSection(base + ".semanal"));
             for (int i = 0; i < 4; i++) if (g.opciones[i] != null) g.opciones[i].guardar(y.createSection(base + ".opcion" + i));
-            if (g.oferta != null) y.set(base + ".oferta", java.util.Arrays.asList(g.oferta));
+            for (Map.Entry<Integer, String[]> pe : g.pend.entrySet()) y.set(base + ".pendientes." + pe.getKey(), java.util.Arrays.asList(pe.getValue()));
+            for (Map.Entry<Integer, String> he : g.hechas.entrySet()) y.set(base + ".hechas." + he.getKey(), he.getValue());
             for (Map.Entry<String, Integer> b : g.boosts.entrySet()) y.set(base + ".boosts." + b.getKey().replace(':', '-'), b.getValue());
         }
         guardarActivo(y, "activos.xp", boostXp);
