@@ -1,6 +1,8 @@
 package ar.com.tresyetres.trabajos;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
@@ -18,7 +20,6 @@ import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
@@ -26,6 +27,15 @@ import org.bukkit.persistence.PersistentDataType;
 
 /** Lo que el jugador hace y paga: romper, matar, pescar y criar, con las reglas anti-trampa. */
 final class Escucha implements Listener {
+    private static final java.util.Set<org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason> SIN_PAGO =
+            java.util.EnumSet.noneOf(org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.class);
+    static {
+        for (var r : org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.values()) {
+            String n = r.name();
+            if (n.contains("SPAWNER") || n.contains("EGG")) SIN_PAGO.add(r);
+        }
+    }
+
     private final TrabajosPlugin pl;
     private final NamespacedKey noPaga;
 
@@ -47,13 +57,24 @@ final class Escucha implements Listener {
     }
 
     @EventHandler
-    public void alSalir(PlayerQuitEvent e) { pl.perfiles().descargar(e.getPlayer()); }
-
-    @EventHandler(ignoreCancelled = true)
-    public void alMoverse(PlayerMoveEvent e) {
-        if (!e.hasChangedPosition() && !e.hasChangedOrientation()) return;
+    public void alSalir(PlayerQuitEvent e) {
         Perfil f = pl.perfiles().existente(e.getPlayer());
-        if (f != null) f.ultimoMov = System.currentTimeMillis();
+        if (f != null) pl.pago().vaciar(e.getPlayer(), f);
+        pl.perfiles().descargar(e.getPlayer());
+    }
+
+    /** Cada segundo mira quien se movio o giro (en vez de escuchar cada paso de cada jugador, que es mucho mas caro). */
+    void muestrear() {
+        long ahora = System.currentTimeMillis();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            Perfil f = pl.perfiles().existente(p);
+            if (f == null) continue;
+            Location l = p.getLocation();
+            if (l.getX() != f.mx || l.getY() != f.my || l.getZ() != f.mz || l.getYaw() != f.myaw || l.getPitch() != f.mpitch) {
+                f.mx = l.getX(); f.my = l.getY(); f.mz = l.getZ(); f.myaw = l.getYaw(); f.mpitch = l.getPitch();
+                f.ultimoMov = ahora;
+            }
+        }
     }
 
     /** Un bloque que paga y lo pone un jugador se marca: despues no paga. Los cultivos no se marcan (se miran por madurez). */
@@ -85,8 +106,7 @@ final class Escucha implements Listener {
     /** Los mobs que salen de un spawner o de un huevo no pagan. */
     @EventHandler(ignoreCancelled = true)
     public void alAparecer(CreatureSpawnEvent e) {
-        String motivo = e.getSpawnReason().name();
-        if (motivo.contains("SPAWNER") || motivo.contains("EGG")) {
+        if (SIN_PAGO.contains(e.getSpawnReason())) {
             e.getEntity().getPersistentDataContainer().set(noPaga, PersistentDataType.BYTE, (byte) 1);
         }
     }

@@ -53,7 +53,9 @@ public final class TrabajosPlugin extends JavaPlugin {
         servicio = new Servicio(this);
         menus = new Menus(this);
 
-        Bukkit.getPluginManager().registerEvents(new Escucha(this), this);
+        Escucha escucha = new Escucha(this);
+        Bukkit.getPluginManager().registerEvents(escucha, this);
+        Bukkit.getPluginManager().registerEvents(colocados, this);
         Bukkit.getPluginManager().registerEvents(iconos, this);
         Bukkit.getPluginManager().registerEvents(menus, this);
         npcs = new Npcs(this);
@@ -69,12 +71,26 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, () -> rarezas.revisar(), 400L, 400L);
         Bukkit.getScheduler().runTaskTimer(this, () -> { misiones.revisar(); misiones.guardarSiHaceFalta(); }, 600L, 600L);
         Bukkit.getScheduler().runTaskTimer(this, () -> pago.porTiempo(), 1200L, 1200L);
+        Bukkit.getScheduler().runTaskTimer(this, escucha::muestrear, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                Perfil f = perfiles.existente(p);
+                if (f != null) pago.vaciar(p, f);
+            }
+        }, 100L, 100L);
         getLogger().info("3y33Trabajos listo: " + catalogo.todas().size() + " acciones en 5 trabajos.");
     }
 
     @Override
     public void onDisable() {
-        if (perfiles != null) perfiles.guardarTodo();
+        if (perfiles != null && pago != null) {
+            for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                Perfil f = perfiles.existente(p);
+                if (f != null) pago.vaciar(p, f);
+            }
+        }
+        if (colocados != null) colocados.volcarTodo();
+        if (perfiles != null) { perfiles.guardarTodo(); perfiles.cerrar(); }
         if (rarezas != null) rarezas.guardar();
         if (misiones != null) misiones.guardar();
         if (npcs != null) npcs.apagar();
