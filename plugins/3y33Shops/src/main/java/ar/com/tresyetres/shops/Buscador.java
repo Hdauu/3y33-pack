@@ -128,9 +128,9 @@ final class Buscador implements Listener {
                 l(Msg.numero(grupos.size()) + " tierras con tiendas.", NamedTextColor.GRAY),
                 l("Clic en una tierra para ir hasta ahí.", NamedTextColor.GRAY),
                 l("Tip: /tienda buscar <ítem>", NamedTextColor.DARK_GRAY))));
-        inv.setItem(S_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver al menú de tu tienda.", NamedTextColor.GRAY))));
-        if (pagina > 0) inv.setItem(S_ANTERIOR, item(Material.ARROW, n("Anterior", NamedTextColor.RED), List.of()));
-        if (pagina < paginas - 1) inv.setItem(S_SIGUIENTE, item(Material.ARROW, n("Siguiente", NamedTextColor.RED), List.of()));
+        inv.setItem(S_VOLVER, pl.banner().modelo(p, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver al menú de tu tienda.", NamedTextColor.GRAY))), "flecha_volver"));
+        if (pagina > 0) inv.setItem(S_ANTERIOR, pl.banner().modelo(p, item(Material.ARROW, n("Anterior", NamedTextColor.RED), List.of()), "flecha_izq"));
+        if (pagina < paginas - 1) inv.setItem(S_SIGUIENTE, pl.banner().modelo(p, item(Material.ARROW, n("Siguiente", NamedTextColor.RED), List.of()), "flecha_der"));
         p.openInventory(inv);
     }
 

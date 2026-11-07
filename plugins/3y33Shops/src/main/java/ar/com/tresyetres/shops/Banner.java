@@ -46,6 +46,18 @@ final class Banner implements Listener {
         return !sinPack.contains(p.getUniqueId());
     }
 
+    /** Si este jugador tiene (o no rechazo) el pack: Java y sin pack rechazado. Los items con modelo propio solo se ven bien con el pack. */
+    boolean conPack(Player p) { return !Holograma.esBedrock(p) && !sinPack.contains(p.getUniqueId()); }
+
+    /** Le pone al item el modelo del pack (por ejemplo la flecha roja de volver) si el jugador lo tiene; si no, queda el item comun. */
+    org.bukkit.inventory.ItemStack modelo(Player p, org.bukkit.inventory.ItemStack it, String clave) {
+        if (!conPack(p)) return it;
+        org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
+        meta.setItemModel(new org.bukkit.NamespacedKey("3y33", "trabajos/" + clave));
+        it.setItemMeta(meta);
+        return it;
+    }
+
     /** Fondos disponibles: cada uno es un caracter de la fuente 3y33:tienda del pack. */
     static final char TIENDA = (char) 0xE300, AJUSTES = (char) 0xE301, ADMINS = (char) 0xE302, HISTORIAL = (char) 0xE303;
     private static final char CORRER_8 = (char) 0xF808;
