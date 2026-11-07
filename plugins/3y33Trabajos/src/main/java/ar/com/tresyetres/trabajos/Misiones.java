@@ -241,6 +241,9 @@ final class Misiones {
     /** Lo que cobra de verdad: la base por el multiplicador personal. */
     double recompensa(int tipo, Perfil.Mision m, Perfil.Progreso g) { return base(tipo, m.rareza) * pl.pago().personal(g); }
 
+    /** XP que da una mision personal: un multiplo de su plata (xp-por-peso en misiones.yml). */
+    double recompensaXp(int tipo, Perfil.Mision m, Perfil.Progreso g) { return Math.floor(recompensa(tipo, m, g) * cfg.getDouble("xp-por-peso", 2.0)); }
+
     // ---------- racha ----------
 
     /** Dias seguidos de racha que siguen vivos (si dejaste pasar un dia entero sin completar las dos, se corta). */
@@ -308,12 +311,14 @@ final class Misiones {
         Perfil.Progreso g = f.de(t);
         m.estado = Perfil.Mision.COMPLETA;
         double pesos = recompensa(tipo, m, g);
+        double xp = recompensaXp(tipo, m, g);
         pl.pago().depositar(p, f, pesos);
         p.showTitle(Title.title(
                 Component.text("¡Misión cumplida!", m.rareza.color),
-                Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN),
+                Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN).append(Component.text("   +" + Msg.num(xp, 0) + " XP", NamedTextColor.AQUA)),
                 Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(1600), Duration.ofMillis(500))));
         p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.2f);
+        pl.pago().subirXp(p, f, t, xp);
         if (tipo != SEMANAL && diariasHechas(g)) sumarRacha(p, g, t);
     }
 
@@ -369,10 +374,10 @@ final class Misiones {
     /** Rareza de una mision global: segun lo dificil que es el item. Define la plata, el XP (un % de la plata) y el bono. */
     static final class Rar {
         final String id, nombre;
-        final int hasta, peso;
-        final double pozo, bono;
+        final int peso;
+        final double hasta, pozo, bono;
         final NamedTextColor color;
-        Rar(String id, String nombre, int hasta, int peso, double pozo, double bono, NamedTextColor color) {
+        Rar(String id, String nombre, double hasta, int peso, double pozo, double bono, NamedTextColor color) {
             this.id = id; this.nombre = nombre; this.hasta = hasta; this.peso = peso; this.pozo = pozo; this.bono = bono; this.color = color;
         }
     }
@@ -417,12 +422,12 @@ final class Misiones {
             for (String id : rs.getKeys(false)) {
                 ConfigurationSection c = rs.getConfigurationSection(id);
                 if (c == null) continue;
-                rarezas.add(new Rar(id, c.getString("nombre", id), c.getInt("hasta", 1_000_000), Math.max(1, c.getInt("peso", 1)),
+                rarezas.add(new Rar(id, c.getString("nombre", id), c.getDouble("hasta", 1.0), Math.max(1, c.getInt("peso", 1)),
                         c.getDouble("pozo", 80000), c.getDouble("bono", 0.20), COLORES_RAREZA[Math.min(i, COLORES_RAREZA.length - 1)]));
                 i++;
             }
         }
-        if (rarezas.isEmpty()) rarezas.add(new Rar("comun", "Común", 1_000_000, 1, 80000, 0.20, NamedTextColor.GRAY));
+        if (rarezas.isEmpty()) rarezas.add(new Rar("comun", "Común", 1.0, 1, 80000, 0.20, NamedTextColor.GRAY));
         pool.clear();
         for (Trabajo t : Trabajo.values()) {
             Map<Material, Integer> todo = new LinkedHashMap<>();
@@ -439,8 +444,14 @@ final class Misiones {
         }
     }
 
-    private int indiceRareza(int valor) {
-        for (int i = 0; i < rarezas.size(); i++) if (valor <= rarezas.get(i).hasta) return i;
+    /** Rareza de un item segun cuantos items del trabajo valen menos que el: cada rareza cubre una franja de la lista ordenada por valor. */
+    private int indiceRareza(Trabajo t, int valor) {
+        Map<Material, Integer> todo = pool.getOrDefault(t, Map.of());
+        if (todo.isEmpty()) return 0;
+        int menores = 0;
+        for (int v : todo.values()) if (v < valor) menores++;
+        double fraccion = (double) menores / todo.size();
+        for (int i = 0; i < rarezas.size(); i++) if (fraccion < rarezas.get(i).hasta) return i;
         return rarezas.size() - 1;
     }
 
@@ -450,7 +461,8 @@ final class Misiones {
         for (Trabajo t : Trabajo.values()) {
             Global g = global(t);
             if (g.semana == ciclo && g.objetivo > 0) {
-                boolean valida = g.item != null && Material.matchMaterial(g.item) != null;
+                Material actual = g.item == null ? null : Material.matchMaterial(g.item);
+                boolean valida = actual != null && pool.getOrDefault(t, Map.of()).containsKey(actual);
                 if (!valida && !pool.getOrDefault(t, Map.of()).isEmpty()) { nuevaMision(t, g); sucio = true; }
                 continue;
             }
@@ -490,12 +502,12 @@ final class Misiones {
         List<List<Material>> porRareza = new ArrayList<>();
         for (int i = 0; i < rarezas.size(); i++) porRareza.add(new ArrayList<>());
         for (Map.Entry<Material, Integer> e : todo.entrySet()) {
-            if (!recientes.contains(e.getKey().name())) porRareza.get(indiceRareza(e.getValue())).add(e.getKey());
+            if (!recientes.contains(e.getKey().name())) porRareza.get(indiceRareza(t, e.getValue())).add(e.getKey());
         }
         int suma = 0;
         for (int i = 0; i < rarezas.size(); i++) if (!porRareza.get(i).isEmpty()) suma += rarezas.get(i).peso;
         if (suma == 0) {   // salieron todos hace poco: se vuelve a empezar
-            for (Map.Entry<Material, Integer> e : todo.entrySet()) porRareza.get(indiceRareza(e.getValue())).add(e.getKey());
+            for (Map.Entry<Material, Integer> e : todo.entrySet()) porRareza.get(indiceRareza(t, e.getValue())).add(e.getKey());
             for (int i = 0; i < rarezas.size(); i++) if (!porRareza.get(i).isEmpty()) suma += rarezas.get(i).peso;
         }
         int tiro = azar.nextInt(suma);
@@ -510,7 +522,7 @@ final class Misiones {
     /** Deja la mision pidiendo ese item, con la cantidad que sale de su dificultad. */
     private void fijar(Trabajo t, Global g, Material mat) {
         int valor = pool.getOrDefault(t, Map.of()).getOrDefault(mat, 4);
-        Rar r = rarezas.get(indiceRareza(valor));
+        Rar r = rarezas.get(indiceRareza(t, valor));
         double esfuerzo = ent.getDouble("esfuerzo." + t.id, 5000);
         g.item = mat.name();
         g.rareza = r.id;

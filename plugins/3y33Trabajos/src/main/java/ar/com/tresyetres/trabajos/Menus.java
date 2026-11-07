@@ -271,7 +271,7 @@ final class Menus implements Listener {
         lore.add(barra((double) m.entregado / m.meta, m.rareza.color).append(Iconos.txt("  " + m.entregado + "/" + m.meta, BLANCO)));
         lore.add(Component.empty());
         double base = pl.misiones().base(tipo, m.rareza);
-        lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(tipo, m, g)), NamedTextColor.GREEN));
+        lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(tipo, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(tipo, m, g), 0) + " XP", NamedTextColor.GREEN));
         lore.add(linea("Base " + Msg.dinero(base) + " × tu multiplicador x" + Msg.num(pl.pago().personal(g), 2), GRIS));
         lore.add(Component.empty());
         if (m.estado == Perfil.Mision.COMPLETA) lore.add(linea("¡Cobrada!", NamedTextColor.GREEN));
@@ -469,7 +469,7 @@ final class Menus implements Listener {
             lore.add(Component.empty());
             lore.add(Misiones.pedido(m));
             lore.add(Component.empty());
-            lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(Misiones.ELEGIDA, m, g)), NamedTextColor.GREEN));
+            lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(Misiones.ELEGIDA, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(Misiones.ELEGIDA, m, g), 0) + " XP", NamedTextColor.GREEN));
             lore.add(Component.empty());
             lore.add(linea("Clic para elegirla (no se puede cambiar)", NamedTextColor.GREEN));
             ItemStack real = Iconos.item(m.item, Iconos.txtNegrita("Misión " + m.rareza.nombre.toLowerCase(java.util.Locale.ROOT), m.rareza.color), lore);
