@@ -372,16 +372,18 @@ final class Npcs implements Listener {
         for (int i = 0; i < top.size(); i++) if (top.get(i).getKey().equals(p.getUniqueId())) { puesto = "#" + (i + 1); break; }
         NamedTextColor gris = NamedTextColor.GRAY;
         Component c = Component.text("MISIÓN GLOBAL", TextColor.color(0xFFAA00), TextDecoration.BOLD).appendNewline()
-                .append(Component.text(pl.misiones().nombreTema(t), t.color, TextDecoration.BOLD)).appendNewline();
+                .append(pl.misiones().pedidoGlobal(t).decoration(TextDecoration.BOLD, true)).appendNewline();
         if (g.completada) {
             c = c.append(Component.text("¡Completada!", NamedTextColor.GREEN, TextDecoration.BOLD)).appendNewline();
         } else {
-            c = c.append(Component.text(num(g.total) + " / " + num(g.objetivo) + " " + UNIDAD.get(t), NamedTextColor.WHITE))
+            c = c.append(Component.text(num(g.total) + " / " + num(g.objetivo), NamedTextColor.WHITE))
                     .append(Component.text(" (" + pct + "%)", pct >= 100 ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).appendNewline();
         }
         TextColor naranja = TextColor.color(0xFFAA00), verde = TextColor.color(0x55FF55);
         double parte = pl.misiones().parte(t, p.getUniqueId());
-        c = c.append(Component.text("Pozo: ", gris)).append(Component.text("$" + Msg.num(pl.misiones().pozo(t), 0), verde)).appendNewline()
+        Misiones.Rar rar = pl.misiones().rarezaDe(t);
+        c = c.append(Component.text("Pozo: ", gris)).append(Component.text("$" + Msg.num(pl.misiones().pozo(t), 0), verde))
+                .append(Component.text(" · " + rar.nombre, rar.color)).appendNewline()
                 .append(Component.text("Tu aporte: ", gris)).append(Component.text(num(mio), verde))
                 .append(Component.text(parte > 0 ? " (" + Msg.num(parte * 100, 1) + "%)" : "", gris)).appendNewline()
                 .append(Component.text("Tu puesto ", gris)).append(Component.text(puesto, naranja, TextDecoration.BOLD)).appendNewline();

@@ -232,31 +232,6 @@ final class Menus implements Listener {
         v.abrir(p);
     }
 
-    /** Lista de todo lo que suma a la mision global actual de ese trabajo, con su valor en puntos. */
-    void entrega(Player p, Trabajo t, int pagina, int volverA) {
-        List<java.util.Map.Entry<Material, Integer>> todos = pl.misiones().aceptados(t);
-        int porPagina = SLOTS_ACCIONES.length;
-        int paginas = Math.max(1, (todos.size() + porPagina - 1) / porPagina);
-        int pag = Math.max(0, Math.min(pagina, paginas - 1));
-        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_ACCIONES, "Se entrega · " + pl.misiones().nombreTema(t)));
-        for (int i = 0; i < porPagina; i++) {
-            int idx = pag * porPagina + i;
-            if (idx >= todos.size()) break;
-            java.util.Map.Entry<Material, Integer> en = todos.get(idx);
-            v.poner(SLOTS_ACCIONES[i], Iconos.item(en.getKey(),
-                    Component.translatable(en.getKey().translationKey()).color(BLANCO).decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true),
-                    List.of(linea("Vale " + en.getValue() + (en.getValue() == 1 ? " punto" : " puntos"), NamedTextColor.YELLOW),
-                            linea("(sin nombre ni encantamientos)", GRIS))));
-        }
-        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); misiones(p, t, volverA); });
-        if (pag > 0) v.poner(48, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + pag + " de " + paginas, GRIS))), e -> { sonido(p); entrega(p, t, pag - 1, volverA); });
-        v.poner(49, pl.iconos().libro(p, Iconos.txtNegrita(pl.misiones().nombreTema(t), NamedTextColor.GOLD), List.of(
-                linea("Los más difíciles de conseguir valen más.", GRIS),
-                linea("Página " + (pag + 1) + " de " + paginas, GRIS))));
-        if (pag < paginas - 1) v.poner(50, pl.iconos().flecha(p, true, Iconos.txtNegrita("Página siguiente", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 2) + " de " + paginas, GRIS))), e -> { sonido(p); entrega(p, t, pag + 1, volverA); });
-        v.abrir(p);
-    }
-
     private ItemStack itemAccion(Trabajo t, Accion a, double personal) {
         Rareza r = pl.rarezas().de(a);
         double factor = personal + r.bono();
@@ -373,27 +348,28 @@ final class Menus implements Listener {
             // global semanal (columna 2) y racha (columna 5)
             Misiones.Global gl = pl.misiones().global(t);
             int aporte = pl.misiones().aporteDe(t, p);
-            int minimo = pl.misiones().aporteMinimo();
+            int minimo = pl.misiones().aporteMinimo(t);
             List<Component> lg = new ArrayList<>();
+            Misiones.Rar rar = pl.misiones().rarezaDe(t);
             double parte = pl.misiones().parte(t, p.getUniqueId());
             boolean cobrable = pl.misiones().puedeCobrarGlobal(t, p);
             boolean cobrada = gl.completada && gl.cobraron.contains(p.getUniqueId());
-            lg.add(linea("Tipo de misión: Global (" + t.nombre + ")", GRIS));
-            lg.add(linea("Cambia de tema en " + Msg.tiempo(pl.misiones().msHastaCiclo()), GRIS));
+            lg.add(Iconos.txt("Tipo de misión: ", GRIS).append(Iconos.txt("Global (" + t.nombre + ")", BLANCO)));
+            lg.add(Iconos.txt("Rareza: ", GRIS).append(Iconos.txt(rar.nombre, rar.color)));
+            lg.add(linea("Cambia en " + Msg.tiempo(pl.misiones().msHastaCiclo()), GRIS));
             lg.add(Component.empty());
             lg.add(Iconos.txtNegrita("Objetivo global", NamedTextColor.YELLOW));
-            lg.add(linea("Entregá los items del tema (" + pl.misiones().aceptados(t).size() + " distintos)", BLANCO));
-            lg.add(linea("Objetivo: " + Msg.num(gl.objetivo, 0) + " puntos", NamedTextColor.GOLD));
+            lg.add(pl.misiones().pedidoGlobal(t));
             lg.add(Iconos.txt("Progreso compartido: ", NamedTextColor.GOLD).append(Iconos.txt(Msg.num(Math.min(gl.total, gl.objetivo), 0) + "/" + Msg.num(gl.objetivo, 0)
                     + " (" + Msg.num(Math.min(100, gl.total * 100.0 / gl.objetivo), 1) + "%)", BLANCO)));
-            lg.add(Iconos.txt("Tu aporte: ", NamedTextColor.GOLD).append(Iconos.txt(aporte + " puntos" + (parte > 0 ? " (" + Msg.num(parte * 100, 1) + "% del reparto)" : ""), BLANCO)));
-            if (parte <= 0) lg.add(linea("Hacen falta " + minimo + " puntos para cobrar.", GRIS));
+            lg.add(Iconos.txt("Tu aporte: ", NamedTextColor.GOLD).append(Iconos.txt(Msg.num(aporte, 0) + (parte > 0 ? " (" + Msg.num(parte * 100, 1) + "% del reparto)" : ""), BLANCO)));
+            if (parte <= 0) lg.add(linea("Hay que entregar al menos " + Msg.num(minimo, 0) + " para cobrar.", GRIS));
             lg.add(Component.empty());
             lg.add(Iconos.txtNegrita("Recompensas", NamedTextColor.YELLOW));
             lg.add(Iconos.txt("- Fondo colaborador: ", NamedTextColor.GOLD).append(Iconos.txt("$" + Msg.num(pl.misiones().pozo(t), 0), NamedTextColor.YELLOW)));
             lg.add(Iconos.txt("- Fondo XP: ", NamedTextColor.GREEN).append(Iconos.txt(Msg.num(pl.misiones().pozoXp(t), 0) + " XP", NamedTextColor.GREEN)));
-            lg.add(Iconos.txt("- Bono global: ", NamedTextColor.GOLD).append(Iconos.txt("+" + pl.misiones().bonoPorcentaje() + "% XP + dinero por " + pl.misiones().bonoHoras() + " h", NamedTextColor.YELLOW)));
-            lg.add(linea("Los fondos se reparten según el % que aportó cada uno.", GRIS));
+            lg.add(Iconos.txt("- Bono global: ", NamedTextColor.GOLD).append(Iconos.txt("+" + Math.round(rar.bono * 100) + "% XP + dinero por " + pl.misiones().bonoHoras() + " h", NamedTextColor.YELLOW)));
+            lg.add(linea("Los fondos se reparten según el % que entregó cada uno.", GRIS));
             if (parte > 0) {
                 lg.add(Iconos.txtNegrita("Tu recompensa estimada:", NamedTextColor.GREEN));
                 lg.add(linea("- $" + Msg.num(pl.misiones().pagoGlobal(t, p.getUniqueId()), 0), NamedTextColor.GREEN));
@@ -406,17 +382,15 @@ final class Menus implements Listener {
             lg.add(Component.empty());
             if (cobrada) lg.add(Iconos.txtNegrita("¡Completada y cobrada!", NamedTextColor.GREEN));
             else if (cobrable) lg.add(Iconos.txtNegrita("Hacé clic para cobrar tu parte", NamedTextColor.GREEN));
-            else if (gl.completada) lg.add(linea("Completada. Sin " + minimo + " puntos no cobrás.", NamedTextColor.RED));
+            else if (gl.completada) lg.add(linea("Completada. Sin " + Msg.num(minimo, 0) + " entregados no cobrás.", NamedTextColor.RED));
             else if (f.activo != t) lg.add(linea("Tomá este trabajo para entregar.", NamedTextColor.RED));
             else if (!pl.misiones().enNpc(p, t)) lg.add(linea("Entregá en el NPC de " + t.nombre + ".", NamedTextColor.YELLOW));
             else {
                 lg.add(Iconos.txtNegrita("Hacé clic para contribuir", NamedTextColor.GREEN));
                 lg.add(linea("Clic derecho: solo lo que tenés en la mano", GRIS));
             }
-            lg.add(linea("Shift + clic: ver qué items se entregan", GRIS));
             String claveG = cobrada ? "mision_global_x_completa" : "mision_global_" + t.id + (cobrable ? "_lista" : "_normal");
-            tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita(pl.misiones().nombreTema(t), NamedTextColor.GREEN), lg), new int[]{1, 2, 3}, e -> {
-                if (e.isShiftClick()) { sonido(p); entrega(p, t, 0, pag); return; }
+            tarjeta(v, p, 2, claveG, Iconos.item(Material.BEACON, Iconos.txtNegrita("Misión global", NamedTextColor.GREEN), lg), new int[]{1, 2, 3}, e -> {
                 if (pl.misiones().puedeCobrarGlobal(t, p)) {
                     if (pl.misiones().cobrarGlobal(p, t)) misiones(p, t, pag);
                     return;
@@ -447,12 +421,21 @@ final class Menus implements Listener {
         lt.add(linea("Las misiones valen solo con el trabajo puesto:", GRIS));
         lt.add(linea("si lo abandonás, las que no cobraste se pierden.", GRIS));
         v.poner(5 * 9 + 4, Iconos.item(Material.CLOCK, Iconos.txtNegrita("Reinicios", NamedTextColor.GOLD), lt));
-        int cant = pl.misiones().aceptados(t).size();
-        v.poner(5 * 9 + 7, pl.iconos().libro(p, Iconos.txtNegrita("Qué se entrega", NamedTextColor.GOLD), List.of(
-                linea("Misión global: " + pl.misiones().nombreTema(t), NamedTextColor.YELLOW),
-                linea(cant + " items suman a esta misión.", GRIS),
+        v.poner(5 * 9 + 7, pl.iconos().libro(p, Iconos.txtNegrita("Cómo funciona la misión global", NamedTextColor.GOLD), List.of(
+                Iconos.txt("Todos los " + t.nombre + " del servidor", BLANCO),
+                Iconos.txt("completan la misma misión juntos.", BLANCO),
                 Component.empty(),
-                linea("Clic para ver la lista completa", NamedTextColor.GREEN))), e -> { sonido(p); entrega(p, t, 0, pag); });
+                Iconos.txtNegrita("1. ", NamedTextColor.YELLOW).append(Iconos.txt("Cada " + pl.misiones().cicloDias() + " días sale una misión nueva:", GRIS)),
+                linea("   entregar una cantidad de un ítem.", GRIS),
+                Iconos.txtNegrita("2. ", NamedTextColor.YELLOW).append(Iconos.txt("Entregás en el NPC de " + t.nombre + ".", GRIS)),
+                Iconos.txtNegrita("3. ", NamedTextColor.YELLOW).append(Iconos.txt("Lo que entrega cada uno suma a la barra.", GRIS)),
+                Iconos.txtNegrita("4. ", NamedTextColor.YELLOW).append(Iconos.txt("Al llegar al 100% se completa y se", GRIS)),
+                linea("   activa el bono para todos.", GRIS),
+                Iconos.txtNegrita("5. ", NamedTextColor.YELLOW).append(Iconos.txt("Cobrás plata y XP según el % que", GRIS)),
+                linea("   entregaste sobre el total.", GRIS),
+                Component.empty(),
+                Iconos.txt("Más rara la misión, más paga y más bono.", NamedTextColor.GOLD),
+                Iconos.txt("Si no se completa a tiempo, no se paga.", NamedTextColor.RED))));
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
                 e -> { sonido(p); misiones(p, t, pag - 1); });
