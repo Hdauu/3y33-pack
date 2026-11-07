@@ -261,8 +261,14 @@ final class Misiones {
     /** Lo que cobra de verdad: la base por el multiplicador personal. */
     double recompensa(int tipo, Perfil.Mision m, Perfil.Progreso g) { return base(tipo, m.rareza) * pl.pago().personal(g); }
 
-    /** XP que da una mision personal: un multiplo de su plata (xp-por-peso en misiones.yml). */
-    double recompensaXp(int tipo, Perfil.Mision m, Perfil.Progreso g) { return Math.floor(recompensa(tipo, m, g) * cfg.getDouble("xp-por-peso", 2.0)); }
+    /** XP de una mision personal: \"minutos de trabajo\" (xp-minutos en misiones.yml) por el XP por hora del oficio. */
+    double recompensaXp(Trabajo t, int tipo, Perfil.Mision m) {
+        String clave = tipo == SEMANAL ? "semanal" : tipo == ELEGIDA ? "elegida" : "aleatoria";
+        List<Double> l = cfg.getDoubleList("xp-minutos." + clave);
+        int i = m.rareza.ordinal();
+        double minutos = i < l.size() ? l.get(i) : 10;
+        return Math.floor(minutos * Pago.xpPorHora(t) / 60.0);
+    }
 
     // ---------- racha ----------
 
@@ -332,7 +338,7 @@ final class Misiones {
         Perfil.Progreso g = f.de(t);
         m.estado = Perfil.Mision.COMPLETA;
         double pesos = recompensa(tipo, m, g);
-        double xp = recompensaXp(tipo, m, g);
+        double xp = recompensaXp(t, tipo, m);
         pl.pago().depositar(p, f, pesos);
         pl.balance().plata(t, Balance.MISIONES, pesos);
         p.showTitle(Title.title(
@@ -398,10 +404,10 @@ final class Misiones {
     static final class Rar {
         final String id, nombre;
         final int peso;
-        final double hasta, pozo, bono;
+        final double hasta, pozo, bono, xpMin;
         final NamedTextColor color;
-        Rar(String id, String nombre, double hasta, int peso, double pozo, double bono, NamedTextColor color) {
-            this.id = id; this.nombre = nombre; this.hasta = hasta; this.peso = peso; this.pozo = pozo; this.bono = bono; this.color = color;
+        Rar(String id, String nombre, double hasta, int peso, double pozo, double bono, double xpMin, NamedTextColor color) {
+            this.id = id; this.nombre = nombre; this.hasta = hasta; this.peso = peso; this.pozo = pozo; this.bono = bono; this.xpMin = xpMin; this.color = color;
         }
     }
 
@@ -446,11 +452,11 @@ final class Misiones {
                 ConfigurationSection c = rs.getConfigurationSection(id);
                 if (c == null) continue;
                 rarezas.add(new Rar(id, c.getString("nombre", id), c.getDouble("hasta", 1.0), Math.max(1, c.getInt("peso", 1)),
-                        c.getDouble("pozo", 80000), c.getDouble("bono", 0.20), COLORES_RAREZA[Math.min(i, COLORES_RAREZA.length - 1)]));
+                        c.getDouble("pozo", 80000), c.getDouble("bono", 0.20), c.getDouble("xp-minutos", 120), COLORES_RAREZA[Math.min(i, COLORES_RAREZA.length - 1)]));
                 i++;
             }
         }
-        if (rarezas.isEmpty()) rarezas.add(new Rar("comun", "Común", 1.0, 1, 80000, 0.20, NamedTextColor.GRAY));
+        if (rarezas.isEmpty()) rarezas.add(new Rar("comun", "Común", 1.0, 1, 80000, 0.20, 120, NamedTextColor.GRAY));
         pool.clear();
         for (Trabajo t : Trabajo.values()) {
             Map<Material, Integer> todo = new LinkedHashMap<>();
@@ -741,7 +747,7 @@ final class Misiones {
     double pozo(Trabajo t) { return rarezaDe(t).pozo; }
 
     /** XP total de la mision actual (el "fondo XP"): un % de la plata. */
-    double pozoXp(Trabajo t) { return Math.floor(pozo(t) * ent.getDouble("xp-ratio", 0.25)); }
+    double pozoXp(Trabajo t) { return Math.floor(rarezaDe(t).xpMin * Pago.xpPorHora(t) / 60.0); }
 
     /** Parte (0 a 1) de este jugador en el reparto: lo que entrego sobre lo que entregaron todos los que llegaron al minimo. */
     double parte(Trabajo t, UUID u) {

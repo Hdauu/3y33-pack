@@ -30,6 +30,12 @@ final class Comandos implements CommandExecutor, TabCompleter {
             pl.servicio().unirse(p, t);
             return true;
         }
+        if (sub.equals("recompensas")) {
+            Trabajo rt = a.length > 1 ? Trabajo.de(a[1]) : pl.perfiles().de(p).activo;
+            if (rt == null) { Msg.error(p, "Uso: /trabajos recompensas <minero|leñador|granjero|cazador|pescador>"); return true; }
+            pl.menus().recompensas(p, rt);
+            return true;
+        }
         Trabajo t = Trabajo.de(a[0]);
         if (t != null) { pl.menus().trabajo(p, t); return true; }
         Msg.error(p, "No conozco ese trabajo. Probá /trabajos.");
@@ -38,10 +44,18 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|ofrecer|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
+            case "ofrecer" -> {
+                // /trabajosadmin ofrecer <jugador> <trabajo>: le arma una oferta de recompensa de nivel (para probar)
+                Player op = a.length > 1 ? Bukkit.getPlayerExact(a[1]) : null;
+                Trabajo ot = a.length > 2 ? Trabajo.de(a[2]) : null;
+                if (op == null || ot == null) { Msg.error(s, "Uso: /trabajosadmin ofrecer <jugador> <trabajo>"); return true; }
+                pl.recompensas().ofrecer(op, ot, pl.perfiles().de(op).de(ot));
+                Msg.ok(s, "Le armé una oferta de recompensa a " + op.getName() + " en " + ot.nombre + ".");
+            }
             case "balance" -> {
                 int horas = 24;
                 if (a.length > 1) { try { horas = Math.max(1, Math.min(72, Integer.parseInt(a[1]))); } catch (NumberFormatException ignorada) { } }
@@ -65,6 +79,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.rarezas().cargar();
                 pl.misiones().cargar();
                 pl.pago().cargarNiveles();
+                pl.recompensas().cargar();
                 Msg.ok(s, "Configuración y acciones recargadas.");
             }
             case "nivel", "xp" -> {
@@ -205,12 +220,12 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "recargar")); }
             else {
-                out.addAll(List.of("unirse", "abandonar"));
+                out.addAll(List.of("unirse", "abandonar", "recompensas"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
             }
-        } else if (a.length == 2 && !admin && a[0].equalsIgnoreCase("unirse")) {
+        } else if (a.length == 2 && !admin && (a[0].equalsIgnoreCase("unirse") || a[0].equalsIgnoreCase("recompensas"))) {
             for (Trabajo t : Trabajo.values()) out.add(t.id);
         } else if (admin && s.hasPermission("tresyetres.staff")) {
             if (a.length == 2 && a[0].equalsIgnoreCase("npc")) out.addAll(List.of("crear", "quitar"));

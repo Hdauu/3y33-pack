@@ -19,6 +19,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /** Ventanas de /trabajos: principal, un trabajo, sus acciones y la confirmacion de abandonar. */
 final class Menus implements Listener {
@@ -139,13 +140,13 @@ final class Menus implements Listener {
         List<Component> l = new ArrayList<>();
         l.add(barraNivel(t, g));
         if (g.nivel < Perfil.NIVEL_MAX) {
-            double need = Pago.xpNecesaria(g.nivel);
+            double need = Pago.xpNecesaria(t, g.nivel);
             l.add(Iconos.txt("XP: ", GRIS).append(Iconos.txt(Msg.num(g.xp, 0) + " / " + Msg.num(need, 0), NamedTextColor.AQUA)));
             l.add(linea("Faltan " + Msg.num(need - g.xp, 0) + " XP para el nivel " + (g.nivel + 1) + ".", GRIS));
         }
         l.add(Component.empty());
         l.add(Iconos.txtNegrita("Tu multiplicador: x" + Msg.num(pl.pago().personal(g), 2), NamedTextColor.YELLOW));
-        l.add(linea("- Nivel: +" + Msg.num(0.01 * (g.nivel - 1) * 100, 0) + "%", GRIS));
+        l.add(linea("- Nivel: +" + Msg.num(Pago.bonoNivel(g.nivel) * 100, 1) + "%", GRIS));
         if (g.prestigio > 0) l.add(linea("- Prestigio: +" + Msg.num(25.0 * g.prestigio, 0) + "%", GRIS));
         l.add(linea("- Racha de misiones: +" + Msg.num(pl.misiones().bonoRacha(g) * 100, 0) + "%", GRIS));
         l.add(Component.empty());
@@ -155,8 +156,8 @@ final class Menus implements Listener {
     }
 
     private Component barraNivel(Trabajo t, Perfil.Progreso g) {
-        if (g.nivel >= Perfil.NIVEL_MAX) return linea("Nivel 100 (máximo)", NamedTextColor.GOLD);
-        double frac = g.xp / Pago.xpNecesaria(g.nivel);
+        if (g.nivel >= Perfil.NIVEL_MAX) return linea("Nivel " + Perfil.NIVEL_MAX + " (máximo)", NamedTextColor.GOLD);
+        double frac = g.xp / Pago.xpNecesaria(t, g.nivel);
         int lleno = (int) Math.round(frac * 10);
         Component barra = Iconos.txt("Nivel " + g.nivel + "  ", BLANCO);
         for (int i = 0; i < 10; i++) barra = barra.append(Iconos.txt("■", i < lleno ? t.color : NamedTextColor.DARK_GRAY));
@@ -192,10 +193,19 @@ final class Menus implements Listener {
                 Component.empty(),
                 linea("Clic para ver", NamedTextColor.GREEN))), e -> { sonido(p); misiones(p, t); });
 
-        v.poner(28, Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), List.of(
-                linea("Premios por nivel, hasta el 100.", GRIS),
-                Component.empty(),
-                linea("Muy pronto.", NamedTextColor.RED))));
+        List<Component> lr = new ArrayList<>();
+        lr.add(linea("Cada nivel que subís te ofrece 3 opciones:", GRIS));
+        lr.add(linea("boost de XP, boost de plata o XP instantánea.", GRIS));
+        lr.add(Component.empty());
+        lr.add(g.oferta != null ? Iconos.txtNegrita("¡Tenés una recompensa para elegir!", NamedTextColor.GREEN) : linea("Sin recompensa pendiente.", NamedTextColor.YELLOW));
+        int guardados = 0;
+        for (int n : g.boosts.values()) guardados += n;
+        lr.add(linea("Boosts guardados: " + guardados, NamedTextColor.YELLOW));
+        lr.add(Component.empty());
+        lr.add(linea("Clic para abrir", NamedTextColor.GREEN));
+        ItemStack ir = Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), lr);
+        if (g.oferta != null) { org.bukkit.inventory.meta.ItemMeta im = ir.getItemMeta(); im.setEnchantmentGlintOverride(true); ir.setItemMeta(im); }
+        v.poner(28, ir, e -> { sonido(p); recompensas(p, t); });
 
         v.poner(16, relojRarezas());
         v.poner(37, itemNivel(t, g, f));
@@ -216,6 +226,72 @@ final class Menus implements Listener {
             });
         }
         v.abrir(p);
+    }
+
+    // ---------- recompensas por nivel ----------
+
+    void recompensas(Player p, Trabajo t) {
+        Perfil f = pl.perfiles().de(p);
+        Perfil.Progreso g = f.de(t);
+        Ventana v = new Ventana(6, Component.text("Recompensas · " + t.nombre, ROJO, TextDecoration.BOLD));
+        v.poner(4, itemNivel(t, g, f));
+        int marcada = pl.recompensas().seleccionada(p);
+        if (g.oferta != null) {
+            v.poner(9, Iconos.item(Material.PAPER, Iconos.txtNegrita("Elegí una", NamedTextColor.GREEN), List.of(
+                    linea("Hacé clic en una y otra vez para confirmar.", GRIS),
+                    linea("Las otras dos se pierden.", NamedTextColor.RED),
+                    linea("Queda hasta que subas el siguiente nivel.", GRIS))));
+            for (int i = 0; i < g.oferta.length; i++) {
+                final int idx = i;
+                String k = g.oferta[i];
+                List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g));
+                lore.add(Component.empty());
+                lore.add(marcada == i ? Iconos.txtNegrita("¡Hacé clic de nuevo para confirmar!", NamedTextColor.GREEN) : linea("Clic para marcarla", GRIS));
+                ItemStack it = Iconos.item(pl.recompensas().material(k), pl.recompensas().nombre(k), lore);
+                if (marcada == i) { org.bukkit.inventory.meta.ItemMeta im = it.getItemMeta(); im.setEnchantmentGlintOverride(true); it.setItemMeta(im); }
+                v.poner(11 + 2 * i, it, e -> {
+                    sonido(p);
+                    if (pl.recompensas().seleccionada(p) == idx) { if (pl.recompensas().reclamar(p, t, idx)) recompensas(p, t); }
+                    else { pl.recompensas().seleccionar(p, idx); recompensas(p, t); }
+                });
+            }
+        } else {
+            v.poner(13, Iconos.item(Material.BOOK, Iconos.txtNegrita("Sin recompensa pendiente", NamedTextColor.YELLOW), List.of(
+                    linea("Subí de nivel en " + t.nombre + " para que te ofrezcan 3 opciones.", GRIS))));
+        }
+
+        v.poner(26, Iconos.item(Material.BARREL, Iconos.txtNegrita("Tus boosts guardados", NamedTextColor.GOLD), List.of(
+                linea("Clic en uno para usarlo (con " + t.nombre + " puesto).", GRIS),
+                linea("Pueden andar dos a la vez, uno de XP y uno de plata.", GRIS),
+                linea("Dos del mismo tipo no se acumulan.", GRIS))));
+        int n = 0;
+        for (Map.Entry<String, Integer> e : g.boosts.entrySet()) {
+            if (n >= 18) break;
+            final String k = e.getKey();
+            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g));
+            lore.add(Component.empty());
+            lore.add(linea("Tenés " + e.getValue() + ".", NamedTextColor.YELLOW));
+            lore.add(Iconos.txtNegrita("Clic para usarlo", NamedTextColor.GREEN));
+            ItemStack it = Iconos.item(pl.recompensas().material(k), pl.recompensas().nombre(k), lore);
+            it.setAmount(Math.max(1, Math.min(64, e.getValue())));
+            v.poner(27 + n, it, ev -> { sonido(p); if (pl.recompensas().activar(p, t, k)) recompensas(p, t); });
+            n++;
+        }
+
+        v.poner(47, boostActivo("XP", f.boostXp));
+        v.poner(51, boostActivo("plata", f.boostPlata));
+        v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
+        v.abrir(p);
+    }
+
+    private ItemStack boostActivo(String tipo, Recompensas.Activo a) {
+        if (a == null || a.ms <= 0) {
+            return Iconos.item(Material.GRAY_DYE, Iconos.txtNegrita("Sin boost de " + tipo + " activo", GRIS), List.of(linea("Activá uno de los que tenés guardados.", GRIS)));
+        }
+        return Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Boost de " + tipo + " activo", NamedTextColor.GREEN), List.of(
+                pl.recompensas().nombre(a.clave),
+                linea("Quedan " + Msg.tiempo(a.ms), NamedTextColor.YELLOW),
+                linea("Solo corre mientras tengas puesto " + a.trabajo.nombre + ".", GRIS)));
     }
 
     // ---------- acciones ----------
@@ -292,7 +368,7 @@ final class Menus implements Listener {
         lore.add(barra((double) m.entregado / m.meta, m.rareza.color).append(Iconos.txt("  " + m.entregado + "/" + m.meta, BLANCO)));
         lore.add(Component.empty());
         double base = pl.misiones().base(tipo, m.rareza);
-        lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(tipo, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(tipo, m, g), 0) + " XP", NamedTextColor.GREEN));
+        lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(tipo, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(t, tipo, m), 0) + " XP", NamedTextColor.GREEN));
         lore.add(linea("Base " + Msg.dinero(base) + " × tu multiplicador x" + Msg.num(pl.pago().personal(g), 2), GRIS));
         lore.add(Component.empty());
         if (m.estado == Perfil.Mision.COMPLETA) lore.add(linea("¡Cobrada!", NamedTextColor.GREEN));
@@ -493,7 +569,7 @@ final class Menus implements Listener {
             lore.add(Component.empty());
             lore.add(Misiones.pedido(m));
             lore.add(Component.empty());
-            lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(Misiones.ELEGIDA, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(Misiones.ELEGIDA, m, g), 0) + " XP", NamedTextColor.GREEN));
+            lore.add(linea("Recompensa: " + Msg.dinero(pl.misiones().recompensa(Misiones.ELEGIDA, m, g)) + " + " + Msg.num(pl.misiones().recompensaXp(t, Misiones.ELEGIDA, m), 0) + " XP", NamedTextColor.GREEN));
             lore.add(Component.empty());
             lore.add(linea("Clic para elegirla (no se puede cambiar)", NamedTextColor.GREEN));
             ItemStack real = Iconos.item(m.item, Iconos.txtNegrita("Misión " + m.rareza.nombre.toLowerCase(java.util.Locale.ROOT), m.rareza.color), lore);

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 /** Todo lo de un jugador: trabajo activo, progreso de cada trabajo y estado temporal (momentum, topes). */
 final class Perfil {
-    static final int NIVEL_MAX = 100;
+    static final int NIVEL_MAX = 130;
 
     /** Una mision de entregar items. estado: 0 activa, 1 cobrada, 2 perdida (por abandonar el trabajo). */
     static final class Mision {
@@ -61,6 +61,9 @@ final class Perfil {
         Mision semanal;
         int racha;
         long rachaDia;
+        /** Las 3 opciones que te ofrecieron al subir de nivel (null si no hay), y los boosts que guardaste: clave -> cantidad. */
+        String[] oferta;
+        final Map<String, Integer> boosts = new java.util.LinkedHashMap<>();
     }
 
     final UUID id;
@@ -78,6 +81,8 @@ final class Perfil {
     long momentumT;
     long ultimoMov = System.currentTimeMillis();
     long ultimaAccion;
+    /** Boosts que se estan usando (el mega ocupa los dos). */
+    Recompensas.Activo boostXp, boostPlata;
     double mx, my, mz;
     float myaw, mpitch;
     long ultimoPagoTiempo;
@@ -126,8 +131,41 @@ final class Perfil {
                 g.elegida = Mision.cargar(c.getConfigurationSection("elegida"));
                 g.semanal = Mision.cargar(c.getConfigurationSection("semanal"));
                 for (int i = 0; i < 4; i++) g.opciones[i] = Mision.cargar(c.getConfigurationSection("opcion" + i));
+                java.util.List<String> of = c.getStringList("oferta");
+                g.oferta = of.size() == 3 ? of.toArray(new String[0]) : null;
+                ConfigurationSection bs = c.getConfigurationSection("boosts");
+                if (bs != null) for (String k : bs.getKeys(false)) {
+                    int n = bs.getInt(k, 0);
+                    if (n > 0) g.boosts.put(k.replace('-', ':'), n);
+                }
             }
         }
+        boostXp = cargarActivo(y, "activos.xp");
+        boostPlata = cargarActivo(y, "activos.plata");
+        if (boostXp != null && boostXp.clave.startsWith("MEGA")) boostPlata = boostXp;
+    }
+
+    private static Recompensas.Activo cargarActivo(YamlConfiguration y, String base) {
+        ConfigurationSection c = y.getConfigurationSection(base);
+        if (c == null) return null;
+        Trabajo t = Trabajo.de(c.getString("trabajo"));
+        long ms = c.getLong("ms", 0L);
+        String clave = c.getString("clave");
+        if (t == null || ms <= 0 || clave == null) return null;
+        Recompensas.Activo a = new Recompensas.Activo();
+        a.clave = clave;
+        a.trabajo = t;
+        a.mult = c.getDouble("mult", 1.0);
+        a.ms = ms;
+        return a;
+    }
+
+    private static void guardarActivo(YamlConfiguration y, String base, Recompensas.Activo a) {
+        if (a == null || a.ms <= 0) return;
+        y.set(base + ".clave", a.clave);
+        y.set(base + ".trabajo", a.trabajo.id);
+        y.set(base + ".mult", a.mult);
+        y.set(base + ".ms", a.ms);
     }
 
     /** El perfil como texto YAML (se escribe a disco aparte, sin frenar el servidor). */
@@ -153,7 +191,11 @@ final class Perfil {
             if (g.elegida != null) g.elegida.guardar(y.createSection(base + ".elegida"));
             if (g.semanal != null) g.semanal.guardar(y.createSection(base + ".semanal"));
             for (int i = 0; i < 4; i++) if (g.opciones[i] != null) g.opciones[i].guardar(y.createSection(base + ".opcion" + i));
+            if (g.oferta != null) y.set(base + ".oferta", java.util.Arrays.asList(g.oferta));
+            for (Map.Entry<String, Integer> b : g.boosts.entrySet()) y.set(base + ".boosts." + b.getKey().replace(':', '-'), b.getValue());
         }
+        guardarActivo(y, "activos.xp", boostXp);
+        if (boostPlata != boostXp) guardarActivo(y, "activos.plata", boostPlata);
         return y.saveToString();
     }
 }

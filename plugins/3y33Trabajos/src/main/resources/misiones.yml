@@ -2,6 +2,12 @@
 # Todas son de entregar items: el jugador los junta con su trabajo y los entrega desde el menu (item "limpio", sin nombre ni encantamientos).
 # La plata de cada mision se multiplica por el multiplicador personal del jugador (nivel + prestigio + racha).
 
+# XP de las misiones personales, en "minutos de trabajo" del oficio (se multiplica por el XP por hora de niveles.xp-por-hora). Por rareza: comun, rara, epica, legendaria.
+xp-minutos:
+  aleatoria: [6, 8, 10, 14]
+  elegida: [8, 11, 15, 22]
+  semanal: [30, 45, 60, 90]
+
 recompensas:
   # Plata base por rareza: comun, rara, epica, legendaria.
   aleatoria: [150, 225, 300, 450]

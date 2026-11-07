@@ -41,8 +41,18 @@ rarezas:
     EPICA: 13
     LEGENDARIA: 4
 
-# Curva de niveles: XP para pasar del nivel n al siguiente = base + lineal x n + cuadratico x n x n (hasta el 100).
+# Curva de niveles (hasta el 130). El XP total de cada trabajo sale de las horas objetivo para llegar al nivel maximo con un jugador que juega
+# horas-por-dia y hace todas las misiones (que suman unos minutos-misiones-por-dia de XP, medidos en "minutos de trabajo"), y del XP por hora de
+# cada oficio. Con el exponente, cada nivel cuesta mas que el anterior. xp-por-hora esta ESTIMADO: se corrige con /trabajosadmin balance.
 niveles:
-  base: 1200
-  lineal: 80
-  cuadratico: 1.5
+  horas-objetivo: 300
+  horas-por-dia: 1.5
+  minutos-misiones-por-dia: 40
+  factor-boosts: 1.05
+  exponente: 1.7
+  xp-por-hora:
+    minero: 4500
+    lenador: 15500
+    granjero: 25000
+    cazador: 13500
+    pescador: 4000

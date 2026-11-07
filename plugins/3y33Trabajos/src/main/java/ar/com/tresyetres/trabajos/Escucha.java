@@ -71,6 +71,7 @@ final class Escucha implements Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             Perfil f = pl.perfiles().existente(p);
             if (f == null) continue;
+            pl.recompensas().tick(p, f);
             Location l = p.getLocation();
             if (l.getX() != f.mx || l.getY() != f.my || l.getZ() != f.mz || l.getYaw() != f.myaw || l.getPitch() != f.mpitch) {
                 f.mx = l.getX(); f.my = l.getY(); f.mz = l.getZ(); f.myaw = l.getYaw(); f.mpitch = l.getPitch();
