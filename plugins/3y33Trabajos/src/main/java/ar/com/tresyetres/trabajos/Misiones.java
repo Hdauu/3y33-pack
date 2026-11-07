@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -45,7 +46,11 @@ final class Misiones {
         long totalAnterior;
         boolean completada;
         long bonoHasta;
-        String tema;
+        double bonoPct;                  // bono (0,20 = +20%) que dejo la mision completada
+        long completadaEn;
+        String item;                     // Material de la mision actual
+        String rareza;                   // id de la rareza (entregas.yml)
+        double factor = 1.0;             // se ajusta solo segun lo rapido que se completan las misiones
         final List<String> historial = new ArrayList<>();
         final Map<UUID, Integer> aportes = new HashMap<>();
         final Set<UUID> cobraron = new HashSet<>();
@@ -59,15 +64,6 @@ final class Misiones {
     private final File archivoEntregas;
     private YamlConfiguration cfg = new YamlConfiguration();
     private YamlConfiguration ent = new YamlConfiguration();
-    /** Un tema de la mision global: nombre y los items que suman, con sus puntos. */
-    static final class Tema {
-        final String id, nombre;
-        final Map<Material, Integer> puntos = new java.util.LinkedHashMap<>();
-        double pozo;
-        Tema(String id, String nombre) { this.id = id; this.nombre = nombre; }
-    }
-
-    private final Map<Trabajo, Map<String, Tema>> temas = new EnumMap<>(Trabajo.class);
     private boolean sucio;
 
     Misiones(TrabajosPlugin pl) {
@@ -84,11 +80,11 @@ final class Misiones {
         cfg = YamlConfiguration.loadConfiguration(archivoConfig);
         if (!archivoEntregas.exists()) pl.saveResource("entregas.yml", false);
         ent = YamlConfiguration.loadConfiguration(archivoEntregas);
-        cargarTemas();
+        cargarPool();
         YamlConfiguration y = YamlConfiguration.loadConfiguration(archivoGlobal);
-        // la global de antes contaba acciones, la de ahora cuenta puntos de items entregados: se empieza de cero una sola vez
-        boolean viejo = archivoGlobal.exists() && !"entrega".equals(y.getString("modo"));
-        if (viejo) pl.getLogger().info("Las globales eran por acciones: se reinician para pasar a entrega de items.");
+        // las globales de antes eran por acciones o por puntos: ahora cada una pide un item, asi que se empieza de cero una sola vez
+        boolean viejo = archivoGlobal.exists() && !"item".equals(y.getString("modo"));
+        if (viejo) pl.getLogger().info("Las globales pasan a pedir un solo item: se reinician.");
         for (Trabajo t : Trabajo.values()) {
             Global g = globales.computeIfAbsent(t, k -> new Global());
             ConfigurationSection s = viejo ? null : y.getConfigurationSection(t.id);
@@ -99,7 +95,11 @@ final class Misiones {
             g.totalAnterior = s.getLong("total-anterior", 0L);
             g.completada = s.getBoolean("completada", false);
             g.bonoHasta = s.getLong("bono-hasta", 0L);
-            g.tema = s.getString("tema");
+            g.item = s.getString("item");
+            g.rareza = s.getString("rareza");
+            g.factor = s.getDouble("factor", 1.0);
+            g.bonoPct = s.getDouble("bono-pct", 0);
+            g.completadaEn = s.getLong("completada-en", 0L);
             g.historial.clear();
             g.historial.addAll(s.getStringList("historial"));
             g.aportes.clear();
@@ -117,7 +117,7 @@ final class Misiones {
 
     void guardar() {
         YamlConfiguration y = new YamlConfiguration();
-        y.set("modo", "entrega");
+        y.set("modo", "item");
         for (Map.Entry<Trabajo, Global> e : globales.entrySet()) {
             Global g = e.getValue();
             String b = e.getKey().id;
@@ -127,7 +127,11 @@ final class Misiones {
             y.set(b + ".total-anterior", g.totalAnterior);
             y.set(b + ".completada", g.completada);
             y.set(b + ".bono-hasta", g.bonoHasta);
-            y.set(b + ".tema", g.tema);
+            y.set(b + ".item", g.item);
+            y.set(b + ".rareza", g.rareza);
+            y.set(b + ".factor", g.factor);
+            y.set(b + ".bono-pct", g.bonoPct);
+            y.set(b + ".completada-en", g.completadaEn);
             y.set(b + ".historial", g.historial);
             for (Map.Entry<UUID, Integer> a : g.aportes.entrySet()) y.set(b + ".aportes." + a.getKey(), a.getValue());
             List<String> c = new ArrayList<>();
@@ -358,129 +362,203 @@ final class Misiones {
         return n;
     }
 
-    // ---------- global semanal ----------
+    // ---------- global ----------
 
     Global global(Trabajo t) { return globales.computeIfAbsent(t, k -> new Global()); }
 
-    /** Cambia de semana si hace falta: el objetivo nuevo es el mayor entre el minimo y un % del total de la semana pasada. */
-    void revisar() {
-        long semana = cicloActual();
-        for (Trabajo t : Trabajo.values()) {
-            Global g = global(t);
-            if (g.semana == semana && g.objetivo > 0) {
-                if (temaDe(t) == null && !temas.getOrDefault(t, Map.of()).isEmpty()) { sortearTema(t, g); sucio = true; }
-                continue;
-            }
-            long anterior = g.semana == 0 ? 0 : g.total;
-            g.totalAnterior = anterior;
-            double minimo = ent.getDouble("minimo." + t.id, 5000);
-            g.objetivo = Math.max(minimo, Math.floor(anterior * cfg.getDouble("global.porcentaje-anterior", 0.6)));
-            g.semana = semana;
-            g.total = 0;
-            g.completada = false;
-            g.aportes.clear();
-            g.cobraron.clear();
-            sortearTema(t, g);
-            sucio = true;
-            pl.getLogger().info("Global de " + t.nombre + ": " + (g.tema == null ? "sin tema" : g.tema) + ", objetivo " + (long) g.objetivo);
+    /** Rareza de una mision global: segun lo dificil que es el item. Define la plata, el XP (un % de la plata) y el bono. */
+    static final class Rar {
+        final String id, nombre;
+        final int hasta, peso;
+        final double pozo, bono;
+        final NamedTextColor color;
+        Rar(String id, String nombre, int hasta, int peso, double pozo, double bono, NamedTextColor color) {
+            this.id = id; this.nombre = nombre; this.hasta = hasta; this.peso = peso; this.pozo = pozo; this.bono = bono; this.color = color;
         }
     }
 
-    // ---------- entrega de items a la global ----------
+    private static final NamedTextColor[] COLORES_RAREZA = {NamedTextColor.GRAY, NamedTextColor.AQUA, NamedTextColor.LIGHT_PURPLE, NamedTextColor.GOLD};
+    private final List<Rar> rarezas = new ArrayList<>();
+    private final Map<Trabajo, Map<Material, Integer>> pool = new EnumMap<>(Trabajo.class);
 
     private static final String[] MADERAS = {"OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "DARK_OAK", "MANGROVE", "CHERRY", "PALE_OAK", "BAMBOO", "CRIMSON", "WARPED"};
 
     private static boolean esItem(Material m) { return m.isItem() && !m.isLegacy(); }
 
-    /** Pone (o saca, con 0) en el tema todos los materiales que cubre una clave: un material, un comodin con * o algo con {M}. */
-    private void aplicar(Tema tema, String clave, int pts, Trabajo t) { aplicar(tema, clave, pts, t, false); }
-
-    private void aplicar(Tema tema, String clave, int pts, Trabajo t, boolean silencio) {
+    /** Pone (o saca, con 0) todos los materiales que cubre una clave: un material, un comodin con * o algo con {M}. */
+    private void aplicar(Map<Material, Integer> dest, String clave, int pts, Trabajo t, String grupo, boolean silencio) {
         if (clave.contains("{M}")) {
-            for (String madera : MADERAS) aplicar(tema, clave.replace("{M}", madera), pts, t, true);
+            for (String madera : MADERAS) aplicar(dest, clave.replace("{M}", madera), pts, t, grupo, true);
             return;
         }
         if (clave.contains("*")) {
             java.util.regex.Pattern pat = java.util.regex.Pattern.compile("^" + clave.toUpperCase(java.util.Locale.ROOT).replace("*", ".*") + "$");
             for (Material mat : Material.values()) {
                 if (!esItem(mat) || !pat.matcher(mat.name()).matches()) continue;
-                if (pts > 0) tema.puntos.put(mat, pts); else tema.puntos.remove(mat);
+                if (pts > 0) dest.put(mat, pts); else dest.remove(mat);
             }
             return;
         }
         Material mat = Material.matchMaterial(clave);
         if (mat == null || !esItem(mat)) {
             // con {M} es normal que algunas maderas no tengan ese item; lo demas, avisa para corregir el nombre
-            if (pts > 0 && !silencio) pl.getLogger().warning("entregas.yml: material desconocido " + clave + " (" + t.id + "/" + tema.id + ")");
+            if (pts > 0 && !silencio) pl.getLogger().warning("entregas.yml: material desconocido " + clave + " (" + t.id + "/" + grupo + ")");
             return;
         }
-        if (pts > 0) tema.puntos.put(mat, pts); else tema.puntos.remove(mat);
+        if (pts > 0) dest.put(mat, pts); else dest.remove(mat);
     }
 
-    private void cargarTemas() {
-        temas.clear();
-        for (Trabajo t : Trabajo.values()) {
-            Map<String, Tema> m = new java.util.LinkedHashMap<>();
-            ConfigurationSection s = ent.getConfigurationSection("temas." + t.id);
-            if (s != null) for (String id : s.getKeys(false)) {
-                ConfigurationSection c = s.getConfigurationSection(id);
+    /** Lee las rarezas y arma, para cada trabajo, el conjunto de items que pueden salir con su valor de dificultad. */
+    private void cargarPool() {
+        rarezas.clear();
+        ConfigurationSection rs = ent.getConfigurationSection("rarezas");
+        if (rs != null) {
+            int i = 0;
+            for (String id : rs.getKeys(false)) {
+                ConfigurationSection c = rs.getConfigurationSection(id);
                 if (c == null) continue;
-                Tema tema = new Tema(id, c.getString("nombre", id));
-                tema.pozo = c.getDouble("pozo", ent.getDouble("pozo-base." + t.id, 6000));
-                ConfigurationSection items = c.getConfigurationSection("items");
-                if (items != null) for (String k : items.getKeys(false)) aplicar(tema, k, items.getInt(k, 0), t);
-                if (tema.puntos.isEmpty()) { pl.getLogger().warning("entregas.yml: el tema " + t.id + "/" + id + " no tiene items."); continue; }
-                m.put(id, tema);
+                rarezas.add(new Rar(id, c.getString("nombre", id), c.getInt("hasta", 1_000_000), Math.max(1, c.getInt("peso", 1)),
+                        c.getDouble("pozo", 80000), c.getDouble("bono", 0.20), COLORES_RAREZA[Math.min(i, COLORES_RAREZA.length - 1)]));
+                i++;
             }
-            temas.put(t, m);
+        }
+        if (rarezas.isEmpty()) rarezas.add(new Rar("comun", "Común", 1_000_000, 1, 80000, 0.20, NamedTextColor.GRAY));
+        pool.clear();
+        for (Trabajo t : Trabajo.values()) {
+            Map<Material, Integer> todo = new LinkedHashMap<>();
+            ConfigurationSection s = ent.getConfigurationSection("grupos." + t.id);
+            if (s != null) for (String id : s.getKeys(false)) {
+                ConfigurationSection items = s.getConfigurationSection(id);
+                if (items == null) continue;
+                Map<Material, Integer> grupo = new LinkedHashMap<>();
+                for (String k : items.getKeys(false)) aplicar(grupo, k, items.getInt(k, 0), t, id, false);
+                for (Map.Entry<Material, Integer> e : grupo.entrySet()) todo.merge(e.getKey(), e.getValue(), Math::max);
+            }
+            pool.put(t, todo);
+            if (todo.isEmpty()) pl.getLogger().warning("entregas.yml: " + t.id + " no tiene items para las misiones globales.");
         }
     }
 
-    /** Tema actual de la global de ese trabajo (null si no hay ninguno configurado). */
-    Tema temaDe(Trabajo t) {
-        Global g = global(t);
-        return g.tema == null ? null : temas.getOrDefault(t, Map.of()).get(g.tema);
+    private int indiceRareza(int valor) {
+        for (int i = 0; i < rarezas.size(); i++) if (valor <= rarezas.get(i).hasta) return i;
+        return rarezas.size() - 1;
     }
 
-    String nombreTema(Trabajo t) { Tema x = temaDe(t); return x == null ? "Misión global" : x.nombre; }
-
-    /** Sortea un tema nuevo que no sea ninguno de los dos ultimos. */
-    private void sortearTema(Trabajo t, Global g) {
-        Map<String, Tema> todos = temas.getOrDefault(t, Map.of());
-        if (todos.isEmpty()) { g.tema = null; return; }
-        List<String> ids = new ArrayList<>(todos.keySet());
-        List<String> libres = new ArrayList<>(ids);
-        int evitar = Math.min(2, ids.size() - 1);
-        for (int i = g.historial.size() - 1, n = 0; i >= 0 && n < evitar; i--, n++) libres.remove(g.historial.get(i));
-        if (libres.isEmpty()) libres = ids;
-        g.tema = libres.get(azar.nextInt(libres.size()));
-        g.historial.add(g.tema);
-        while (g.historial.size() > 6) g.historial.remove(0);
+    /** Cambia de ciclo si hace falta: ajusta la dificultad segun como salio el anterior y sortea la mision nueva de cada trabajo. */
+    void revisar() {
+        long ciclo = cicloActual();
+        for (Trabajo t : Trabajo.values()) {
+            Global g = global(t);
+            if (g.semana == ciclo && g.objetivo > 0) {
+                boolean valida = g.item != null && Material.matchMaterial(g.item) != null;
+                if (!valida && !pool.getOrDefault(t, Map.of()).isEmpty()) { nuevaMision(t, g); sucio = true; }
+                continue;
+            }
+            ajustarFactor(g);
+            g.semana = ciclo;
+            nuevaMision(t, g);
+            sucio = true;
+            pl.getLogger().info("Global de " + t.nombre + ": " + g.item + " x" + (long) g.objetivo + " (" + g.rareza + ", factor " + Msg.num(g.factor, 2) + ")");
+        }
     }
 
-    /** Fuerza un tema (para probar). */
-    boolean fijarTema(Trabajo t, String id) {
-        Tema x = temas.getOrDefault(t, Map.of()).get(id.toLowerCase(java.util.Locale.ROOT));
-        if (x == null) return false;
+    /** Si la mision anterior se completo rapido pide mas la proxima vez; si casi nadie la hizo, pide menos. */
+    private void ajustarFactor(Global g) {
+        if (g.objetivo <= 0 || g.item == null) return;
+        double f = g.factor;
+        if (g.completada) {
+            long ini = LocalDate.ofEpochDay(g.semana).atStartOfDay(ZONA).toInstant().toEpochMilli();
+            long dur = Math.max(1, ent.getInt("ciclo-dias", 3)) * 86_400_000L;
+            f *= g.completadaEn > 0 && g.completadaEn - ini < dur / 2 ? 1.3 : 1.1;
+        } else if (g.total < g.objetivo * 0.5) {
+            f *= 0.8;
+        }
+        g.factor = Math.max(0.1, Math.min(5.0, f));
+    }
+
+    /** Sortea la mision: primero la rareza (con sus pesos) y despues un item de esa rareza que no haya salido hace poco. */
+    private void nuevaMision(Trabajo t, Global g) {
+        g.total = 0;
+        g.completada = false;
+        g.completadaEn = 0;
+        g.bonoPct = 0;
+        g.aportes.clear();
+        g.cobraron.clear();
+        Map<Material, Integer> todo = pool.getOrDefault(t, Map.of());
+        if (todo.isEmpty()) { g.item = null; g.rareza = null; g.objetivo = 1; return; }
+        Set<String> recientes = new HashSet<>(g.historial.subList(Math.max(0, g.historial.size() - 10), g.historial.size()));
+        List<List<Material>> porRareza = new ArrayList<>();
+        for (int i = 0; i < rarezas.size(); i++) porRareza.add(new ArrayList<>());
+        for (Map.Entry<Material, Integer> e : todo.entrySet()) {
+            if (!recientes.contains(e.getKey().name())) porRareza.get(indiceRareza(e.getValue())).add(e.getKey());
+        }
+        int suma = 0;
+        for (int i = 0; i < rarezas.size(); i++) if (!porRareza.get(i).isEmpty()) suma += rarezas.get(i).peso;
+        if (suma == 0) {   // salieron todos hace poco: se vuelve a empezar
+            for (Map.Entry<Material, Integer> e : todo.entrySet()) porRareza.get(indiceRareza(e.getValue())).add(e.getKey());
+            for (int i = 0; i < rarezas.size(); i++) if (!porRareza.get(i).isEmpty()) suma += rarezas.get(i).peso;
+        }
+        int tiro = azar.nextInt(suma);
+        for (int i = 0; i < rarezas.size(); i++) {
+            List<Material> l = porRareza.get(i);
+            if (l.isEmpty()) continue;
+            tiro -= rarezas.get(i).peso;
+            if (tiro < 0) { fijar(t, g, l.get(azar.nextInt(l.size()))); return; }
+        }
+    }
+
+    /** Deja la mision pidiendo ese item, con la cantidad que sale de su dificultad. */
+    private void fijar(Trabajo t, Global g, Material mat) {
+        int valor = pool.getOrDefault(t, Map.of()).getOrDefault(mat, 4);
+        Rar r = rarezas.get(indiceRareza(valor));
+        double esfuerzo = ent.getDouble("esfuerzo." + t.id, 5000);
+        g.item = mat.name();
+        g.rareza = r.id;
+        g.objetivo = Math.max(ent.getInt("cantidad-minima", 3), Math.round(esfuerzo * g.factor / valor));
+        g.historial.add(mat.name());
+        while (g.historial.size() > 40) g.historial.remove(0);
+    }
+
+    /** Staff: fuerza el item de la mision (y la reinicia). */
+    boolean fijarMision(Trabajo t, Material mat) {
+        if (!esItem(mat)) return false;
         Global g = global(t);
-        g.tema = x.id;
-        g.historial.add(x.id);
+        g.total = 0;
+        g.completada = false;
+        g.completadaEn = 0;
+        g.bonoPct = 0;
+        g.aportes.clear();
+        g.cobraron.clear();
+        fijar(t, g, mat);
         sucio = true;
         return true;
     }
 
-    List<String> idsTemas(Trabajo t) { return new ArrayList<>(temas.getOrDefault(t, Map.of()).keySet()); }
+    // ---------- lo que se ve de la mision actual ----------
 
-    /** Puntos que vale un item para la global de ese trabajo (0 si no sirve). */
-    int puntosDe(Trabajo t, Material m) { Tema x = temaDe(t); return x == null ? 0 : x.puntos.getOrDefault(m, 0); }
+    Material itemGlobal(Trabajo t) { String n = global(t).item; return n == null ? null : Material.matchMaterial(n); }
 
-    /** Los items que sirven, del que mas vale al que menos. */
-    List<Map.Entry<Material, Integer>> aceptados(Trabajo t) {
-        Tema x = temaDe(t);
-        List<Map.Entry<Material, Integer>> l = x == null ? new ArrayList<>() : new ArrayList<>(x.puntos.entrySet());
-        l.sort((a, b) -> b.getValue() != a.getValue().intValue() ? Integer.compare(b.getValue(), a.getValue()) : a.getKey().name().compareTo(b.getKey().name()));
-        return l;
+    Rar rarezaDe(Trabajo t) {
+        String id = global(t).rareza;
+        for (Rar r : rarezas) if (r.id.equals(id)) return r;
+        return rarezas.get(0);
     }
+
+    /** Nombre del item de la mision, traducido por el cliente y del color de su rareza. */
+    Component itemGlobalNombre(Trabajo t) {
+        Material m = itemGlobal(t);
+        if (m == null) return Component.text("-", NamedTextColor.GRAY);
+        return Component.translatable(m.translationKey()).color(rarezaDe(t).color).decoration(TextDecoration.ITALIC, false);
+    }
+
+    /** "Entregá 18.000 × Cobblestone" */
+    Component pedidoGlobal(Trabajo t) {
+        return Iconos.txt("Entregá " + Msg.num(global(t).objetivo, 0) + " × ", NamedTextColor.WHITE).append(itemGlobalNombre(t));
+    }
+
+    // ---------- entrega ----------
+
+    int cicloDias() { return Math.max(1, ent.getInt("ciclo-dias", 3)); }
 
     boolean soloEnNpc() { return ent.getBoolean("solo-en-npc", true); }
 
@@ -495,82 +573,82 @@ final class Misiones {
     /** true si no hace falta NPC o si el jugador esta cerca del NPC de ese trabajo. */
     boolean enNpc(Player p, Trabajo t) { return !soloEnNpc() || pl.npcs().cercaDeNpc(p, t, ent.getDouble("distancia-npc", 8)); }
 
-    /** Entrega a la global lo que tenga el jugador (o solo lo que tiene en la mano). Devuelve los puntos sumados. */
+    /** Entrega a la global el item que pide (todo lo que tenga el jugador, o solo lo que tiene en la mano). Devuelve cuantos entrego. */
     int entregarGlobal(Player p, Trabajo t, boolean soloMano) {
         if (!puedeEntregar(p, t)) return 0;
         Global g = global(t);
-        if (g.completada) { Msg.error(p, "La misión global de esta semana ya se completó. ¡Cobrá tu parte!"); return 0; }
-        Tema tema = temaDe(t);
-        if (tema == null) { Msg.error(p, "Esta misión global todavía no tiene tema."); return 0; }
-        Map<Material, Integer> val = tema.puntos;
+        Material mat = itemGlobal(t);
+        if (mat == null) { Msg.error(p, "Esta misión global todavía no tiene un item."); return 0; }
+        if (g.completada) { Msg.error(p, "La misión global ya se completó. ¡Cobrá tu parte!"); return 0; }
+        long faltan = (long) Math.ceil(g.objetivo - g.total);
+        ItemStack molde = new ItemStack(mat);
         ItemStack[] cont = p.getInventory().getStorageContents();
-        // primero lo que menos vale, asi no se va un diamante cuando faltaban pocos puntos
-        List<Integer> idx = new ArrayList<>();
-        for (int i = 0; i < cont.length; i++) {
+        long tomados = 0;
+        for (int i = 0; i < cont.length && tomados < faltan; i++) {
             ItemStack it = cont[i];
-            if (it == null || !val.containsKey(it.getType()) || !it.isSimilar(new ItemStack(it.getType()))) continue;
+            if (it == null || !it.isSimilar(molde)) continue;
             if (soloMano && i != p.getInventory().getHeldItemSlot()) continue;
-            idx.add(i);
+            int n = (int) Math.min(it.getAmount(), faltan - tomados);
+            tomados += n;
+            if (n == it.getAmount()) cont[i] = null; else it.setAmount(it.getAmount() - n);
         }
-        if (idx.isEmpty()) {
-            Msg.error(p, soloMano ? "Lo que tenés en la mano no suma a esta misión." : "No tenés nada que sume a esta misión (items sin nombre ni encantamientos).");
+        if (tomados == 0) {
+            Msg.aviso(p, Component.text("No tenés ", NamedTextColor.RED).append(itemGlobalNombre(t))
+                    .append(Component.text(soloMano ? " en la mano (sin nombre ni encantamientos)." : " (tiene que ser sin nombre ni encantamientos).", NamedTextColor.RED)));
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.7f, 1.0f);
             return 0;
         }
-        idx.sort((a, b) -> Integer.compare(val.get(cont[a].getType()), val.get(cont[b].getType())));
-        long faltan = (long) Math.ceil(g.objetivo - g.total);
-        long sumados = 0;
-        int items = 0;
-        for (int i : idx) {
-            if (sumados >= faltan) break;
-            ItemStack it = cont[i];
-            int v = val.get(it.getType());
-            int n = (int) Math.min(it.getAmount(), (faltan - sumados + v - 1) / v);
-            sumados += (long) n * v;
-            items += n;
-            if (n == it.getAmount()) cont[i] = null; else it.setAmount(it.getAmount() - n);
-        }
         p.getInventory().setStorageContents(cont);
-        g.total += sumados;
-        g.aportes.merge(p.getUniqueId(), (int) sumados, Integer::sum);
+        g.total += tomados;
+        g.aportes.merge(p.getUniqueId(), (int) tomados, Integer::sum);
         sucio = true;
-        Msg.aviso(p, Component.text("Entregaste " + items + " items · ", NamedTextColor.GRAY)
-                .append(Component.text("+" + sumados + " puntos", NamedTextColor.GREEN))
+        Msg.aviso(p, Component.text("Entregaste " + Msg.num(tomados, 0) + " × ", NamedTextColor.GRAY).append(itemGlobalNombre(t))
                 .append(Component.text("  (" + Msg.num(Math.min(g.total, g.objetivo), 0) + "/" + Msg.num(g.objetivo, 0) + ")", NamedTextColor.YELLOW)));
         p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.8f, 1.1f);
         if (!g.completada && g.total >= g.objetivo) completarGlobal(t, g);
-        return (int) sumados;
+        return (int) tomados;
     }
 
     private void completarGlobal(Trabajo t, Global g) {
+        Rar r = rarezaDe(t);
         g.completada = true;
-        g.bonoHasta = System.currentTimeMillis() + cfg.getLong("global.bono-horas", 48) * 3_600_000L;
+        g.completadaEn = System.currentTimeMillis();
+        g.bonoPct = r.bono;
+        g.bonoHasta = g.completadaEn + bonoHoras() * 3_600_000L;
         guardar();
-        int pct = (int) Math.round(cfg.getDouble("global.bono", 0.20) * 100);
         Bukkit.broadcast(Component.text("★ ", NamedTextColor.GOLD)
                 .append(Component.text("¡Se completó la misión global de ", NamedTextColor.GRAY))
                 .append(Component.text(t.nombre, t.color))
-                .append(Component.text("! Todos los " + t.nombre + " tienen +" + pct + "% de pago por " + cfg.getLong("global.bono-horas", 48) + " horas. Cobrá tu parte en /trabajos.", NamedTextColor.GRAY)));
+                .append(Component.text(" (" + r.nombre + ")! Todos los " + t.nombre + " tienen +" + Math.round(r.bono * 100) + "% de pago y XP por " + bonoHoras() + " horas. Cobrá tu parte en /trabajos.", NamedTextColor.GRAY)));
         for (Player o : Bukkit.getOnlinePlayers()) o.playSound(o.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 1.0f);
     }
 
-    /** Suma sobre el pago (0,20 = +20%) para los de este trabajo mientras dure el bono global. */
+    /** Suma sobre el pago y el XP (0,20 = +20%) para los de este trabajo mientras dure el bono global. */
     double bonoGlobal(Trabajo t) {
         Global g = globales.get(t);
-        return g != null && System.currentTimeMillis() < g.bonoHasta ? cfg.getDouble("global.bono", 0.20) : 0;
+        return g != null && System.currentTimeMillis() < g.bonoHasta ? g.bonoPct : 0;
     }
+
+    /** Horas que dura el bono despues de completarse. */
+    long bonoHoras() { return ent.getLong("bono-horas", 48); }
+
+    // ---------- reparto ----------
 
     int aporteDe(Trabajo t, Player p) { return global(t).aportes.getOrDefault(p.getUniqueId(), 0); }
 
-    int aporteMinimo() { return cfg.getInt("global.aporte-minimo", 100); }
+    /** Lo minimo que hay que entregar para cobrar: el 1% de lo que pide la mision (al menos 1). */
+    int aporteMinimo(Trabajo t) { return (int) Math.max(1, Math.ceil(global(t).objetivo * ent.getDouble("participacion-minima", 0.01))); }
 
-    /** Plata total de la global actual: un pozo fijo segun la dificultad del tema, que se reparte segun lo que aporto cada uno. */
-    double pozo(Trabajo t) { Tema x = temaDe(t); return x == null ? 0 : x.pozo; }
+    /** Plata total de la mision actual (el "fondo colaborador"): depende de la rareza. */
+    double pozo(Trabajo t) { return rarezaDe(t).pozo; }
 
-    /** Parte (0 a 1) de este jugador en el reparto: su aporte sobre el de todos los que llegaron al minimo. */
+    /** XP total de la mision actual (el "fondo XP"): un % de la plata. */
+    double pozoXp(Trabajo t) { return Math.floor(pozo(t) * ent.getDouble("xp-ratio", 0.25)); }
+
+    /** Parte (0 a 1) de este jugador en el reparto: lo que entrego sobre lo que entregaron todos los que llegaron al minimo. */
     double parte(Trabajo t, UUID u) {
         Global g = global(t);
-        int min = aporteMinimo();
+        int min = aporteMinimo(t);
         long suma = 0;
         for (int a : g.aportes.values()) if (a >= min) suma += a;
         int mio = g.aportes.getOrDefault(u, 0);
@@ -579,19 +657,11 @@ final class Misiones {
 
     double pagoGlobal(Trabajo t, UUID u) { return Math.floor(pozo(t) * parte(t, u)); }
 
-    /** XP total de la global actual (el "fondo XP"): un % del pozo de plata, repartido igual que la plata. */
-    double pozoXp(Trabajo t) { return Math.floor(pozo(t) * ent.getDouble("xp-ratio", 0.25)); }
-
     double xpGlobal(Trabajo t, UUID u) { return Math.floor(pozoXp(t) * parte(t, u)); }
-
-    /** Horas que dura el bono global despues de completarse. */
-    long bonoHoras() { return cfg.getLong("global.bono-horas", 48); }
-
-    int bonoPorcentaje() { return (int) Math.round(cfg.getDouble("global.bono", 0.20) * 100); }
 
     boolean puedeCobrarGlobal(Trabajo t, Player p) {
         Global g = global(t);
-        return g.completada && aporteDe(t, p) >= aporteMinimo() && !g.cobraron.contains(p.getUniqueId());
+        return g.completada && aporteDe(t, p) >= aporteMinimo(t) && !g.cobraron.contains(p.getUniqueId());
     }
 
     boolean cobrarGlobal(Player p, Trabajo t) {
