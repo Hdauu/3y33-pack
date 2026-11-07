@@ -150,20 +150,7 @@ def generar(salida):
         rect(im, x, y5, x + 17, y5 + 17, (201, 149, 91)); borde(im, x, y5, x + 17, y5 + 17, (150, 100, 50))
         rect(im, x + 1, y5 + 1, x + 16, y5 + 1, (232, 186, 124)); rect(im, x + 1, y5 + 16, x + 16, y5 + 16, (168, 118, 66))
 
-    # cartel de arriba
-    f = ImageFont.truetype(T.FONT, 8)
-    d = ImageDraw.Draw(im); d.fontmode = '1'
-    texto = 'CAMINO'
-    tw = int(d.textlength(texto, font=f)); ancho = tw + 22
-    x0 = (W - ancho) // 2; x1 = x0 + ancho - 1
-    rect(im, x0 + 1, 3, x1 + 1, 15, (40, 22, 14)); rect(im, x0, 2, x1, 14, (112, 68, 38))
-    tablones(im, x0 + 1, 3, x1 - 1, 13, (128, 80, 44), (158, 106, 62), (104, 64, 34), (84, 50, 28), alto=9, semilla=5)
-    borde(im, x0, 2, x1, 14, CONTORNO); borde(im, x0 + 1, 3, x1 - 1, 13, (200, 150, 78))
-    for (nx, ny) in ((x0 + 3, 5), (x1 - 3, 5), (x0 + 3, 11), (x1 - 3, 11)): pto(im, nx, ny, ORO); pto(im, nx + 1, ny + 1, ORO_OSC)
-    d = ImageDraw.Draw(im); d.fontmode = '1'
-    tx = (W - tw) // 2
-    d.text((tx + 1, 5), texto, font=f, fill=(40, 20, 8, 255)); d.text((tx, 4), texto, font=f, fill=(255, 236, 168, 255))
-
+    # arriba queda solo la viga de madera del marco, sin cartel (la ventana ya se entiende sola)
     # separador: cinta crema para el "Inventario" y bandeja del inventario (igual que las tiendas)
     sep = 17 + 18 * FILAS + 3
     rect(im, 62, sep + 3, 170, sep + 6, M_BASE); rect(im, 62, sep + 3, 170, sep + 3, M_CLARA); rect(im, 62, sep + 6, 170, sep + 6, M_OSC)
