@@ -99,7 +99,7 @@ final class Npcs implements Listener {
         this.yaw0 = new NamespacedKey(pl, "npc-yaw0");
         this.archivo = new File(pl.getDataFolder(), "hologramas.yml");
         cargar();
-        Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 20L);
+        Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 5L);
         Bukkit.getScheduler().runTaskTimer(pl, this::mirar, 40L, 2L);
         Bukkit.getScheduler().runTaskLater(pl, this::migrar, 100L);
     }
@@ -438,8 +438,8 @@ final class Npcs implements Listener {
         }
     }
 
-    /** Cada segundo: pone, saca y actualiza los hologramas: el titulo lo ve todo el mundo y el panel es uno por jugador cercano. */
-    private void actualizar() {
+    /** Cada 5 ticks (y apenas alguien entrega): pone, saca y actualiza los hologramas: el titulo lo ve todo el mundo y el panel es uno por jugador cercano. */
+    void actualizar() {
         for (Holo h : holos.values()) {
             World w = h.loc.getWorld();
             if (w == null || !w.isChunkLoaded(h.loc.getBlockX() >> 4, h.loc.getBlockZ() >> 4)) { sacarCarteles(h); continue; }

@@ -25,8 +25,17 @@ final class Pago {
         return eco != null;
     }
 
+    private static double nivelBase = 1200, nivelLineal = 80, nivelCuad = 1.5;
+
+    /** Lee la curva de niveles de config.yml (niveles.base / lineal / cuadratico). */
+    void cargarNiveles() {
+        nivelBase = pl.getConfig().getDouble("niveles.base", 1200);
+        nivelLineal = pl.getConfig().getDouble("niveles.lineal", 80);
+        nivelCuad = pl.getConfig().getDouble("niveles.cuadratico", 1.5);
+    }
+
     /** XP que hace falta para pasar del nivel n al siguiente. */
-    static double xpNecesaria(int n) { return 200 + 40.0 * n + 0.9 * n * n; }
+    static double xpNecesaria(int n) { return nivelBase + nivelLineal * n + nivelCuad * n * n; }
 
     /** Multiplicador personal: +1% por nivel, +25% por prestigio y hasta +20% por la racha de misiones. */
     double personal(Perfil.Progreso g) { return 1.0 + 0.01 * (g.nivel - 1) + 0.25 * g.prestigio + pl.misiones().bonoRacha(g); }
@@ -112,12 +121,24 @@ final class Pago {
         if (g.nivel >= Perfil.NIVEL_MAX) g.xp = 0;
     }
 
+    /** Linea de chat con el nivel y el XP que falta, para que se vea siempre como viene. */
+    void avisarNivel(Player p, Trabajo t, Perfil.Progreso g) {
+        if (g.nivel >= Perfil.NIVEL_MAX) return;
+        double need = xpNecesaria(g.nivel);
+        Msg.aviso(p, Component.text(t.nombre + " · nivel " + g.nivel + " · ", t.color)
+                .append(Component.text(Msg.num(g.xp, 0) + " / " + Msg.num(need, 0) + " XP", NamedTextColor.AQUA))
+                .append(Component.text(" (" + Msg.num(g.xp * 100 / need, 0) + "%) · multiplicador x" + Msg.num(personal(g), 2), NamedTextColor.GRAY)));
+    }
+
     private void subioDeNivel(Player p, Trabajo t, Perfil.Progreso g) {
         p.showTitle(Title.title(
                 Component.text("¡Nivel " + g.nivel + "!", t.color),
                 Component.text(t.nombre + " · multiplicador x" + Msg.num(personal(g), 2), NamedTextColor.GRAY),
                 Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(1800), Duration.ofMillis(500))));
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.0f);
+        Msg.aviso(p, Component.text("¡Subiste a nivel " + g.nivel + " de ", NamedTextColor.GREEN)
+                .append(Component.text(t.nombre, t.color))
+                .append(Component.text("! Multiplicador x" + Msg.num(personal(g), 2) + ". Mirá tu nivel y lo que falta en /trabajos (ícono de la botella de XP).", NamedTextColor.GRAY)));
         if (g.nivel == Perfil.NIVEL_MAX) {
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             Bukkit.broadcast(Component.text("★ ", NamedTextColor.GOLD)

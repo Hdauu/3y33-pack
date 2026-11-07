@@ -134,6 +134,26 @@ final class Menus implements Listener {
         return pl.iconos().carta(p, t, g.prestigio, estado, detalle, nombre, lore);
     }
 
+    /** Ícono con el nivel, el XP y de dónde sale el multiplicador. */
+    private ItemStack itemNivel(Trabajo t, Perfil.Progreso g, Perfil f) {
+        List<Component> l = new ArrayList<>();
+        l.add(barraNivel(t, g));
+        if (g.nivel < Perfil.NIVEL_MAX) {
+            double need = Pago.xpNecesaria(g.nivel);
+            l.add(Iconos.txt("XP: ", GRIS).append(Iconos.txt(Msg.num(g.xp, 0) + " / " + Msg.num(need, 0), NamedTextColor.AQUA)));
+            l.add(linea("Faltan " + Msg.num(need - g.xp, 0) + " XP para el nivel " + (g.nivel + 1) + ".", GRIS));
+        }
+        l.add(Component.empty());
+        l.add(Iconos.txtNegrita("Tu multiplicador: x" + Msg.num(pl.pago().personal(g), 2), NamedTextColor.YELLOW));
+        l.add(linea("- Nivel: +" + Msg.num(0.01 * (g.nivel - 1) * 100, 0) + "%", GRIS));
+        if (g.prestigio > 0) l.add(linea("- Prestigio: +" + Msg.num(25.0 * g.prestigio, 0) + "%", GRIS));
+        l.add(linea("- Racha de misiones: +" + Msg.num(pl.misiones().bonoRacha(g) * 100, 0) + "%", GRIS));
+        l.add(Component.empty());
+        l.add(linea("El XP sale de las acciones del trabajo", GRIS));
+        l.add(linea("y de todas las misiones (diarias, semanal y global).", GRIS));
+        return Iconos.item(Material.EXPERIENCE_BOTTLE, Iconos.txtNegrita("Tu nivel · " + t.nombre, t.color), l);
+    }
+
     private Component barraNivel(Trabajo t, Perfil.Progreso g) {
         if (g.nivel >= Perfil.NIVEL_MAX) return linea("Nivel 100 (máximo)", NamedTextColor.GOLD);
         double frac = g.xp / Pago.xpNecesaria(g.nivel);
@@ -178,6 +198,7 @@ final class Menus implements Listener {
                 linea("Muy pronto.", NamedTextColor.RED))));
 
         v.poner(16, relojRarezas());
+        v.poner(37, itemNivel(t, g, f));
         v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p, java.util.Arrays.asList(Trabajo.values()).indexOf(t) < 3 ? 0 : 1); });
 
         if (activo) {
@@ -436,6 +457,7 @@ final class Menus implements Listener {
                 Component.empty(),
                 Iconos.txt("Más rara la misión, más paga y más bono.", NamedTextColor.GOLD),
                 Iconos.txt("Si no se completa a tiempo, no se paga.", NamedTextColor.RED))));
+        v.poner(5 * 9 + 1, itemNivel(t, g, f));
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),
                 e -> { sonido(p); misiones(p, t, pag - 1); });

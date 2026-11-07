@@ -36,3 +36,9 @@ rarezas:
     RARA: 28
     EPICA: 13
     LEGENDARIA: 4
+
+# Curva de niveles: XP para pasar del nivel n al siguiente = base + lineal x n + cuadratico x n x n (hasta el 100).
+niveles:
+  base: 1200
+  lineal: 80
+  cuadratico: 1.5
