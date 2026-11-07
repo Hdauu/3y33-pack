@@ -390,7 +390,7 @@ final class Menus implements Listener {
             lg.add(Iconos.txt("- Fondo colaborador: ", NamedTextColor.GOLD).append(Iconos.txt("$" + Msg.num(pl.misiones().pozo(t), 0), NamedTextColor.YELLOW)));
             lg.add(Iconos.txt("- Fondo XP: ", NamedTextColor.GREEN).append(Iconos.txt(Msg.num(pl.misiones().pozoXp(t), 0) + " XP", NamedTextColor.GREEN)));
             lg.add(Iconos.txt("- Bono global: ", NamedTextColor.GOLD).append(Iconos.txt("+" + Math.round(rar.bono * 100) + "% XP + dinero por " + pl.misiones().bonoHoras() + " h", NamedTextColor.YELLOW)));
-            lg.add(linea("Los fondos se reparten según el % que entregó cada uno.", GRIS));
+            lg.add(linea("Los fondos se reparten según el % que entregó cada uno (tope " + Math.round(pl.misiones().topeParte() * 100) + "% por persona).", GRIS));
             if (parte > 0) {
                 lg.add(Iconos.txtNegrita("Tu recompensa estimada:", NamedTextColor.GREEN));
                 lg.add(linea("- $" + Msg.num(pl.misiones().pagoGlobal(t, p.getUniqueId()), 0), NamedTextColor.GREEN));
@@ -456,7 +456,9 @@ final class Menus implements Listener {
                 linea("   entregaste sobre el total.", GRIS),
                 Component.empty(),
                 Iconos.txt("Más rara la misión, más paga y más bono.", NamedTextColor.GOLD),
-                Iconos.txt("Si no se completa a tiempo, no se paga.", NamedTextColor.RED))));
+                Iconos.txt("Nadie cobra más del " + Math.round(pl.misiones().topeParte() * 100) + "% del fondo.", NamedTextColor.GRAY),
+                Iconos.txt("Si no se completa, cobrás una compensación baja.", NamedTextColor.RED),
+                Iconos.txt("Si no cobraste, te llega sola al cambiar la misión.", NamedTextColor.GRAY))));
         v.poner(5 * 9 + 1, itemNivel(t, g, f));
         v.poner(5 * 9, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
         v.poner(5 * 9 + 3, pl.iconos().flecha(p, false, Iconos.txtNegrita("Página anterior", NamedTextColor.YELLOW), List.of(linea("Página " + (pag + 1) + " de " + PAGINAS_MISIONES, GRIS))),

@@ -65,6 +65,8 @@ final class Misiones {
     private YamlConfiguration cfg = new YamlConfiguration();
     private YamlConfiguration ent = new YamlConfiguration();
     private boolean sucio;
+    /** Lo que ya se gano de globales terminadas y todavia no se le dio a quien no estaba conectado: [plata, xp, 1 si la mision se completo]. */
+    private final Map<UUID, Map<Trabajo, double[]>> pendientes = new HashMap<>();
 
     Misiones(TrabajosPlugin pl) {
         this.pl = pl;
@@ -112,6 +114,17 @@ final class Misiones {
                 try { g.cobraron.add(UUID.fromString(k)); } catch (IllegalArgumentException ignorada) { }
             }
         }
+        pendientes.clear();
+        ConfigurationSection pe = y.getConfigurationSection("pendientes");
+        if (pe != null) for (String k : pe.getKeys(false)) {
+            UUID u;
+            try { u = UUID.fromString(k); } catch (IllegalArgumentException ignorada) { continue; }
+            for (Trabajo t : Trabajo.values()) {
+                ConfigurationSection c = pe.getConfigurationSection(k + "." + t.id);
+                if (c == null) continue;
+                pendientes.computeIfAbsent(u, x -> new EnumMap<>(Trabajo.class)).put(t, new double[]{c.getDouble("plata"), c.getDouble("xp"), c.getDouble("completa")});
+            }
+        }
         revisar();
     }
 
@@ -138,6 +151,13 @@ final class Misiones {
             for (UUID u : g.cobraron) c.add(u.toString());
             y.set(b + ".cobraron", c);
         }
+        for (Map.Entry<UUID, Map<Trabajo, double[]>> pe : pendientes.entrySet())
+            for (Map.Entry<Trabajo, double[]> t : pe.getValue().entrySet()) {
+                String b = "pendientes." + pe.getKey() + "." + t.getKey().id;
+                y.set(b + ".plata", t.getValue()[0]);
+                y.set(b + ".xp", t.getValue()[1]);
+                y.set(b + ".completa", t.getValue()[2]);
+            }
         try { y.save(archivoGlobal); } catch (IOException ex) { pl.getLogger().warning("No pude guardar misiones-globales.yml: " + ex); }
         sucio = false;
     }
@@ -314,6 +334,7 @@ final class Misiones {
         double pesos = recompensa(tipo, m, g);
         double xp = recompensaXp(tipo, m, g);
         pl.pago().depositar(p, f, pesos);
+        pl.balance().plata(t, Balance.MISIONES, pesos);
         p.showTitle(Title.title(
                 Component.text("¡Misión cumplida!", m.rareza.color),
                 Component.text("+" + Msg.dinero(pesos), NamedTextColor.GREEN).append(Component.text("   +" + Msg.num(xp, 0) + " XP", NamedTextColor.AQUA)),
@@ -468,12 +489,62 @@ final class Misiones {
                 if (!valida && !pool.getOrDefault(t, Map.of()).isEmpty()) { nuevaMision(t, g); sucio = true; }
                 continue;
             }
+            liquidar(t, g);
             ajustarFactor(g);
             g.semana = ciclo;
             nuevaMision(t, g);
             sucio = true;
             pl.getLogger().info("Global de " + t.nombre + ": " + g.item + " x" + (long) g.objetivo + " (" + g.rareza + ", factor " + Msg.num(g.factor, 2) + ")");
         }
+    }
+
+    /**
+     * Al terminar el ciclo: si la global se completo, a quien no cobro se le paga su parte sola; si no se completo, se paga una compensacion baja
+     * (compensacion x el avance x el fondo, repartido por aporte). Los que no estan conectados la reciben al entrar.
+     */
+    private void liquidar(Trabajo t, Global g) {
+        if (g.item == null || g.objetivo <= 0 || g.aportes.isEmpty()) return;
+        double fraccion = g.completada ? 1.0 : ent.getDouble("compensacion", 0.10) * Math.min(1.0, g.total / g.objetivo);
+        if (fraccion <= 0) return;
+        double pozo = pozo(t), pozoXp = pozoXp(t);
+        for (UUID u : new ArrayList<>(g.aportes.keySet())) {
+            if (g.completada && g.cobraron.contains(u)) continue;
+            double parte = parte(t, u);
+            if (parte <= 0) continue;
+            double plata = Math.floor(pozo * fraccion * parte), xp = Math.floor(pozoXp * fraccion * parte);
+            if (plata <= 0 && xp <= 0) continue;
+            Player p = Bukkit.getPlayer(u);
+            if (p != null && p.isOnline()) pagarGlobal(p, t, plata, xp, g.completada);
+            else {
+                double[] v = pendientes.computeIfAbsent(u, k -> new EnumMap<>(Trabajo.class)).computeIfAbsent(t, k -> new double[3]);
+                v[0] += plata;
+                v[1] += xp;
+                if (g.completada) v[2] = 1;
+            }
+        }
+        sucio = true;
+    }
+
+    private void pagarGlobal(Player p, Trabajo t, double plata, double xp, boolean completa) {
+        Perfil f = pl.perfiles().de(p);
+        pl.pago().depositar(p, f, plata);
+        pl.pago().vaciar(p, f);
+        pl.balance().plata(t, Balance.GLOBAL, plata);
+        if (xp > 0) pl.pago().subirXp(p, f, t, xp);
+        pl.perfiles().guardar(f);
+        Msg.aviso(p, Component.text(completa ? "Tu parte de la misión global de " + t.nombre + " (se completó y no la habías cobrado): "
+                        : "La misión global de " + t.nombre + " no se completó. Compensación por tu aporte: ", NamedTextColor.GRAY)
+                .append(Component.text("+$" + Msg.num(plata, 0), NamedTextColor.GREEN))
+                .append(Component.text("  +" + Msg.num(xp, 0) + " XP", NamedTextColor.AQUA)));
+        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 1.2f);
+    }
+
+    /** Al entrar: entrega lo que le quedo pendiente de globales que terminaron mientras no estaba. */
+    void pagarPendientes(Player p) {
+        Map<Trabajo, double[]> m = pendientes.remove(p.getUniqueId());
+        if (m == null) return;
+        sucio = true;
+        for (Map.Entry<Trabajo, double[]> e : m.entrySet()) pagarGlobal(p, e.getKey(), e.getValue()[0], e.getValue()[1], e.getValue()[2] > 0);
     }
 
     /** Si la mision anterior se completo rapido pide mas la proxima vez (cuanto mas rapido, mas); si casi nadie la hizo, pide menos. */
@@ -653,6 +724,9 @@ final class Misiones {
         return g != null && System.currentTimeMillis() < g.bonoHasta ? g.bonoPct : 0;
     }
 
+    /** Fraccion maxima del fondo que puede cobrar una sola persona. */
+    double topeParte() { return ent.getDouble("tope-parte", 0.40); }
+
     /** Horas que dura el bono despues de completarse. */
     long bonoHoras() { return ent.getLong("bono-horas", 48); }
 
@@ -676,7 +750,8 @@ final class Misiones {
         long suma = 0;
         for (int a : g.aportes.values()) if (a >= min) suma += a;
         int mio = g.aportes.getOrDefault(u, 0);
-        return suma <= 0 || mio < min ? 0 : (double) mio / suma;
+        double cruda = suma <= 0 || mio < min ? 0 : (double) mio / suma;
+        return Math.min(cruda, ent.getDouble("tope-parte", 0.40));   // nadie cobra mas que este % del fondo
     }
 
     double pagoGlobal(Trabajo t, UUID u) { return Math.floor(pozo(t) * parte(t, u)); }
@@ -697,6 +772,7 @@ final class Misiones {
         double pesos = pagoGlobal(t, p.getUniqueId());
         double xp = xpGlobal(t, p.getUniqueId());
         pl.pago().depositar(p, f, pesos);
+        pl.balance().plata(t, Balance.GLOBAL, pesos);
         if (xp > 0) pl.pago().subirXp(p, f, t, xp);
         pl.perfiles().guardar(f);
         Msg.aviso(p, Component.text("Cobraste tu parte de la misión global: ", NamedTextColor.GRAY)

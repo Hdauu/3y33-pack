@@ -31,6 +31,12 @@ bono-horas: 48
 xp-ratio: 0.25
 # Para cobrar hay que haber entregado al menos este % de lo que pide la misión (1 = 1%).
 participacion-minima: 0.01
+# Nadie cobra más que este % del fondo (0,40 = 40%): evita que una persona (o sus alts) se lleve casi todo. Lo que no se reparte no se paga.
+tope-parte: 0.40
+# Si la misión NO se completa, quien colaboró cobra una compensación baja: este % del fondo, multiplicado por lo que se avanzó (0,10 = hasta 10%),
+# repartido por aporte. Lo de una misión completada que no se cobró se paga solo al terminar el ciclo.
+compensacion: 0.10
+
 # Cantidad mínima que puede pedir una misión (para los ítems carísimos, como un bloque de netherite).
 cantidad-minima: 3
 
