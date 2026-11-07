@@ -474,18 +474,21 @@ final class Misiones {
         }
     }
 
-    /** Si la mision anterior se completo rapido pide mas la proxima vez; si casi nadie la hizo, pide menos. */
+    /** Si la mision anterior se completo rapido pide mas la proxima vez (cuanto mas rapido, mas); si casi nadie la hizo, pide menos. */
     private void ajustarFactor(Global g) {
         if (g.objetivo <= 0 || g.item == null) return;
         double f = g.factor;
+        long dur = Math.max(1, ent.getInt("ciclo-dias", 3)) * 86_400_000L;
         if (g.completada) {
             long ini = LocalDate.ofEpochDay(g.semana).atStartOfDay(ZONA).toInstant().toEpochMilli();
-            long dur = Math.max(1, ent.getInt("ciclo-dias", 3)) * 86_400_000L;
-            f *= g.completadaEn > 0 && g.completadaEn - ini < dur / 2 ? 1.3 : 1.1;
-        } else if (g.total < g.objetivo * 0.5) {
-            f *= 0.8;
+            double usado = g.completadaEn > 0 ? Math.max(0.03, (double) (g.completadaEn - ini) / dur) : 0.7;
+            // se apunta a que cueste casi todo el ciclo: si se completo en el 10% del tiempo, la proxima pide hasta 3 veces mas
+            f *= Math.max(1.05, Math.min(3.0, 0.8 / usado));
+        } else {
+            double avance = g.total / g.objetivo;
+            if (avance < 0.6) f *= Math.max(0.4, avance / 0.6);
         }
-        g.factor = Math.max(0.1, Math.min(5.0, f));
+        g.factor = Math.max(0.05, Math.min(100.0, f));
     }
 
     /** Sortea la mision: primero la rareza (con sus pesos) y despues un item de esa rareza que no haya salido hace poco. */
@@ -526,7 +529,11 @@ final class Misiones {
         double esfuerzo = ent.getDouble("esfuerzo." + t.id, 5000);
         g.item = mat.name();
         g.rareza = r.id;
-        g.objetivo = Math.max(ent.getInt("cantidad-minima", 3), Math.round(esfuerzo * g.factor / valor));
+        double exp = ent.getDouble("exponente-valor", 1.3);
+        double cantidad = esfuerzo * g.factor / Math.pow(valor, exp);
+        // tope: lo que se puede juntar y llevar razonablemente (los que no se apilan, como botes o picos, mucho menos)
+        double tope = mat.getMaxStackSize() > 1 ? mat.getMaxStackSize() * (double) ent.getInt("max-pilas", 1500) : ent.getInt("max-no-apilables", 150);
+        g.objetivo = Math.max(ent.getInt("cantidad-minima", 3), Math.round(Math.min(cantidad, tope)));
         g.historial.add(mat.name());
         while (g.historial.size() > 40) g.historial.remove(0);
     }

@@ -3,8 +3,8 @@
 # Cada ciclo (ver ciclo-dias) cada trabajo sortea UNA misión: entregar una cantidad de UN ítem en el NPC del trabajo.
 #  - El ítem sale de los "grupos" de más abajo. Cada ítem tiene un valor de dificultad (los más difíciles de conseguir o
 #    de fabricar valen más) que decide la rareza de la misión y cuántos hay que entregar.
-#  - Cantidad = esfuerzo del trabajo x factor / valor del ítem (mínimo cantidad-minima). El factor sube solo si la misión
-#    anterior se completó rápido y baja si casi nadie la hizo, así la dificultad se acomoda al servidor.
+#  - Cantidad = esfuerzo del trabajo x factor / valor del ítem ^ exponente (mínimo cantidad-minima). El factor sube solo (hasta
+#    3 veces por ciclo) si la misión anterior se completó rápido y baja si casi nadie la hizo, así la dificultad se acomoda al servidor.
 #  - Rareza: se sortea con "peso" y le toca un ítem de esa franja: "hasta" es la fracción de los ítems del trabajo (ordenados por valor) que entra en ella. Cada rareza define el fondo de
 #    plata (pozo) y el bono (+% de pago y de XP durante bono-horas) que se activa al completarla. El fondo de XP es un % del pozo.
 #  - La plata y el XP se reparten entre los colaboradores según el % de ítems que entregó cada uno (hay que haber entregado
@@ -34,13 +34,20 @@ participacion-minima: 0.01
 # Cantidad mínima que puede pedir una misión (para los ítems carísimos, como un bloque de netherite).
 cantidad-minima: 3
 
-# Esfuerzo de cada trabajo, en "valor de dificultad". Con 6000, un ítem de valor 1 pide 6000 y uno de valor 60 pide unos 100.
+# Esfuerzo de cada trabajo. Cantidad = esfuerzo x factor / valor^exponente-valor. Con el exponente > 1 los ítems fáciles (valor bajo)
+# piden muchísimo más que los difíciles: cobblestone pide decenas de miles y un diamante unos cientos.
+# Pensado para que casi todo el servidor colabore (Minero y Cazador son los que más juntan).
 esfuerzo:
-  minero: 6000
-  lenador: 3500
-  granjero: 4000
-  cazador: 3000
-  pescador: 1500
+  minero: 120000
+  cazador: 90000
+  lenador: 50000
+  granjero: 50000
+  pescador: 8000
+
+exponente-valor: 1.3
+# Tope de cantidad: este número de pilas (los que no se apilan, como botes o picos, usan max-no-apilables).
+max-pilas: 1500
+max-no-apilables: 150
 
 rarezas:
   comun:
