@@ -10,7 +10,12 @@ holograma:
   altura-texto: 0.25
   separacion-lineas: 0.26
   escala-item: 0.6
+  # El texto (nombre, precios, mensaje) solo se ve en la tienda que estas apuntando, a esta distancia como maximo. El item flota siempre desde rango-aparicion.
   rango-texto: 6.0
+  # Que tan cerca de la mira tiene que estar el cofre (o el item) para contar como "mirandola", en bloques; mirada-margen agranda eso al dejar de mirar (evita parpadeos).
+  mirada-radio: 0.8
+  mirada-radio-doble: 1.3
+  mirada-margen: 1.4
   rango-aparicion: 14.0
   rango-desaparicion: 24.0
   vaiven: 0.12
