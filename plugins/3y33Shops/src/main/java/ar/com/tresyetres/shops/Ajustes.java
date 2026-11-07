@@ -208,7 +208,7 @@ final class Ajustes implements Listener {
         }
         inv.setItem(A_PUNTO, item(Material.ENDER_PEARL, n("Punto de viaje de la tierra", NamedTextColor.AQUA), lp));
 
-        inv.setItem(A_VOLVER, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))));
+        inv.setItem(A_VOLVER, pl.banner().modelo(p, item(Material.ARROW, n("Volver", NamedTextColor.RED), List.of(l("Volver a la tienda.", NamedTextColor.GRAY))), "flecha_volver"));
     }
 
     /** Precio en centavos a texto editable: 1000 -> "10", 250 -> "2.5". */
@@ -238,7 +238,7 @@ final class Ajustes implements Listener {
         if (t.admins.isEmpty()) inv.setItem(13, item(Material.BARRIER, n("Sin administradores", NamedTextColor.GRAY), List.of(l("Agregá a alguien con el botón de abajo.", NamedTextColor.DARK_GRAY))));
         inv.setItem(ADM_AGREGAR, item(Material.LIME_DYE, n("Agregar administrador", NamedTextColor.GREEN), List.of(
                 l("Escribís su nombre en el chat.", NamedTextColor.GRAY), l("Máximo " + MAX_ADMINS + ".", NamedTextColor.GRAY), Component.empty(), l("Clic: agregar.", NamedTextColor.YELLOW))));
-        inv.setItem(ADM_VOLVER, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
+        inv.setItem(ADM_VOLVER, pl.banner().modelo(p, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()), "flecha_volver"));
         p.openInventory(inv);
     }
 
@@ -275,7 +275,7 @@ final class Ajustes implements Listener {
                                 l((compro ? "Pagó: " : "Cobró: "), NamedTextColor.GRAY).append(Component.text(Msg.dinero(r.total()), NamedTextColor.WHITE)),
                                 l(fecha, NamedTextColor.DARK_GRAY))));
             }
-            inv.setItem(HIS_VOLVER, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()));
+            inv.setItem(HIS_VOLVER, pl.banner().modelo(p, item(Material.ARROW, n("Volver a ajustes", NamedTextColor.RED), List.of()), "flecha_volver"));
             p.openInventory(inv);
         });
     }

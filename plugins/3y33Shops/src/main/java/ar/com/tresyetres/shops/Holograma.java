@@ -188,7 +188,7 @@ final class Holograma implements Listener {
                 double techoTexto = arranque + (Math.max(1, lineas) - 1) * sep + 0.32;
                 yield centro.clone().add(0, -hueco - techoTexto, 0);
             }
-            default -> centro.clone().add(0, 1.0 + mitad + hueco + vaiven - 0.15, 0);   // el item (en base + 0.15) apenas toca la tapa al bajar
+            default -> centro.clone().add(0, 1.0 + mitad + hueco + vaiven - 0.15 + pl.getConfig().getDouble("holograma.ajuste-arriba", -0.09), 0);   // el item (en base + 0.15) apenas toca la tapa al bajar; ajuste-arriba lo pega o lo despega del cofre
         };
     }
 

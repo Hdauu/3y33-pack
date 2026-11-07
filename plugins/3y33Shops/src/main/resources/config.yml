@@ -19,6 +19,8 @@ holograma:
   rango-aparicion: 14.0
   rango-desaparicion: 24.0
   vaiven: 0.12
+  # Cuando el holograma va arriba del cofre: negativo lo acerca al cofre, positivo lo aleja (en bloques).
+  ajuste-arriba: -0.09
 
 buscar-espera-segundos: 10
 
