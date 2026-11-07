@@ -69,7 +69,7 @@ final class Iconos implements Listener {
     }
 
     /** Fondos de ventana: cada uno es un caracter de la fuente 3y33:tienda del pack. */
-    static final char FONDO_TRABAJOS = (char) 0xE304, FONDO_TRABAJO = (char) 0xE305, FONDO_ACCIONES = (char) 0xE306, FONDO_CONFIRMAR = (char) 0xE307, FONDO_MISIONES = (char) 0xE308, FONDO_ELEGIR = (char) 0xE309;
+    static final char FONDO_TRABAJOS = (char) 0xE304, FONDO_TRABAJO = (char) 0xE305, FONDO_ACCIONES = (char) 0xE306, FONDO_CONFIRMAR = (char) 0xE307, FONDO_MISIONES = (char) 0xE308, FONDO_ELEGIR = (char) 0xE309, FONDO_CAMINO = (char) 0xE30A;
     private static final char CORRER_8 = (char) 0xF808;
 
     /** Titulo con el fondo ilustrado (corrido 8 a la izquierda para quedar pegado al borde); sin el pack, el titulo comun. */
