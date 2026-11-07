@@ -47,6 +47,7 @@ public final class TrabajosPlugin extends JavaPlugin {
         perfiles = new Perfiles(this);
         misiones = new Misiones(this);
         misiones.cargar();
+        pago.cargarNiveles();
         iconos = new Iconos(this);
         colocados = new Colocados(this);
         servicio = new Servicio(this);

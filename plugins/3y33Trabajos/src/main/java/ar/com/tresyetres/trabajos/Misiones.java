@@ -286,13 +286,14 @@ final class Misiones {
     boolean entregar(Player p, Trabajo t, int tipo, Perfil.Mision m) {
         Perfil f = pl.perfiles().de(p);
         if (!puedeEntregar(p, t)) return false;
-        if (m == null || m.estado != Perfil.Mision.ACTIVA) { Msg.error(p, "Esa misión ya no está activa."); return false; }
+        if (m == null || m.estado != Perfil.Mision.ACTIVA) { Msg.error(p, "Esa misión ya no está activa."); fallo(p); return false; }
         int falta = m.meta - m.entregado;
         int tiene = contar(p, m.item);
         int n = Math.min(falta, tiene);
         if (n <= 0) {
-            Msg.error(p, "No tenés ninguno de esos items (sin nombre ni encantamientos) en el inventario.");
-            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.7f, 1.0f);
+            Msg.aviso(p, Component.text("No tenés ", NamedTextColor.RED).append(Component.translatable(m.item.translationKey()))
+                    .append(Component.text(" (sin nombre ni encantamientos) en el inventario. Ojo con los parecidos: un bloque infestado no es el común.", NamedTextColor.RED)));
+            fallo(p);
             return false;
         }
         sacar(p, m.item, n);
@@ -319,6 +320,7 @@ final class Misiones {
                 Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(1600), Duration.ofMillis(500))));
         p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.2f);
         pl.pago().subirXp(p, f, t, xp);
+        pl.pago().avisarNivel(p, t, g);
         if (tipo != SEMANAL && diariasHechas(g)) sumarRacha(p, g, t);
     }
 
@@ -582,10 +584,13 @@ final class Misiones {
     boolean soloEnNpc() { return ent.getBoolean("solo-en-npc", true); }
 
     /** true si puede entregar: tiene el trabajo puesto y, si hace falta, esta cerca del NPC. Si no, le avisa. */
+    /** Ruido de "no se pudo" para cualquier entrega que falla. */
+    private void fallo(Player p) { p.playSound(p, Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f); }
+
     boolean puedeEntregar(Player p, Trabajo t) {
         Perfil f = pl.perfiles().de(p);
-        if (f.activo != t) { Msg.error(p, "Tenés que tener el trabajo de " + t.nombre + " para entregar."); return false; }
-        if (!enNpc(p, t)) { Msg.error(p, "Las entregas se hacen en el NPC de " + t.nombre + ". Acercate y hacele clic."); return false; }
+        if (f.activo != t) { Msg.error(p, "Tenés que tener el trabajo de " + t.nombre + " para entregar."); fallo(p); return false; }
+        if (!enNpc(p, t)) { Msg.error(p, "Las entregas se hacen en el NPC de " + t.nombre + ". Acercate y hacele clic."); fallo(p); return false; }
         return true;
     }
 
@@ -597,8 +602,8 @@ final class Misiones {
         if (!puedeEntregar(p, t)) return 0;
         Global g = global(t);
         Material mat = itemGlobal(t);
-        if (mat == null) { Msg.error(p, "Esta misión global todavía no tiene un item."); return 0; }
-        if (g.completada) { Msg.error(p, "La misión global ya se completó. ¡Cobrá tu parte!"); return 0; }
+        if (mat == null) { Msg.error(p, "Esta misión global todavía no tiene un item."); fallo(p); return 0; }
+        if (g.completada) { Msg.error(p, "La misión global ya se completó. ¡Cobrá tu parte!"); fallo(p); return 0; }
         long faltan = (long) Math.ceil(g.objetivo - g.total);
         ItemStack molde = new ItemStack(mat);
         ItemStack[] cont = p.getInventory().getStorageContents();
@@ -614,7 +619,7 @@ final class Misiones {
         if (tomados == 0) {
             Msg.aviso(p, Component.text("No tenés ", NamedTextColor.RED).append(itemGlobalNombre(t))
                     .append(Component.text(soloMano ? " en la mano (sin nombre ni encantamientos)." : " (tiene que ser sin nombre ni encantamientos).", NamedTextColor.RED)));
-            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.7f, 1.0f);
+            fallo(p);
             return 0;
         }
         p.getInventory().setStorageContents(cont);
@@ -625,6 +630,7 @@ final class Misiones {
                 .append(Component.text("  (" + Msg.num(Math.min(g.total, g.objetivo), 0) + "/" + Msg.num(g.objetivo, 0) + ")", NamedTextColor.YELLOW)));
         p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.8f, 1.1f);
         if (!g.completada && g.total >= g.objetivo) completarGlobal(t, g);
+        pl.npcs().actualizar();
         return (int) tomados;
     }
 

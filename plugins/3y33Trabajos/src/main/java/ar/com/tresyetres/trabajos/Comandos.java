@@ -47,6 +47,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 pl.catalogo().cargar();
                 pl.rarezas().cargar();
                 pl.misiones().cargar();
+                pl.pago().cargarNiveles();
                 Msg.ok(s, "Configuración y acciones recargadas.");
             }
             case "nivel", "xp" -> {
