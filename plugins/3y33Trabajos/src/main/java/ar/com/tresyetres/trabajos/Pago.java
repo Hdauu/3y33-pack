@@ -186,7 +186,7 @@ final class Pago {
         Msg.aviso(p, Component.text("¡Subiste a nivel " + g.nivel + " de ", NamedTextColor.GREEN)
                 .append(Component.text(t.nombre, t.color))
                 .append(Component.text("! Multiplicador x" + Msg.num(personal(g), 2) + ".", NamedTextColor.GRAY)));
-        pl.recompensas().ofrecer(p, t, g);
+        pl.recompensas().alSubir(p, t, g);
         if (g.nivel == Perfil.NIVEL_MAX) {
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             Bukkit.broadcast(Component.text("★ ", NamedTextColor.GOLD)
