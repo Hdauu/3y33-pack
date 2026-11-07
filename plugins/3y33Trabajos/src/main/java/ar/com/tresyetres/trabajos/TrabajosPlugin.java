@@ -14,6 +14,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     private Perfiles perfiles;
     private Iconos iconos;
     private Colocados colocados;
+    private Balance balance;
     private Servicio servicio;
     private Menus menus;
     private Misiones misiones;
@@ -25,6 +26,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     Perfiles perfiles() { return perfiles; }
     Iconos iconos() { return iconos; }
     Colocados colocados() { return colocados; }
+    Balance balance() { return balance; }
     Servicio servicio() { return servicio; }
     Menus menus() { return menus; }
     Misiones misiones() { return misiones; }
@@ -50,6 +52,8 @@ public final class TrabajosPlugin extends JavaPlugin {
         pago.cargarNiveles();
         iconos = new Iconos(this);
         colocados = new Colocados(this);
+        balance = new Balance(this);
+        balance.cargar();
         servicio = new Servicio(this);
         menus = new Menus(this);
 
@@ -72,6 +76,7 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, () -> { misiones.revisar(); misiones.guardarSiHaceFalta(); }, 600L, 600L);
         Bukkit.getScheduler().runTaskTimer(this, () -> pago.porTiempo(), 1200L, 1200L);
         Bukkit.getScheduler().runTaskTimer(this, escucha::muestrear, 20L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> balance.guardarSiHaceFalta(), 6000L, 6000L);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
                 Perfil f = perfiles.existente(p);
@@ -90,6 +95,7 @@ public final class TrabajosPlugin extends JavaPlugin {
             }
         }
         if (colocados != null) colocados.volcarTodo();
+        if (balance != null) balance.guardar();
         if (perfiles != null) { perfiles.guardarTodo(); perfiles.cerrar(); }
         if (rarezas != null) rarezas.guardar();
         if (misiones != null) misiones.guardar();

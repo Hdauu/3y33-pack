@@ -6,10 +6,13 @@ import net.kyori.adventure.title.Title;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Locale;
 
 /** Calcula y paga cada accion: plata por Vault, XP, momentum y subida de nivel. */
 final class Pago {
@@ -32,6 +35,17 @@ final class Pago {
         nivelBase = pl.getConfig().getDouble("niveles.base", 1200);
         nivelLineal = pl.getConfig().getDouble("niveles.lineal", 80);
         nivelCuad = pl.getConfig().getDouble("niveles.cuadratico", 1.5);
+        mundos = pl.getConfig().getStringList("mundos").stream().map(m -> m.toLowerCase(Locale.ROOT)).toList();
+    }
+
+    private List<String> mundos = List.of();
+
+    /** true si en ese mundo pagan las acciones (los nombres de config.yml valen como prefijo: 3y33SMP incluye el Nether y el End). */
+    boolean mundoPaga(World w) {
+        if (mundos.isEmpty()) return true;
+        String n = w.getName().toLowerCase(Locale.ROOT);
+        for (String m : mundos) if (n.startsWith(m)) return true;
+        return false;
     }
 
     /** XP que hace falta para pasar del nivel n al siguiente. */
@@ -51,6 +65,7 @@ final class Pago {
 
     /** Paga una accion hecha por el jugador (el trabajo activo ya se verifico afuera). */
     void accion(Player p, Accion a) {
+        if (!mundoPaga(p.getWorld())) return;
         Perfil f = pl.perfiles().de(p);
         if (f.activo != a.trabajo()) return;
         long ahora = System.currentTimeMillis();
@@ -66,6 +81,8 @@ final class Pago {
         f.momentum = Math.min(pl.getConfig().getDouble("momentum.maximo", 3.0), mom + pl.getConfig().getDouble("momentum.por-accion", 0.02));
         f.momentumT = ahora;
         f.accionesVentana++;
+        f.ultimaAccion = ahora;
+        pl.balance().plata(a.trabajo(), Balance.ACCIONES, pesos);
         if (f.ultimoPagoTiempo == 0) f.ultimoPagoTiempo = ahora;
         depositar(p, f, pesos);
         subirXp(p, f, a.trabajo(), xp);
@@ -83,6 +100,7 @@ final class Pago {
         long afk = pl.getConfig().getLong("afk-segundos", 60) * 1000L;
         for (Player p : Bukkit.getOnlinePlayers()) {
             Perfil f = pl.perfiles().existente(p);
+            if (f != null && f.activo != null && ahora - f.ultimaAccion <= 60_000L) pl.balance().minuto(f.activo);
             if (f == null || f.activo == null || f.accionesVentana <= 0) continue;
             if (ahora - f.ultimoPagoTiempo < cada) continue;
             if (ahora - f.ultimoMov > afk) {          // quieto: no cobra y empieza de cero
@@ -92,6 +110,7 @@ final class Pago {
             }
             double pesos = base * personal(f.de(f.activo)) * (1.0 + pl.misiones().bonoGlobal(f.activo));
             depositar(p, f, pesos);
+            pl.balance().plata(f.activo, Balance.TIEMPO, pesos);
             f.accionesVentana = 0;
             f.ultimoPagoTiempo = ahora;
             Msg.aviso(p, Component.text("Pago por tiempo de " + f.activo.nombre + ": ", NamedTextColor.GRAY)
@@ -117,6 +136,7 @@ final class Pago {
     void subirXp(Player p, Perfil f, Trabajo t, double xp) {
         Perfil.Progreso g = f.de(t);
         if (g.nivel >= Perfil.NIVEL_MAX) return;
+        pl.balance().xp(t, xp);
         g.xp += xp;
         while (g.nivel < Perfil.NIVEL_MAX && g.xp >= xpNecesaria(g.nivel)) {
             g.xp -= xpNecesaria(g.nivel);

@@ -38,10 +38,27 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
+            case "balance" -> {
+                int horas = 24;
+                if (a.length > 1) { try { horas = Math.max(1, Math.min(72, Integer.parseInt(a[1]))); } catch (NumberFormatException ignorada) { } }
+                Msg.info(s, "Balance de las últimas " + horas + " h (plata por hora activa de cada trabajo):");
+                double totalPlata = 0;
+                for (Trabajo t : Trabajo.values()) {
+                    double[] v = pl.balance().suma(t, horas);
+                    double plata = v[Balance.ACCIONES] + v[Balance.TIEMPO] + v[Balance.MISIONES] + v[Balance.GLOBAL];
+                    totalPlata += plata;
+                    if (v[Balance.MINUTOS] < 1) { Msg.info(s, " · " + t.nombre + ": sin horas activas (plata creada: $" + Msg.num(plata, 0) + ")"); continue; }
+                    double h = v[Balance.MINUTOS] / 60.0;
+                    Msg.info(s, " · " + t.nombre + ": " + Msg.num(h, 1) + " h activas · $" + Msg.num(plata / h, 0) + "/h (acciones " + Msg.num(v[Balance.ACCIONES] / h, 0)
+                            + " + tiempo " + Msg.num(v[Balance.TIEMPO] / h, 0) + " + misiones " + Msg.num(v[Balance.MISIONES] / h, 0) + " + global " + Msg.num(v[Balance.GLOBAL] / h, 0)
+                            + ") · " + Msg.num(v[Balance.XP] / h, 0) + " XP/h");
+                }
+                Msg.info(s, "Plata creada por los trabajos en total: $" + Msg.num(totalPlata, 0));
+            }
             case "recargar" -> {
                 pl.reloadConfig();
                 pl.catalogo().cargar();
@@ -188,7 +205,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);

@@ -4,6 +4,10 @@ reroll-hora: 6
 # Horas sin trabajo al abandonar uno (no se puede tomar otro hasta que pasen).
 abandonar-horas: 13
 
+# Mundos donde pagan las acciones (picar, matar, pescar, criar). Vale como prefijo: 3y33SMP incluye 3y33SMP_nether y 3y33SMP_the_end. Vacío = todos.
+mundos:
+  - 3y33SMP
+
 # Iconos y marcos del resource pack en los menus: todos, staff o no. Bedrock siempre ve los items comunes.
 iconos-pack: todos
 

@@ -77,6 +77,7 @@ final class Perfil {
     double momentum = 1.0;
     long momentumT;
     long ultimoMov = System.currentTimeMillis();
+    long ultimaAccion;
     double mx, my, mz;
     float myaw, mpitch;
     long ultimoPagoTiempo;

@@ -54,6 +54,8 @@ final class Escucha implements Listener {
         Perfil f = pl.perfiles().de(e.getPlayer());
         f.nombre = e.getPlayer().getName();
         f.ultimoMov = System.currentTimeMillis();
+        Player jugador = e.getPlayer();
+        Bukkit.getScheduler().runTaskLater(pl, () -> { if (jugador.isOnline()) pl.misiones().pagarPendientes(jugador); }, 60L);
     }
 
     @EventHandler
@@ -81,6 +83,7 @@ final class Escucha implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void alColocar(BlockPlaceEvent e) {
         Block b = e.getBlockPlaced();
+        if (!pl.pago().mundoPaga(b.getWorld())) return;
         if (!pl.catalogo().pagable(b.getType())) return;
         if (b.getBlockData() instanceof Ageable) return;
         pl.colocados().marcar(b);
@@ -89,7 +92,7 @@ final class Escucha implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void alRomper(BlockBreakEvent e) {
         Player p = e.getPlayer();
-        if (!enJuego(p)) return;
+        if (!enJuego(p) || !pl.pago().mundoPaga(p.getWorld())) return;
         Perfil f = pl.perfiles().existente(p);
         if (f == null || f.activo == null) return;
         Block b = e.getBlock();

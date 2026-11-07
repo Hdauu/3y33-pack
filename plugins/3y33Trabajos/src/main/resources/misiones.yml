@@ -30,90 +30,246 @@ global:
     cazador: 1500             # mobs hostiles
     pescador: 1000            # pescas
 
-# Que se pide, por trabajo y rareza: material: cantidad (de una diaria).
+# Que se pide, por trabajo y rareza: material: cantidad (de una diaria). La semanal pide semanal-factor veces esa cantidad.
+# Se pueden agregar items (que sean del oficio del trabajo); la plata no depende del item sino de la rareza.
 pools:
   minero:
     COMUN:
       COBBLESTONE: 256
       COAL: 64
       RAW_COPPER: 64
+      COBBLED_DEEPSLATE: 256
+      ANDESITE: 192
+      DIORITE: 192
+      GRANITE: 192
+      TUFF: 192
+      GRAVEL: 192
+      SAND: 192
+      SANDSTONE: 128
+      NETHERRACK: 256
+      BASALT: 192
+      BLACKSTONE: 192
+      STONE: 128
+      DEEPSLATE: 128
+      GOLD_NUGGET: 128
     RARA:
       RAW_IRON: 48
       REDSTONE: 96
       LAPIS_LAZULI: 64
+      COPPER_INGOT: 64
+      IRON_INGOT: 36
+      GLOWSTONE_DUST: 80
+      COAL_ORE: 40
+      COPPER_ORE: 40
+      END_STONE: 80
+      CALCITE: 80
+      DRIPSTONE_BLOCK: 80
+      MAGMA_BLOCK: 60
+      SOUL_SAND: 100
     EPICA:
       RAW_GOLD: 32
       AMETHYST_SHARD: 48
       QUARTZ: 48
+      GOLD_INGOT: 24
+      IRON_ORE: 32
+      GOLD_ORE: 20
+      LAPIS_ORE: 32
+      OBSIDIAN: 24
+      REDSTONE_ORE: 36
+      DEEPSLATE_IRON_ORE: 24
+      DEEPSLATE_GOLD_ORE: 18
+      NETHER_QUARTZ_ORE: 40
+      COAL_BLOCK: 9
     LEGENDARIA:
       DIAMOND: 8
       EMERALD: 6
       ANCIENT_DEBRIS: 2
+      DIAMOND_ORE: 6
+      EMERALD_ORE: 5
+      DEEPSLATE_DIAMOND_ORE: 5
+      GOLD_BLOCK: 3
+      LAPIS_BLOCK: 6
+      REDSTONE_BLOCK: 8
+      IRON_BLOCK: 4
   lenador:
     COMUN:
       OAK_LOG: 128
       SPRUCE_LOG: 128
       BIRCH_LOG: 128
+      STICK: 256
+      OAK_PLANKS: 192
+      SPRUCE_PLANKS: 192
+      BIRCH_PLANKS: 192
+      STRIPPED_OAK_LOG: 96
+      BAMBOO: 128
+      VINE: 128
+      OAK_LEAVES: 192
+      OAK_SAPLING: 64
     RARA:
       JUNGLE_LOG: 96
       ACACIA_LOG: 96
       DARK_OAK_LOG: 96
+      ACACIA_PLANKS: 128
+      STRIPPED_SPRUCE_LOG: 96
+      BAMBOO_BLOCK: 64
+      OAK_FENCE: 48
+      OAK_DOOR: 32
+      APPLE: 48
+      HONEYCOMB: 32
+      CHARCOAL: 64
     EPICA:
       CHERRY_LOG: 96
       MANGROVE_LOG: 96
       CRIMSON_STEM: 96
+      CHERRY_PLANKS: 96
+      MANGROVE_ROOTS: 96
+      CHEST: 24
+      BARREL: 24
+      CRAFTING_TABLE: 40
+      HONEY_BOTTLE: 24
+      BOOKSHELF: 8
     LEGENDARIA:
       PALE_OAK_LOG: 64
       WARPED_STEM: 64
       SHROOMLIGHT: 32
+      BEE_NEST: 5
+      BEEHIVE: 6
+      PALE_OAK_PLANKS: 64
+      LECTERN: 12
+      SMITHING_TABLE: 12
   granjero:
     COMUN:
       WHEAT: 128
       CARROT: 96
       POTATO: 96
+      SUGAR_CANE: 192
+      EGG: 128
+      FEATHER: 128
+      BEEF: 96
+      PORKCHOP: 96
+      CHICKEN: 96
+      MUTTON: 96
+      BONE_MEAL: 192
+      KELP: 192
+      CACTUS: 192
     RARA:
       BEETROOT: 64
       MELON_SLICE: 160
       SWEET_BERRIES: 96
+      BAKED_POTATO: 80
+      BREAD: 40
+      COOKIE: 80
+      SUGAR: 120
+      LEATHER: 64
+      RABBIT: 64
+      COOKED_BEEF: 60
+      COOKED_PORKCHOP: 60
+      COOKED_CHICKEN: 60
+      DRIED_KELP: 96
+      GLOW_BERRIES: 96
+      BROWN_MUSHROOM: 64
+      RED_MUSHROOM: 64
+      MILK_BUCKET: 40
     EPICA:
       PUMPKIN: 48
       COCOA_BEANS: 64
       NETHER_WART: 64
+      MELON: 32
+      CARVED_PUMPKIN: 40
+      JACK_O_LANTERN: 24
+      HONEYCOMB: 24
+      HONEY_BOTTLE: 20
+      MUSHROOM_STEW: 24
+      BEETROOT_SOUP: 24
+      RABBIT_STEW: 16
+      SUNFLOWER: 40
+      LILAC: 40
+      ROSE_BUSH: 40
     LEGENDARIA:
       HAY_BLOCK: 24
       GOLDEN_CARROT: 24
       PUMPKIN_PIE: 16
+      CAKE: 5
+      HONEY_BLOCK: 5
+      TORCHFLOWER: 12
+      PITCHER_PLANT: 12
+      RABBIT_FOOT: 8
+      CHORUS_FRUIT: 24
   cazador:
     COMUN:
       BONE: 64
       ROTTEN_FLESH: 96
       STRING: 64
+      GOLD_NUGGET: 96
     RARA:
       GUNPOWDER: 64
       SPIDER_EYE: 48
       ARROW: 96
+      SPECTRAL_ARROW: 48
+      BLAZE_POWDER: 40
+      WIND_CHARGE: 40
+      PRISMARINE_SHARD: 36
+      FIRE_CHARGE: 28
+      FIREWORK_ROCKET: 24
+      BOW: 16
     EPICA:
       ENDER_PEARL: 16
       SLIME_BALL: 48
       BLAZE_ROD: 24
+      MAGMA_CREAM: 36
+      BREEZE_ROD: 24
+      PRISMARINE_CRYSTALS: 32
+      ENDER_EYE: 9
+      TNT: 9
+      BONE_BLOCK: 10
+      FERMENTED_SPIDER_EYE: 28
     LEGENDARIA:
       GHAST_TEAR: 8
       PHANTOM_MEMBRANE: 24
       WITHER_SKELETON_SKULL: 2
+      SHULKER_SHELL: 4
+      SKELETON_SKULL: 3
+      ZOMBIE_HEAD: 3
+      CREEPER_HEAD: 3
   pescador:
     COMUN:
       COD: 64
       SALMON: 64
       STICK: 64
+      KELP: 128
+      SEAGRASS: 128
+      STRING: 48
+      BONE: 48
+      ROTTEN_FLESH: 48
+      DRIED_KELP: 96
+      COOKED_COD: 40
+      COOKED_SALMON: 36
+      INK_SAC: 36
     RARA:
       TROPICAL_FISH: 24
       PUFFERFISH: 24
       BOWL: 32
+      GLASS_BOTTLE: 32
+      SEA_PICKLE: 32
+      GLOW_INK_SAC: 24
+      TURTLE_SCUTE: 16
+      PRISMARINE_SHARD: 24
+      FISHING_ROD: 12
+      BUCKET: 10
     EPICA:
       LILY_PAD: 32
       LEATHER: 24
       TRIPWIRE_HOOK: 16
+      TURTLE_EGG: 10
+      SPONGE: 6
+      SEA_LANTERN: 6
+      COD_BUCKET: 8
+      SALMON_BUCKET: 8
+      SMOKER: 8
+      DRIED_KELP_BLOCK: 10
     LEGENDARIA:
       NAUTILUS_SHELL: 6
       NAME_TAG: 4
       SADDLE: 3
+      TROPICAL_FISH_BUCKET: 6
+      PUFFERFISH_BUCKET: 6
