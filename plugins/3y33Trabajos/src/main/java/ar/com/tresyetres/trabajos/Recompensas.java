@@ -191,6 +191,7 @@ final class Recompensas {
         Perfil.Progreso g = f.de(t);
         String[] of = g.pend.get(nivel);
         if (of == null || i < 0 || i >= of.length) { Msg.error(p, "Esa recompensa ya no está."); return false; }
+        if (nivel != g.pend.firstKey()) { Msg.error(p, "Primero elegí la recompensa del nivel " + g.pend.firstKey() + "."); return false; }
         String k = of[i];
         g.pend.remove(nivel);
         g.hechas.put(nivel, k);

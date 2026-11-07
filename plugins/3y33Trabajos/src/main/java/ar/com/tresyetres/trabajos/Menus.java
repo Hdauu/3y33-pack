@@ -203,7 +203,7 @@ final class Menus implements Listener {
         lr.add(pendientes > 0 ? Iconos.txtNegrita("¡Tenés " + pendientes + " para elegir!", NamedTextColor.GREEN) : linea("Sin recompensas pendientes.", NamedTextColor.YELLOW));
         lr.add(Component.empty());
         lr.add(linea("Clic para ver el camino", NamedTextColor.GREEN));
-        ItemStack ir = Iconos.item(Material.CHEST, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), lr);
+        ItemStack ir = regalo(p, false, Iconos.txtNegrita("Recompensas", NamedTextColor.LIGHT_PURPLE), lr);
         if (pendientes > 0) { org.bukkit.inventory.meta.ItemMeta im = ir.getItemMeta(); im.setEnchantmentGlintOverride(true); ir.setItemMeta(im); }
         v.poner(28, ir, e -> { sonido(p); recompensas(p, t); });
         v.poner(25, Iconos.item(Material.EXPERIENCE_BOTTLE, Iconos.txtNegrita("Boosts", NamedTextColor.GOLD), List.of(
@@ -286,6 +286,13 @@ final class Menus implements Listener {
         v.abrir(p);
     }
 
+    /** Icono de "recompensa": un regalo (pack) o una llave comun. bloqueado = gris, todavia no se puede abrir. */
+    private ItemStack regalo(Player p, boolean bloqueado, Component nombre, List<Component> lore) {
+        ItemStack it = Iconos.item(Material.TRIAL_KEY, nombre, lore);
+        if (pl.iconos().conPack(p)) pl.iconos().modelo(it, bloqueado ? "reclamar_bloqueado" : "reclamar");
+        return it;
+    }
+
     /** Un nodo del camino: ya elegido, esperando que elijas, alcanzado sin recompensa o todavia lejos. */
     private void nodo(Ventana v, int slot, Player p, Trabajo t, Perfil.Progreso g, int nivel) {
         String hecha = g.hechas.get(nivel);
@@ -296,15 +303,23 @@ final class Menus implements Listener {
             lore.addAll(pl.recompensas().detalle(hecha, t, g));
             v.poner(slot, pl.recompensas().icono(p, hecha, lore));
         } else if (g.pend.containsKey(nivel)) {
-            ItemStack it = Iconos.item(Material.CHEST, Iconos.txtNegrita("Nivel " + nivel + " · ¡Elegí tu recompensa!", NamedTextColor.GREEN), List.of(
-                    linea("Hay 3 opciones esperándote.", GRIS),
-                    linea("Elegís 1 y las otras dos se pierden.", GRIS),
-                    Component.empty(),
-                    linea("Clic para elegir", NamedTextColor.GREEN)));
-            org.bukkit.inventory.meta.ItemMeta im = it.getItemMeta();
-            im.setEnchantmentGlintOverride(true);
-            it.setItemMeta(im);
-            v.poner(slot, it, e -> { sonido(p); elegirRecompensa(p, t, nivel); });
+            int primera = g.pend.firstKey();
+            if (nivel != primera) {
+                v.poner(slot, regalo(p, true, Iconos.txtNegrita("Nivel " + nivel + " · bloqueada", GRIS), List.of(
+                        linea("Primero elegí la recompensa del nivel " + primera + ".", NamedTextColor.RED),
+                        linea("Se reclaman en orden, de a una.", GRIS))),
+                        e -> { p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.7f); });
+            } else {
+                ItemStack it = regalo(p, false, Iconos.txtNegrita("Nivel " + nivel + " · ¡Elegí tu recompensa!", NamedTextColor.GREEN), List.of(
+                        linea("Hay 3 opciones esperándote.", GRIS),
+                        linea("Elegís 1 y las otras dos se pierden.", GRIS),
+                        Component.empty(),
+                        linea("Clic para elegir", NamedTextColor.GREEN)));
+                org.bukkit.inventory.meta.ItemMeta im = it.getItemMeta();
+                im.setEnchantmentGlintOverride(true);
+                it.setItemMeta(im);
+                v.poner(slot, it, e -> { sonido(p); elegirRecompensa(p, t, nivel); });
+            }
         } else if (nivel <= g.nivel) {
             v.poner(slot, Iconos.item(Material.IRON_BARS, Iconos.txtNegrita("Nivel " + nivel, GRIS), List.of(linea("Sin recompensa (lo alcanzaste antes del camino).", GRIS))));
         } else {
@@ -319,6 +334,7 @@ final class Menus implements Listener {
         Perfil.Progreso g = f.de(t);
         String[] of = g.pend.get(nivel);
         if (of == null) { recompensas(p, t); return; }
+        if (nivel != g.pend.firstKey()) { Msg.error(p, "Primero elegí la recompensa del nivel " + g.pend.firstKey() + "."); recompensas(p, t); return; }
         Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_MISIONES, "Recompensa · nivel " + nivel));
         int[] columnas = {1, 4, 7};
         int[][] zonas = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}};
@@ -381,7 +397,7 @@ final class Menus implements Listener {
         if (n == 0) v.poner(22, Iconos.item(Material.BARRIER, Iconos.txtNegrita("No tenés boosts guardados", NamedTextColor.GRAY), List.of(
                 linea("Elegilos en el camino de recompensas.", GRIS))));
         v.poner(36, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); trabajo(p, t); });
-        v.poner(40, Iconos.item(Material.CHEST, Iconos.txtNegrita("Camino de recompensas", NamedTextColor.LIGHT_PURPLE), List.of(linea("Clic para abrir", NamedTextColor.GREEN))), e -> { sonido(p); recompensas(p, t); });
+        v.poner(40, regalo(p, false, Iconos.txtNegrita("Camino de recompensas", NamedTextColor.LIGHT_PURPLE), List.of(linea("Clic para abrir", NamedTextColor.GREEN))), e -> { sonido(p); recompensas(p, t); });
         v.abrir(p);
     }
 

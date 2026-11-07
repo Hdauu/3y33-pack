@@ -56,6 +56,29 @@ def destellos(color, n):
     return _capa(forma, color)
 
 
+def regalo(base, osc, luz, cinta, cinta_osc):
+    """Regalo (caja con cinta y mono) de 16x16, dibujado a mano: el icono de "elegi tu recompensa"."""
+    forma = {}
+    def r(x0, y0, x1, y1, c):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1): forma[(x, y)] = c
+    r(2, 8, 13, 14, base); r(13, 8, 13, 14, osc); r(2, 14, 13, 14, osc)          # cuerpo
+    r(1, 5, 14, 7, base); r(1, 5, 14, 5, luz); r(1, 7, 14, 7, osc)                # tapa
+    r(7, 5, 8, 14, cinta); r(8, 5, 8, 14, cinta_osc)                              # cinta vertical
+
+    for x in range(1, 15): forma[(x, 6)] = cinta if x not in (8,) else cinta_osc
+    for (x, y) in ((4, 3), (5, 2), (6, 3), (5, 4), (4, 4), (6, 4), (11, 3), (10, 2), (9, 3), (10, 4), (9, 4), (11, 4)): forma[(x, y)] = cinta
+    forma[(5, 3)] = cinta_osc; forma[(10, 3)] = cinta_osc
+    r(7, 3, 8, 4, cinta_osc); forma[(7, 3)] = luz
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for (x, y) in forma:
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            p = (x + dx, y + dy)
+            if p not in forma and 0 <= p[0] < 16 and 0 <= p[1] < 16: im.putpixel(p, CONTORNO + (255,))
+    for (x, y), c in forma.items(): im.putpixel((x, y), tuple(c) + (255,))
+    return im
+
+
 ROTULOS = {'xp': 'XP', 'plata': 'PLATA', 'xpdirecta': 'AHORA', 'mega': 'MEGA'}
 
 
@@ -70,6 +93,8 @@ def variantes():
             out['recompensa_%s_%s_sel' % (tipo, r)] = (MC.carta(ROTULOS[tipo], COLOR[r], 'lista'), True, None)
     out['boost_mega'] = (flechas(COLOR['mega'], 4), False, BASE['mega'])
     out['recompensa_mega'] = (MC.carta(ROTULOS['mega'], COLOR['mega']), True, None)
+    out['reclamar'] = (regalo((196, 40, 52), (128, 22, 34), (236, 96, 96), (255, 204, 64), (200, 140, 30)), False, None)
+    out['reclamar_bloqueado'] = (regalo((128, 128, 138), (86, 86, 98), (170, 170, 180), (168, 168, 178), (118, 118, 130)), False, None)
     out['recompensa_mega_sel'] = (MC.carta(ROTULOS['mega'], COLOR['mega'], 'lista'), True, None)
     return out
 
@@ -88,7 +113,8 @@ def escribir(pack):
             json.dump({'oversized_in_gui': True, 'model': {'type': 'minecraft:model', 'model': '3y33:item/trabajos/' + nombre}},
                       open(os.path.join(its, nombre + '.json'), 'w'), indent=1)
         else:
-            json.dump({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'minecraft:item/' + base, 'layer1': '3y33:item/trabajos/' + nombre}},
+            tx = {'layer0': 'minecraft:item/' + base, 'layer1': '3y33:item/trabajos/' + nombre} if base else {'layer0': '3y33:item/trabajos/' + nombre}
+            json.dump({'parent': 'minecraft:item/generated', 'textures': tx},
                       open(os.path.join(mod, nombre + '.json'), 'w'), indent=1)
             json.dump({'model': {'type': 'minecraft:model', 'model': '3y33:item/trabajos/' + nombre}}, open(os.path.join(its, nombre + '.json'), 'w'), indent=1)
         n += 1
