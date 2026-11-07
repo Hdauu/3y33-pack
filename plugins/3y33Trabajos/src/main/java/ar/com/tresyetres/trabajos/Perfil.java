@@ -77,6 +77,8 @@ final class Perfil {
     double momentum = 1.0;
     long momentumT;
     long ultimoMov = System.currentTimeMillis();
+    double mx, my, mz;
+    float myaw, mpitch;
     long ultimoPagoTiempo;
     int accionesVentana;
     private final Map<String, long[]> topes = new HashMap<>();
@@ -127,7 +129,8 @@ final class Perfil {
         }
     }
 
-    void guardar(File f) {
+    /** El perfil como texto YAML (se escribe a disco aparte, sin frenar el servidor). */
+    String aTexto() {
         YamlConfiguration y = new YamlConfiguration();
         y.set("nombre", nombre);
         y.set("activo", activo == null ? null : activo.name());
@@ -150,6 +153,6 @@ final class Perfil {
             if (g.semanal != null) g.semanal.guardar(y.createSection(base + ".semanal"));
             for (int i = 0; i < 4; i++) if (g.opciones[i] != null) g.opciones[i].guardar(y.createSection(base + ".opcion" + i));
         }
-        try { y.save(f); } catch (IOException ex) { System.err.println("[3y33Trabajos] No pude guardar " + f + ": " + ex); }
+        return y.saveToString();
     }
 }

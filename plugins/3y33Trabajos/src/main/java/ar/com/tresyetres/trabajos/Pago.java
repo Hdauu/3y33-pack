@@ -100,9 +100,14 @@ final class Pago {
         }
     }
 
-    /** Suma plata acumulando los centavos sueltos: Vault no maneja fracciones de centavo. */
+    /** Suma plata al acumulado del jugador; se deposita en Vault cuando junta $1 o cada pocos segundos (no en cada bloque). */
     void depositar(Player p, Perfil f, double pesos) {
         f.pendiente += pesos;
+        if (f.pendiente >= 1.0) vaciar(p, f);
+    }
+
+    /** Deposita en Vault lo acumulado (en centavos enteros: Vault no maneja fracciones). */
+    void vaciar(Player p, Perfil f) {
         long centavos = (long) Math.floor(f.pendiente * 100.0 + 1e-9);
         if (centavos <= 0) return;
         f.pendiente -= centavos / 100.0;

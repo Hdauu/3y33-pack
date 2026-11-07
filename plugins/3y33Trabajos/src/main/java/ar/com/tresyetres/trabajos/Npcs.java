@@ -99,7 +99,7 @@ final class Npcs implements Listener {
         this.yaw0 = new NamespacedKey(pl, "npc-yaw0");
         this.archivo = new File(pl.getDataFolder(), "hologramas.yml");
         cargar();
-        Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 60L);
+        Bukkit.getScheduler().runTaskTimer(pl, this::actualizar, 40L, 100L);
         Bukkit.getScheduler().runTaskTimer(pl, this::mirar, 40L, 4L);
         Bukkit.getScheduler().runTaskLater(pl, this::migrar, 100L);
     }
@@ -357,9 +357,15 @@ final class Npcs implements Listener {
                 .append(Component.text(t.nombre, t.color, TextDecoration.BOLD));
     }
 
-    private static String nombreDe(UUID u) {
+    private final Map<UUID, String> nombres = new HashMap<>();
+
+    private String nombreDe(UUID u) {
+        String n = nombres.get(u);
+        if (n != null) return n;
         OfflinePlayer o = Bukkit.getOfflinePlayer(u);
-        return o.getName() != null ? o.getName() : "?";
+        if (o.getName() == null) return "?";
+        nombres.put(u, o.getName());
+        return o.getName();
     }
 
     private Component panel(Trabajo t, Player p) {
@@ -408,37 +414,54 @@ final class Npcs implements Listener {
         }
     }
 
-    /** Cada 2 ticks: el NPC mira al jugador mas cercano (a menos de 8 bloques); si no hay nadie, vuelve a su direccion. */
-    private void mirar() {
+    private record NpcMira(Mannequin m, float yaw0) { }
+    private List<NpcMira> miran = new ArrayList<>();
+    private long miranHasta;
+
+    /** Busca los NPC cargados (barrer las entidades del mundo es caro: se hace cada 3 segundos, no a cada giro). */
+    private void reconstruirMiran() {
+        List<NpcMira> nueva = new ArrayList<>();
         for (World w : Bukkit.getWorlds()) {
             if (w.getPlayers().isEmpty()) continue;
             for (Mannequin m : w.getEntitiesByClass(Mannequin.class)) {
                 if (!m.getScoreboardTags().contains(TAG)) continue;
-                Location o = m.getLocation();
                 Float guardado = m.getPersistentDataContainer().get(yaw0, PersistentDataType.FLOAT);
-                if (guardado == null) { guardado = o.getYaw(); m.getPersistentDataContainer().set(yaw0, PersistentDataType.FLOAT, guardado); }
-                float inicial = guardado;
-                Player cerca = null;
-                double mejor = 8 * 8;
-                for (Player p : w.getPlayers()) {
-                    double d = p.getLocation().distanceSquared(o);
-                    if (d < mejor) { mejor = d; cerca = p; }
-                }
-                float yaw = inicial, pitch = 0f;
-                if (cerca != null) {
-                    Location ojos = cerca.getEyeLocation();
-                    double dx = ojos.getX() - o.getX(), dz = ojos.getZ() - o.getZ();
-                    double dy = ojos.getY() - (o.getY() + 1.6);
-                    yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-                    pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
-                }
-                if (Math.abs(o.getPitch() - pitch) < 1.5f && Math.abs(((o.getYaw() - yaw + 540f) % 360f) - 180f) < 1.5f) continue;
-                m.setRotation(yaw, pitch);
+                if (guardado == null) { guardado = m.getLocation().getYaw(); m.getPersistentDataContainer().set(yaw0, PersistentDataType.FLOAT, guardado); }
+                nueva.add(new NpcMira(m, guardado));
             }
+        }
+        miran = nueva;
+    }
+
+    /** Cada 4 ticks: el NPC mira al jugador mas cercano (a menos de 8 bloques); si no hay nadie, vuelve a su direccion. */
+    private void mirar() {
+        long ahora = System.currentTimeMillis();
+        if (ahora >= miranHasta) { reconstruirMiran(); miranHasta = ahora + 3000L; }
+        for (NpcMira n : miran) {
+            Mannequin m = n.m();
+            if (!m.isValid()) continue;
+            World w = m.getWorld();
+            Location o = m.getLocation();
+            Player cerca = null;
+            double mejor = 8 * 8;
+            for (Player p : w.getPlayers()) {
+                double d = p.getLocation().distanceSquared(o);
+                if (d < mejor) { mejor = d; cerca = p; }
+            }
+            float yaw = n.yaw0(), pitch = 0f;
+            if (cerca != null) {
+                Location ojos = cerca.getEyeLocation();
+                double dx = ojos.getX() - o.getX(), dz = ojos.getZ() - o.getZ();
+                double dy = ojos.getY() - (o.getY() + 1.6);
+                yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+            }
+            if (Math.abs(o.getPitch() - pitch) < 1.5f && Math.abs(((o.getYaw() - yaw + 540f) % 360f) - 180f) < 1.5f) continue;
+            m.setRotation(yaw, pitch);
         }
     }
 
-    /** Cada 3 segundos (para no cargar el servidor): pone, saca y actualiza los hologramas: el titulo lo ve todo el mundo y el panel es uno por jugador cercano. */
+    /** Cada 5 segundos (para no cargar el servidor): pone, saca y actualiza los hologramas: el titulo lo ve todo el mundo y el panel es uno por jugador cercano. */
     void actualizar() {
         for (Holo h : holos.values()) {
             World w = h.loc.getWorld();
