@@ -35,13 +35,45 @@ final class Menus implements Listener {
     public void alClic(InventoryClickEvent e) {
         if (!(e.getView().getTopInventory().getHolder() instanceof Ventana v)) return;
         e.setCancelled(true);
-        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
+        Player quien = e.getWhoClicked() instanceof Player pp ? pp : null;
+        if (e.getClickedInventory() != e.getView().getTopInventory()) {
+            // tocar un item del propio inventario con la ventana abierta: no se puede mover nada
+            if (quien != null && e.getCurrentItem() != null && !e.getCurrentItem().getType().isAir()) negar(quien);
+            return;
+        }
+        if (quien != null) {
+            boolean conItem = e.getCursor() != null && !e.getCursor().getType().isAir();
+            if (conItem || e.getClick() == ClickType.NUMBER_KEY || e.getClick() == ClickType.SWAP_OFFHAND) { negar(quien); return; }
+        }
         v.clic(e);
     }
 
     @EventHandler
     public void alArrastrar(InventoryDragEvent e) {
-        if (e.getView().getTopInventory().getHolder() instanceof Ventana) e.setCancelled(true);
+        if (!(e.getView().getTopInventory().getHolder() instanceof Ventana)) return;
+        e.setCancelled(true);
+        if (e.getWhoClicked() instanceof Player pp) negar(pp);
+    }
+
+    private final Map<java.util.UUID, Long> ultimoNo = new java.util.HashMap<>();
+
+    /** Como el "no" del aldeano: suena, y se vuelve a dibujar el inventario para que el item no parezca perdido. */
+    private void negar(Player p) {
+        long ahora = System.currentTimeMillis();
+        Long ult = ultimoNo.get(p.getUniqueId());
+        if (ult == null || ahora - ult > 350) {
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.8f, 1.0f);
+            ultimoNo.put(p.getUniqueId(), ahora);
+        }
+        Bukkit.getScheduler().runTask(pl, p::updateInventory);
+    }
+
+    /** Solo se ve y se usa lo del trabajo que tenes activo (de los otros solo se pueden mirar las misiones). */
+    private boolean propio(Player p, Trabajo t) { return pl.perfiles().de(p).activo == t; }
+
+    private void denegar(Player p) {
+        negar(p);
+        Msg.error(p, "Eso solo lo ves en el trabajo que tenés activo.");
     }
 
     private static Component titulo(String s) { return Component.text(s, ROJO, TextDecoration.BOLD); }
@@ -122,17 +154,19 @@ final class Menus implements Listener {
         List<Component> lore = new ArrayList<>();
         lore.add(linea(t.descripcion, GRIS));
         lore.add(Component.empty());
-        lore.add(barraNivel(t, g));
-        lore.add(linea("Multiplicador personal: x" + Msg.num(pl.pago().personal(g), 2), NamedTextColor.YELLOW));
-        if (g.prestigio > 0) lore.add(linea("Prestigio " + g.prestigio, NamedTextColor.GOLD));
-        lore.add(Component.empty());
+        if (activo) {
+            lore.add(barraNivel(t, g));
+            lore.add(linea("Multiplicador personal: x" + Msg.num(pl.pago().personal(g), 2), NamedTextColor.YELLOW));
+            if (g.prestigio > 0) lore.add(linea("Prestigio " + g.prestigio, NamedTextColor.GOLD));
+            lore.add(Component.empty());
+        }
         long ahora = System.currentTimeMillis();
         if (activo) lore.add(linea("Es tu trabajo ahora.", NamedTextColor.GREEN));
         else if (f.activo != null) lore.add(linea("Ya tenés otro trabajo.", NamedTextColor.RED));
         else if (ahora < f.libreHasta) lore.add(linea("Disponible en " + Msg.tiempo(f.libreHasta - ahora), NamedTextColor.RED));
         else if (!detalle) lore.add(linea("Clic derecho: tomar este trabajo", NamedTextColor.GREEN));
         if (!detalle) lore.add(linea("Clic izquierdo: ver detalles", GRIS));
-        return pl.iconos().carta(p, t, g.prestigio, estado, detalle, nombre, lore);
+        return pl.iconos().carta(p, t, activo ? g.prestigio : 0, estado, detalle, nombre, lore);
     }
 
     /** Ícono con el nivel, el XP y de dónde sale el multiplicador. */
@@ -216,6 +250,13 @@ final class Menus implements Listener {
 
         v.poner(16, relojRarezas());
         v.poner(37, itemNivel(t, g, f));
+        if (!activo) {
+            String[] nombres = {"Acciones", "Recompensas", "Boosts", "Nivel"};
+            int[] slots = {10, 28, 25, 37};
+            for (int i = 0; i < slots.length; i++)
+                v.poner(slots[i], Iconos.item(Material.BARRIER, Iconos.txtNegrita(nombres[i] + " · bloqueado", NamedTextColor.RED), List.of(
+                        linea("Esto lo ves únicamente en el trabajo", GRIS), linea("que tenés activo. De " + t.nombre + " podés", GRIS), linea("mirar las misiones.", GRIS))), e -> denegar(p));
+        }
         v.poner(45, pl.iconos().flecha(p, false, Iconos.txtNegrita("Volver", GRIS), null), e -> { sonido(p); principal(p, java.util.Arrays.asList(Trabajo.values()).indexOf(t) < 3 ? 0 : 1); });
 
         if (activo) {
@@ -226,7 +267,7 @@ final class Menus implements Listener {
                     linea("Clic para abandonar", NamedTextColor.RED))), e -> { sonido(p); confirmarAbandono(p, t); });
         } else {
             v.poner(53, Iconos.item(Material.LIME_DYE, Iconos.txtNegrita("Tomar este trabajo", NamedTextColor.GREEN), List.of(
-                    linea("Nivel " + g.nivel + " · x" + Msg.num(pl.pago().personal(g), 2), GRIS),
+                    linea(g.nivel > 1 ? "Retomás tu progreso de antes." : "Empezás desde cero.", GRIS),
                     Component.empty(),
                     linea("Clic para tomarlo", NamedTextColor.GREEN))), e -> {
                 if (pl.servicio().unirse(p, t)) trabajo(p, t);
@@ -243,6 +284,7 @@ final class Menus implements Listener {
 
     /** El camino de niveles: un nodo cada "cada-niveles" niveles, en zigzag. pagina -1 = la que tiene tu proximo nodo. */
     void recompensas(Player p, Trabajo t, int pagina) {
+        if (!propio(p, t)) { denegar(p); trabajo(p, t); return; }
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         int cada = pl.recompensas().cada();
@@ -297,11 +339,10 @@ final class Menus implements Listener {
     private void nodo(Ventana v, int slot, Player p, Trabajo t, Perfil.Progreso g, int nivel) {
         String hecha = g.hechas.get(nivel);
         if (hecha != null) {
-            List<Component> lore = new ArrayList<>();
-            lore.add(linea("Nivel " + nivel + " · ya la elegiste", NamedTextColor.GREEN));
-            lore.add(Component.empty());
-            lore.addAll(pl.recompensas().detalle(hecha, t, g));
-            v.poner(slot, pl.recompensas().icono(p, hecha, lore));
+            // ya reclamada: el casillero queda vacio (con el pack el item es invisible y solo queda el texto al apuntarlo)
+            ItemStack it = Iconos.item(Material.GRAY_STAINED_GLASS_PANE, Iconos.txtNegrita("Nivel " + nivel + " · reclamada", GRIS), List.of(
+                    Iconos.txt("Elegiste: ", GRIS).append(pl.recompensas().nombre(hecha))));
+            v.poner(slot, pl.iconos().conPack(p) ? pl.iconos().relleno(it) : it);
         } else if (g.pend.containsKey(nivel)) {
             int primera = g.pend.firstKey();
             if (nivel != primera) {
@@ -330,6 +371,7 @@ final class Menus implements Listener {
 
     /** Elegir 1 de las 3 opciones de un nodo, en cartas. El primer clic marca y el segundo confirma. */
     void elegirRecompensa(Player p, Trabajo t, int nivel) {
+        if (!propio(p, t)) { denegar(p); trabajo(p, t); return; }
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         String[] of = g.pend.get(nivel);
@@ -368,6 +410,7 @@ final class Menus implements Listener {
     // ---------- boosts: los guardados y los que estan andando ----------
 
     void boosts(Player p, Trabajo t) {
+        if (!propio(p, t)) { denegar(p); trabajo(p, t); return; }
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         Ventana v = new Ventana(5, Component.text("Boosts · " + t.nombre, ROJO, TextDecoration.BOLD));
@@ -423,6 +466,7 @@ final class Menus implements Listener {
     }
 
     void acciones(Player p, Trabajo t, int pagina) {
+        if (!propio(p, t)) { denegar(p); trabajo(p, t); return; }
         Perfil f = pl.perfiles().de(p);
         Perfil.Progreso g = f.de(t);
         double personal = pl.pago().personal(g);
