@@ -630,7 +630,6 @@ final class Misiones {
                 .append(Component.text("  (" + Msg.num(Math.min(g.total, g.objetivo), 0) + "/" + Msg.num(g.objetivo, 0) + ")", NamedTextColor.YELLOW)));
         p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.8f, 1.1f);
         if (!g.completada && g.total >= g.objetivo) completarGlobal(t, g);
-        pl.npcs().actualizar();
         return (int) tomados;
     }
 
