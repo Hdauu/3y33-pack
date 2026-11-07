@@ -253,7 +253,9 @@ final class Menus implements Listener {
             pagina = (sig - 1) / NODOS_POR_PAGINA;
         }
         final int pag = Math.max(0, Math.min(paginas - 1, pagina));
-        Ventana v = new Ventana(6, Component.text("Camino · " + t.nombre, ROJO, TextDecoration.BOLD));
+        // con el pack, el fondo ya dibuja el caminito y las plaquitas de cada nodo: no hacen falta los tramos de vidrio
+        boolean pack = pl.iconos().conPack(p);
+        Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_CAMINO, "Camino · " + t.nombre));
         for (int k = 0; k < NODOS_POR_PAGINA; k++) {
             int idx = pag * NODOS_POR_PAGINA + k;
             if (idx >= total) break;
@@ -262,6 +264,7 @@ final class Menus implements Listener {
             int col = (k / 5) % 2 == 0 ? 2 * j : 8 - 2 * j;
             nodo(v, fila * 9 + col, p, t, g, nivel);
             // el tramo que lleva a este nodo: hacia el costado dentro de la fila, o hacia abajo al empezar una fila nueva
+            if (pack) continue;
             boolean recorrido = nivel <= g.nivel;
             ItemStack tramo = Iconos.item(recorrido ? Material.LIME_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE, Component.text(" "), null);
             org.bukkit.inventory.meta.ItemMeta tm = tramo.getItemMeta(); tm.setHideTooltip(true); tramo.setItemMeta(tm);
