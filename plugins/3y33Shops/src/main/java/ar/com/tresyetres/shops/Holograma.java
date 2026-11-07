@@ -48,6 +48,9 @@ final class Holograma implements Listener {
         UUID item, visor;
         boolean listo;
         int fase;
+        /** Para saber si un jugador la esta mirando: mundo, centro del cofre, radio de ese cofre y donde flota el item. */
+        String mundo = "";
+        double x, y, z, radio = 0.8, ix, iy, iz;
         final List<UUID> lineas = new ArrayList<>();
         final List<Component> textos = new ArrayList<>();
     }
@@ -55,8 +58,10 @@ final class Holograma implements Listener {
     private final ShopsPlugin pl;
     private final NamespacedKey clave;
     private final Map<Long, Pieza> piezas = new HashMap<>();
-    private BukkitTask tarea;
+    private BukkitTask tarea, tareaMirada;
     private int ciclos;
+    /** Que tienda esta mirando cada jugador (el texto del holograma solo se le muestra de esa). */
+    private final Map<UUID, Long> mirando = new HashMap<>();
     private final Set<String> pendientes = new HashSet<>();
 
     Holograma(ShopsPlugin pl) {
@@ -67,12 +72,15 @@ final class Holograma implements Listener {
     void iniciar() {
         limpiarHuerfanas();
         tarea = Bukkit.getScheduler().runTaskTimer(pl, this::ciclo, 40L, 20L);
+        tareaMirada = Bukkit.getScheduler().runTaskTimer(pl, this::mirada, 40L, 4L);
     }
 
     void detener() {
         if (tarea != null) tarea.cancel();
+        if (tareaMirada != null) tareaMirada.cancel();
         for (Pieza p : piezas.values()) quitarPieza(p);
         piezas.clear();
+        mirando.clear();
     }
 
     /** Borra todos los hologramas; el ciclo los vuelve a armar enseguida con la config y los datos actuales. */
@@ -198,6 +206,10 @@ final class Holograma implements Listener {
 
         Location base = anclaje(t, bloque, textos.size());
         Pieza p = piezas.computeIfAbsent(t.id, x -> new Pieza());
+        p.mundo = w.getName();
+        p.x = bloque.getX(); p.y = bloque.getY() + 0.5; p.z = bloque.getZ();
+        p.radio = t.doble ? pl.getConfig().getDouble("holograma.mirada-radio-doble", 1.3) : pl.getConfig().getDouble("holograma.mirada-radio", 0.8);
+        p.ix = base.getX(); p.iy = base.getY() + 0.3; p.iz = base.getZ();
         ItemStack uno = t.item.clone();
         uno.setAmount(1);
 
@@ -312,49 +324,114 @@ final class Holograma implements Listener {
 
     // ---------- visibilidad ----------
 
-    /** El texto solo lo ve quien esta cerca. El item: Java ve el ItemDisplay y Bedrock el item comun. */
+    /** El item: Java ve el ItemDisplay y Bedrock el item comun, desde lejos. El texto va aparte (mirada), solo para quien apunta a la tienda. */
     private void visibilidad() {
         if (piezas.isEmpty()) return;
         List<Player> jugs = new ArrayList<>(Bukkit.getOnlinePlayers());
         if (jugs.isEmpty()) return;
-        double r2 = Math.pow(pl.getConfig().getDouble("holograma.rango-texto", 6.0), 2);
         double rItem2 = Math.pow(pl.getConfig().getDouble("holograma.rango-aparicion", 14.0), 2);
-        Location[] locs = new Location[jugs.size()];
         boolean[] bedrock = new boolean[jugs.size()];
-        for (int j = 0; j < jugs.size(); j++) { locs[j] = jugs.get(j).getLocation(); bedrock[j] = esBedrock(jugs.get(j)); }
+        for (int j = 0; j < jugs.size(); j++) bedrock[j] = esBedrock(jugs.get(j));
         for (Pieza p : piezas.values()) {
             // las entidades de la pieza se buscan una sola vez, no una por jugador
             Entity drop = p.item == null ? null : Bukkit.getEntity(p.item);
             Entity visor = p.visor == null ? null : Bukkit.getEntity(p.visor);
-            List<Entity> lineas = new ArrayList<>(p.lineas.size());
-            for (UUID u : p.lineas) lineas.add(Bukkit.getEntity(u));
             for (int j = 0; j < jugs.size(); j++) {
                 Player jug = jugs.get(j);
-                Location jl = locs[j];
-                for (int idx = 0; idx < lineas.size(); idx++) {
-                    Entity t = lineas.get(idx);
-                    if (t == null || !t.isValid()) continue;
-                    double dx = jl.getX() - t.getX(), dy = jl.getY() - t.getY(), dz = jl.getZ() - t.getZ();
-                    boolean cerca = jl.getWorld().equals(t.getWorld()) && dx * dx + dy * dy + dz * dz <= r2;
-                    boolean ve = jug.canSee(t);
-                    if (cerca && !ve) {
-                        // las lineas aparecen una tras otra, de abajo hacia arriba
-                        final UUID u = p.lineas.get(idx);
-                        String k = jug.getUniqueId() + ":" + u;
-                        if (pendientes.add(k)) {
-                            Bukkit.getScheduler().runTaskLater(pl, () -> {
-                                pendientes.remove(k);
-                                Entity e2 = Bukkit.getEntity(u);
-                                if (e2 != null && e2.isValid() && jug.isOnline()) aparecer(jug, e2);
-                            }, 1L + idx * 3L);
-                        }
-                    } else if (!cerca && ve) {
-                        jug.hideEntity(pl, t);
-                    }
-                }
                 mostrarItem(jug, drop, bedrock[j], rItem2);
                 mostrarItem(jug, visor, !bedrock[j], rItem2);
             }
+        }
+    }
+
+    // ---------- mirada: el texto solo se ve en la tienda que apuntas ----------
+
+    /** Cada 4 ticks: a cada jugador le muestra el texto de la tienda que mira (la mas centrada en su mira) y se lo saca al dejar de mirarla. */
+    private void mirada() {
+        try {
+            if (piezas.isEmpty()) {
+                if (!mirando.isEmpty()) { for (Map.Entry<UUID, Long> en : mirando.entrySet()) { Player j = Bukkit.getPlayer(en.getKey()); if (j != null) ocultarLineas(j, null); } mirando.clear(); }
+                return;
+            }
+            double rango = pl.getConfig().getDouble("holograma.rango-texto", 6.0);
+            double r2max = rango * rango;
+            double margen = pl.getConfig().getDouble("holograma.mirada-margen", 1.4);
+            for (Player jug : Bukkit.getOnlinePlayers()) {
+                Location ojo = jug.getEyeLocation();
+                Vector dir = ojo.getDirection();
+                String mundo = ojo.getWorld().getName();
+                Long actual = mirando.get(jug.getUniqueId());
+                Long nuevo = null;
+                // la que ya miraba se conserva mientras siga cerca de la mira (asi no parpadea en el borde)
+                if (actual != null) {
+                    Pieza pa = piezas.get(actual);
+                    if (pa != null && puntaje(pa, mundo, ojo, dir, r2max, margen) >= 0) nuevo = actual;
+                }
+                if (nuevo == null) {
+                    double mejor = Double.MAX_VALUE;
+                    for (Map.Entry<Long, Pieza> en : piezas.entrySet()) {
+                        double sc = puntaje(en.getValue(), mundo, ojo, dir, r2max, 1.0);
+                        if (sc >= 0 && sc < mejor) { mejor = sc; nuevo = en.getKey(); }
+                    }
+                }
+                if (actual != null && !actual.equals(nuevo)) ocultarLineas(jug, piezas.get(actual));
+                if (nuevo == null) mirando.remove(jug.getUniqueId());
+                else {
+                    mirando.put(jug.getUniqueId(), nuevo);
+                    mostrarLineas(jug, nuevo, piezas.get(nuevo));
+                }
+            }
+            mirando.keySet().removeIf(u -> Bukkit.getPlayer(u) == null);
+        } catch (Throwable e) {
+            pl.getLogger().warning("Holograma (mirada): " + e);
+        }
+    }
+
+    /** Que tan centrada esta la tienda en la mira (tangente al cuadrado del angulo), o -1 si no la apunta o esta lejos. */
+    private static double puntaje(Pieza p, String mundo, Location ojo, Vector dir, double r2max, double margen) {
+        if (!p.mundo.equals(mundo)) return -1;
+        double a = punto(p.x, p.y, p.z, p.radio * margen, ojo, dir, r2max);
+        double b = punto(p.ix, p.iy, p.iz, 0.6 * margen, ojo, dir, r2max);
+        if (a < 0) return b;
+        if (b < 0) return a;
+        return Math.min(a, b);
+    }
+
+    private static double punto(double x, double y, double z, double radio, Location ojo, Vector dir, double r2max) {
+        double vx = x - ojo.getX(), vy = y - ojo.getY(), vz = z - ojo.getZ();
+        double dist2 = vx * vx + vy * vy + vz * vz;
+        if (dist2 > r2max) return -1;
+        double dot = vx * dir.getX() + vy * dir.getY() + vz * dir.getZ();
+        if (dot <= 0.05) return -1;
+        double perp2 = dist2 - dot * dot;
+        if (perp2 > radio * radio) return -1;
+        return perp2 / (dot * dot);
+    }
+
+    /** Muestra las lineas de la pieza que todavia no ve (una tras otra, de abajo hacia arriba), siempre que siga mirandola. */
+    private void mostrarLineas(Player jug, long id, Pieza p) {
+        if (p == null) return;
+        for (int idx = 0; idx < p.lineas.size(); idx++) {
+            final UUID u = p.lineas.get(idx);
+            Entity e = Bukkit.getEntity(u);
+            if (e == null || !e.isValid() || jug.canSee(e)) continue;
+            String k = jug.getUniqueId() + ":" + u;
+            if (pendientes.add(k)) {
+                Bukkit.getScheduler().runTaskLater(pl, () -> {
+                    pendientes.remove(k);
+                    Entity e2 = Bukkit.getEntity(u);
+                    Long m = mirando.get(jug.getUniqueId());
+                    if (e2 != null && e2.isValid() && jug.isOnline() && m != null && m == id) aparecer(jug, e2);
+                }, 1L + idx * 3L);
+            }
+        }
+    }
+
+    private void ocultarLineas(Player jug, Pieza p) {
+        if (p == null) return;
+        for (UUID u : p.lineas) {
+            Entity e = Bukkit.getEntity(u);
+            if (e != null && e.isValid() && jug.canSee(e)) jug.hideEntity(pl, e);
         }
     }
 
