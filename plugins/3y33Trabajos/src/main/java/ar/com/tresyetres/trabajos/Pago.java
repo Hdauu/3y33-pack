@@ -28,13 +28,25 @@ final class Pago {
         return eco != null;
     }
 
-    private static double nivelBase = 1200, nivelLineal = 80, nivelCuad = 1.5;
+    private static final java.util.Map<Trabajo, Double> XP_TOTAL = new java.util.EnumMap<>(Trabajo.class);
+    private static final java.util.Map<Trabajo, Double> XP_HORA = new java.util.EnumMap<>(Trabajo.class);
+    private static double curvaK = 1.7;
 
-    /** Lee la curva de niveles de config.yml (niveles.base / lineal / cuadratico). */
+    /**
+     * Lee de config.yml (seccion niveles) la curva de niveles. El XP total de cada trabajo sale de las horas objetivo (300 para un jugador que
+     * juega horas-por-dia y hace todas las misiones) y del XP por hora de ese trabajo; cada nivel cuesta mas que el anterior.
+     */
     void cargarNiveles() {
-        nivelBase = pl.getConfig().getDouble("niveles.base", 1200);
-        nivelLineal = pl.getConfig().getDouble("niveles.lineal", 80);
-        nivelCuad = pl.getConfig().getDouble("niveles.cuadratico", 1.5);
+        double horas = pl.getConfig().getDouble("niveles.horas-objetivo", 300);
+        double porDia = Math.max(0.1, pl.getConfig().getDouble("niveles.horas-por-dia", 1.5));
+        double minMisiones = pl.getConfig().getDouble("niveles.minutos-misiones-por-dia", 40);
+        double boosts = pl.getConfig().getDouble("niveles.factor-boosts", 1.05);
+        curvaK = pl.getConfig().getDouble("niveles.exponente", 1.7);
+        for (Trabajo t : Trabajo.values()) {
+            double xph = Math.max(1, pl.getConfig().getDouble("niveles.xp-por-hora." + t.id, 8000));
+            XP_HORA.put(t, xph);
+            XP_TOTAL.put(t, horas * xph * (1.0 + (minMisiones / 60.0) / porDia) * boosts);
+        }
         mundos = pl.getConfig().getStringList("mundos").stream().map(m -> m.toLowerCase(Locale.ROOT)).toList();
     }
 
@@ -48,11 +60,21 @@ final class Pago {
         return false;
     }
 
-    /** XP que hace falta para pasar del nivel n al siguiente. */
-    static double xpNecesaria(int n) { return nivelBase + nivelLineal * n + nivelCuad * n * n; }
+    /** XP que hace falta, en ese trabajo, para pasar del nivel n al siguiente (crece con cada nivel). */
+    static double xpNecesaria(Trabajo t, int n) {
+        double total = XP_TOTAL.getOrDefault(t, 2_000_000.0);
+        double den = Math.pow(Perfil.NIVEL_MAX, curvaK) - 1.0;
+        return Math.max(10, Math.floor(total * (Math.pow(n + 1, curvaK) - Math.pow(n, curvaK)) / den));
+    }
+
+    /** XP por hora de trabajo de ese oficio (la unidad con la que se miden las misiones). */
+    static double xpPorHora(Trabajo t) { return XP_HORA.getOrDefault(t, 8000.0); }
+
+    /** Lo que suma el nivel al multiplicador: +1% por nivel hasta el 100 y +0,5% por nivel de ahi al 130. */
+    static double bonoNivel(int nivel) { return nivel <= 100 ? 0.01 * (nivel - 1) : 0.99 + 0.005 * (nivel - 100); }
 
     /** Multiplicador personal: +1% por nivel, +25% por prestigio y hasta +20% por la racha de misiones. */
-    double personal(Perfil.Progreso g) { return 1.0 + 0.01 * (g.nivel - 1) + 0.25 * g.prestigio + pl.misiones().bonoRacha(g); }
+    double personal(Perfil.Progreso g) { return 1.0 + bonoNivel(g.nivel) + 0.25 * g.prestigio + pl.misiones().bonoRacha(g); }
 
     /** Momentum de ahora: el guardado menos lo que bajo por estar quieto. */
     double momentum(Perfil f, long ahora) {
@@ -76,8 +98,8 @@ final class Pago {
             f.momentumT = ahora;
         }
         double mom = momentum(f, ahora);
-        double pesos = a.pago() * (personal(g) + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo()));
-        double xp = a.xp() * (1.0 + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo()));
+        double pesos = a.pago() * (personal(g) + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo())) * pl.recompensas().multPlata(f, a.trabajo());
+        double xp = a.xp() * (1.0 + r.bono()) * mom * (1.0 + pl.misiones().bonoGlobal(a.trabajo())) * pl.recompensas().multXp(f, a.trabajo());
         f.momentum = Math.min(pl.getConfig().getDouble("momentum.maximo", 3.0), mom + pl.getConfig().getDouble("momentum.por-accion", 0.02));
         f.momentumT = ahora;
         f.accionesVentana++;
@@ -108,7 +130,7 @@ final class Pago {
                 f.ultimoPagoTiempo = ahora;
                 continue;
             }
-            double pesos = base * personal(f.de(f.activo)) * (1.0 + pl.misiones().bonoGlobal(f.activo));
+            double pesos = base * personal(f.de(f.activo)) * (1.0 + pl.misiones().bonoGlobal(f.activo)) * pl.recompensas().multPlata(f, f.activo);
             depositar(p, f, pesos);
             pl.balance().plata(f.activo, Balance.TIEMPO, pesos);
             f.accionesVentana = 0;
@@ -138,8 +160,8 @@ final class Pago {
         if (g.nivel >= Perfil.NIVEL_MAX) return;
         pl.balance().xp(t, xp);
         g.xp += xp;
-        while (g.nivel < Perfil.NIVEL_MAX && g.xp >= xpNecesaria(g.nivel)) {
-            g.xp -= xpNecesaria(g.nivel);
+        while (g.nivel < Perfil.NIVEL_MAX && g.xp >= xpNecesaria(t, g.nivel)) {
+            g.xp -= xpNecesaria(t, g.nivel);
             g.nivel++;
             subioDeNivel(p, t, g);
         }
@@ -149,7 +171,7 @@ final class Pago {
     /** Linea de chat con el nivel y el XP que falta, para que se vea siempre como viene. */
     void avisarNivel(Player p, Trabajo t, Perfil.Progreso g) {
         if (g.nivel >= Perfil.NIVEL_MAX) return;
-        double need = xpNecesaria(g.nivel);
+        double need = xpNecesaria(t, g.nivel);
         Msg.aviso(p, Component.text(t.nombre + " · nivel " + g.nivel + " · ", t.color)
                 .append(Component.text(Msg.num(g.xp, 0) + " / " + Msg.num(need, 0) + " XP", NamedTextColor.AQUA))
                 .append(Component.text(" (" + Msg.num(g.xp * 100 / need, 0) + "%) · multiplicador x" + Msg.num(personal(g), 2), NamedTextColor.GRAY)));
@@ -163,12 +185,13 @@ final class Pago {
         p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.0f);
         Msg.aviso(p, Component.text("¡Subiste a nivel " + g.nivel + " de ", NamedTextColor.GREEN)
                 .append(Component.text(t.nombre, t.color))
-                .append(Component.text("! Multiplicador x" + Msg.num(personal(g), 2) + ". Mirá tu nivel y lo que falta en /trabajos (ícono de la botella de XP).", NamedTextColor.GRAY)));
+                .append(Component.text("! Multiplicador x" + Msg.num(personal(g), 2) + ".", NamedTextColor.GRAY)));
+        pl.recompensas().ofrecer(p, t, g);
         if (g.nivel == Perfil.NIVEL_MAX) {
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             Bukkit.broadcast(Component.text("★ ", NamedTextColor.GOLD)
                     .append(Component.text(p.getName(), NamedTextColor.WHITE))
-                    .append(Component.text(" llegó al nivel 100 de ", NamedTextColor.GRAY))
+                    .append(Component.text(" llegó al nivel " + Perfil.NIVEL_MAX + " de ", NamedTextColor.GRAY))
                     .append(Component.text(t.nombre, t.color))
                     .append(Component.text("!", NamedTextColor.GRAY)));
         }

@@ -1,0 +1,42 @@
+# Recompensas por subir de nivel de un trabajo.
+# Cada vez que subís de nivel te ofrecen 3 opciones: un boost de XP, un boost de plata y XP instantánea, cada una con su rareza sorteada.
+# Elegís una (hay que hacer clic dos veces para confirmar) y las otras se pierden. La oferta queda hasta que subas el siguiente nivel.
+# Los boosts elegidos se guardan en tu perfil y se activan desde el menú de Recompensas. Pueden andar dos a la vez (uno de XP y uno de plata),
+# pero dos del mismo tipo no se acumulan. El tiempo cuenta mientras estás conectado con ese trabajo puesto.
+
+# Chance de que una opción de boost salga como MEGA (XP y plata juntos). 0,001 = 0,1%.
+probabilidad-mega: 0.001
+
+# peso: chance relativa de cada rareza (la mega no usa peso: sale por la probabilidad de arriba).
+# mult: multiplicador del boost (1,25 = +25%). minutos: lo que dura. xp-porcentaje: la XP instantánea da este % de lo que cuesta tu nivel actual.
+rarezas:
+  comun:
+    nombre: Común
+    peso: 65
+    mult: 1.10
+    minutos: 20
+    xp-porcentaje: 8
+  rara:
+    nombre: Rara
+    peso: 24
+    mult: 1.25
+    minutos: 30
+    xp-porcentaje: 15
+  epica:
+    nombre: Épica
+    peso: 8
+    mult: 1.5
+    minutos: 45
+    xp-porcentaje: 30
+  legendaria:
+    nombre: Legendaria
+    peso: 2.5
+    mult: 2.0
+    minutos: 60
+    xp-porcentaje: 60
+  mega:
+    nombre: Mega
+    peso: 0
+    mult: 2.5
+    minutos: 60
+    xp-porcentaje: 100

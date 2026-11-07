@@ -6,7 +6,7 @@
 #  - Cantidad = esfuerzo del trabajo x factor / valor del ítem ^ exponente (mínimo cantidad-minima). El factor sube solo (hasta
 #    3 veces por ciclo) si la misión anterior se completó rápido y baja si casi nadie la hizo, así la dificultad se acomoda al servidor.
 #  - Rareza: se sortea con "peso" y le toca un ítem de esa franja: "hasta" es la fracción de los ítems del trabajo (ordenados por valor) que entra en ella. Cada rareza define el fondo de
-#    plata (pozo) y el bono (+% de pago y de XP durante bono-horas) que se activa al completarla. El fondo de XP es un % del pozo.
+#    plata (pozo) y el bono (+% de pago y de XP durante bono-horas) que se activa al completarla. El fondo de XP sale de xp-minutos.
 #  - La plata y el XP se reparten entre los colaboradores según el % de ítems que entregó cada uno (hay que haber entregado
 #    al menos participacion-minima de lo que pide la misión).
 # Solo cuentan ítems "limpios" (sin nombre ni encantamientos). Se recarga con /trabajosadmin recargar.
@@ -27,8 +27,7 @@ distancia-npc: 8
 ciclo-dias: 3
 # Horas que dura el bono después de completarla.
 bono-horas: 48
-# El fondo de XP es este % del pozo de plata.
-xp-ratio: 0.25
+# El fondo de XP de cada rareza (xp-minutos, en los rarezas de abajo) se mide en "minutos de trabajo" y se multiplica por el XP por hora del oficio.
 # Para cobrar hay que haber entregado al menos este % de lo que pide la misión (1 = 1%).
 participacion-minima: 0.01
 # Nadie cobra más que este % del fondo (0,40 = 40%): evita que una persona (o sus alts) se lleve casi todo. Lo que no se reparte no se paga.
@@ -62,24 +61,28 @@ rarezas:
     peso: 55
     pozo: 80000
     bono: 0.20
+    xp-minutos: 120
   rara:
     nombre: Rara
     hasta: 0.83
     peso: 28
     pozo: 120000
     bono: 0.30
+    xp-minutos: 150
   epica:
     nombre: Épica
     hasta: 0.97
     peso: 14
     pozo: 200000
     bono: 0.50
+    xp-minutos: 210
   legendaria:
     nombre: Legendaria
     hasta: 1.0
     peso: 3
     pozo: 350000
     bono: 0.75
+    xp-minutos: 300
 
 # Grupos de ítems de cada trabajo (de acá sale el ítem de la misión). El valor es el esfuerzo de conseguir uno, medido en "adoquines picados".
 grupos:

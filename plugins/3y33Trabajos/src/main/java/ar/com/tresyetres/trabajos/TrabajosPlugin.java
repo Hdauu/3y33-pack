@@ -15,6 +15,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     private Iconos iconos;
     private Colocados colocados;
     private Balance balance;
+    private Recompensas recompensas;
     private Servicio servicio;
     private Menus menus;
     private Misiones misiones;
@@ -27,6 +28,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     Iconos iconos() { return iconos; }
     Colocados colocados() { return colocados; }
     Balance balance() { return balance; }
+    Recompensas recompensas() { return recompensas; }
     Servicio servicio() { return servicio; }
     Menus menus() { return menus; }
     Misiones misiones() { return misiones; }
@@ -50,6 +52,8 @@ public final class TrabajosPlugin extends JavaPlugin {
         misiones = new Misiones(this);
         misiones.cargar();
         pago.cargarNiveles();
+        recompensas = new Recompensas(this);
+        recompensas.cargar();
         iconos = new Iconos(this);
         colocados = new Colocados(this);
         balance = new Balance(this);

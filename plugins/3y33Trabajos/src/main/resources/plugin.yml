@@ -1,5 +1,5 @@
 name: 3y33Trabajos
-version: 1.5.5
+version: 1.6.0
 main: ar.com.tresyetres.trabajos.TrabajosPlugin
 api-version: '1.21'
 author: 3y33 SMP
@@ -9,8 +9,8 @@ softdepend: [Essentials]
 commands:
   trabajos:
     description: Trabajos de 3y33 SMP
-    usage: /trabajos [unirse|abandonar] [trabajo]
+    usage: /trabajos [unirse|abandonar|recompensas] [trabajo]
     aliases: [jobs, trabajo, job]
   trabajosadmin:
     description: Herramientas de staff para los trabajos
-    usage: /trabajosadmin [reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|holo|info|recargar]
+    usage: /trabajosadmin [reroll|nivel|xp|espera|tomar|quitar|misiones|global|npc|holo|info|balance|ofrecer|recargar]
