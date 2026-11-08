@@ -1,7 +1,11 @@
 [ERROR] COMPILATION ERROR : 
-[ERROR] /home/runner/work/3y33-pack/3y33-pack/plugins/3y33Trabajos/src/main/java/ar/com/tresyetres/trabajos/Npcs.java:[158,46] incompatible types: ar.com.tresyetres.trabajos.Npcs.Panel cannot be converted to org.bukkit.entity.TextDisplay
+[ERROR] /home/runner/work/3y33-pack/3y33-pack/plugins/3y33Trabajos/src/main/java/ar/com/tresyetres/trabajos/Menus.java:[438,86] cannot find symbol
+  symbol:   variable nivel
+  location: class ar.com.tresyetres.trabajos.Menus
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project 3y33Trabajos: Compilation failure
-[ERROR] /home/runner/work/3y33-pack/3y33-pack/plugins/3y33Trabajos/src/main/java/ar/com/tresyetres/trabajos/Npcs.java:[158,46] incompatible types: ar.com.tresyetres.trabajos.Npcs.Panel cannot be converted to org.bukkit.entity.TextDisplay
+[ERROR] /home/runner/work/3y33-pack/3y33-pack/plugins/3y33Trabajos/src/main/java/ar/com/tresyetres/trabajos/Menus.java:[438,86] cannot find symbol
+[ERROR]   symbol:   variable nivel
+[ERROR]   location: class ar.com.tresyetres.trabajos.Menus
 [ERROR] -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
