@@ -57,7 +57,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 Trabajo ot = a.length > 2 ? Trabajo.de(a[2]) : null;
                 if (op == null || ot == null) { Msg.error(s, "Uso: /trabajosadmin ofrecer <jugador> <trabajo>"); return true; }
                 Perfil of = pl.perfiles().de(op);
-                int n = pl.recompensas().alcanzar(of.de(ot));
+                int n = pl.recompensas().alcanzar(of, ot);
                 pl.perfiles().guardar(of);
                 Msg.ok(s, "Le dejé " + n + " recompensa(s) del camino pendientes a " + op.getName() + " en " + ot.nombre + ".");
             }

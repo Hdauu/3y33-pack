@@ -79,7 +79,7 @@ def regalo(base, osc, luz, cinta, cinta_osc):
     return im
 
 
-ROTULOS = {'xp': 'XP', 'plata': 'PLATA', 'xpdirecta': 'AHORA', 'mega': 'MEGA'}
+ROTULOS = {'xp': 'XP', 'plata': 'PLATA', 'xpdirecta': 'AHORA', 'mega': 'MEGA', 'dinero': 'PESOS', 'pack': 'LOTE', 'chunk': 'SUELO', 'fija': 'HITO'}
 
 
 def variantes():
@@ -91,6 +91,14 @@ def variantes():
             out['boost_%s_%s' % (tipo, r)] = (capa, False, BASE[tipo])
             out['recompensa_%s_%s' % (tipo, r)] = (MC.carta(ROTULOS[tipo], COLOR[r]), True, None)
             out['recompensa_%s_%s_sel' % (tipo, r)] = (MC.carta(ROTULOS[tipo], COLOR[r], 'lista'), True, None)
+    # hitos: dinero y lote llevan la gema de la rareza del hito; terreno y hito fijo tienen la suya
+    for tipo in ('dinero', 'pack'):
+        for r in RAREZAS:
+            out['recompensa_%s_%s' % (tipo, r)] = (MC.carta(ROTULOS[tipo], COLOR[r]), True, None)
+            out['recompensa_%s_%s_sel' % (tipo, r)] = (MC.carta(ROTULOS[tipo], COLOR[r], 'lista'), True, None)
+    for tipo, col in (('chunk', (96, 214, 120)), ('fija', (255, 214, 90))):
+        out['recompensa_' + tipo] = (MC.carta(ROTULOS[tipo], col), True, None)
+        out['recompensa_%s_sel' % tipo] = (MC.carta(ROTULOS[tipo], col, 'lista'), True, None)
     out['boost_mega'] = (flechas(COLOR['mega'], 4), False, BASE['mega'])
     out['recompensa_mega'] = (MC.carta(ROTULOS['mega'], COLOR['mega']), True, None)
     out['reclamar'] = (regalo((196, 40, 52), (128, 22, 34), (236, 96, 96), (255, 204, 64), (200, 140, 30)), False, None)

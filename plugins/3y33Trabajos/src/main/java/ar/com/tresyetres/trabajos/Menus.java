@@ -335,6 +335,8 @@ final class Menus implements Listener {
         return it;
     }
 
+    private String esHitoTxt(int nivel) { return pl.recompensas().esHito(nivel) ? "¡Es un HITO! " : ""; }
+
     /** Un nodo del camino: ya elegido, esperando que elijas, alcanzado sin recompensa o todavia lejos. */
     private void nodo(Ventana v, int slot, Player p, Trabajo t, Perfil.Progreso g, int nivel) {
         String hecha = g.hechas.get(nivel);
@@ -352,8 +354,8 @@ final class Menus implements Listener {
                         e -> { p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.7f); });
             } else {
                 ItemStack it = regalo(p, false, Iconos.txtNegrita("Nivel " + nivel + " · ¡Elegí tu recompensa!", NamedTextColor.GREEN), List.of(
-                        linea("Hay 3 opciones esperándote.", GRIS),
-                        linea("Elegís 1 y las otras dos se pierden.", GRIS),
+                        linea(esHitoTxt(nivel) + (g.pend.get(nivel).length > 1 ? "Hay " + g.pend.get(nivel).length + " opciones esperándote." : "Tu recompensa te espera."), GRIS),
+                        linea(g.pend.get(nivel).length > 1 ? "Elegís 1 y las otras se pierden." : "Un clic para ver y reclamar.", GRIS),
                         Component.empty(),
                         linea("Clic para elegir", NamedTextColor.GREEN)));
                 org.bukkit.inventory.meta.ItemMeta im = it.getItemMeta();
@@ -363,6 +365,10 @@ final class Menus implements Listener {
             }
         } else if (nivel <= g.nivel) {
             v.poner(slot, Iconos.item(Material.IRON_BARS, Iconos.txtNegrita("Nivel " + nivel, GRIS), List.of(linea("Sin recompensa (lo alcanzaste antes del camino).", GRIS))));
+        } else if (pl.recompensas().esHito(nivel)) {
+            v.poner(slot, Iconos.item(Material.GLOWSTONE_DUST, Iconos.txtNegrita("Nivel " + nivel + " · HITO", NamedTextColor.GOLD), List.of(
+                    linea("Una recompensa especial te espera.", GRIS),
+                    linea("Te faltan " + (nivel - g.nivel) + " nivel" + (nivel - g.nivel == 1 ? "" : "es") + ".", GRIS))));
         } else {
             v.poner(slot, Iconos.item(Material.GRAY_DYE, Iconos.txtNegrita("Nivel " + nivel, GRIS), List.of(
                     linea("Te faltan " + (nivel - g.nivel) + " nivel" + (nivel - g.nivel == 1 ? "" : "es") + ".", GRIS))));
@@ -378,17 +384,18 @@ final class Menus implements Listener {
         if (of == null) { recompensas(p, t); return; }
         if (nivel != g.pend.firstKey()) { Msg.error(p, "Primero elegí la recompensa del nivel " + g.pend.firstKey() + "."); recompensas(p, t); return; }
         Ventana v = new Ventana(6, pl.iconos().titulo(p, Iconos.FONDO_MISIONES, "Recompensa · nivel " + nivel));
-        int[] columnas = {1, 4, 7};
-        int[][] zonas = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}};
+        int[] columnas = of.length == 3 ? new int[]{1, 4, 7} : of.length == 2 ? new int[]{2, 5} : new int[]{4};
+        int[][] zonas = of.length == 3 ? new int[][]{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}} : of.length == 2 ? new int[][]{{1, 2, 3}, {4, 5, 6}} : new int[][]{{3, 4, 5}};
         int marcada = pl.recompensas().seleccionada(p, nivel);
-        v.poner(4, Iconos.item(Material.PAPER, Iconos.txtNegrita("Nivel " + nivel + " · elegí una", NamedTextColor.GREEN), List.of(
+        v.poner(4, Iconos.item(Material.PAPER, Iconos.txtNegrita((pl.recompensas().esHito(nivel) ? "¡HITO! " : "") + "Nivel " + nivel + (of.length > 1 ? " · elegí una" : " · tu recompensa"), pl.recompensas().esHito(nivel) ? NamedTextColor.GOLD : NamedTextColor.GREEN), of.length > 1 ? List.of(
                 linea("Clic para marcarla y otro clic para confirmar.", GRIS),
-                linea("Las otras dos se pierden.", NamedTextColor.RED))));
+                linea("Las otras se pierden.", NamedTextColor.RED)) : List.of(
+                linea("Clic para marcarla y otro clic para confirmar.", GRIS))));
         for (int i = 0; i < of.length; i++) {
             final int idx = i;
             String k = of[i];
             boolean sel = marcada == i;
-            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g));
+            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g, nivel));
             lore.add(Component.empty());
             lore.add(sel ? Iconos.txtNegrita("¡Clic de nuevo para confirmar!", NamedTextColor.GREEN) : linea("Clic para marcarla", GRIS));
             ItemStack real = pl.recompensas().icono(p, k, lore);
@@ -428,7 +435,7 @@ final class Menus implements Listener {
         for (Map.Entry<String, Integer> e : g.boosts.entrySet()) {
             if (n >= 18) break;
             final String k = e.getKey();
-            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g));
+            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g, nivel));
             lore.add(Component.empty());
             lore.add(linea("Tenés " + e.getValue() + ".", NamedTextColor.YELLOW));
             lore.add(Iconos.txtNegrita("Clic para usarlo", NamedTextColor.GREEN));

@@ -43,3 +43,37 @@ rarezas:
     mult: 2.5
     minutos: 60
     xp-porcentaje: 100
+
+# ---------------------------------------------------------------------------------------------
+# HITOS: nodos especiales del camino (tienen que caer en un nivel que sea multiplo de "cada-niveles").
+#   rareza: 0 comun, 1 rara, 2 epica, 3 legendaria (escala el dinero y la rareza de los boosts del pack)
+#   opciones: lo que podes elegir ("dinero", "pack" de boosts, "chunk" = un chunk gratis)
+#   fija: en vez de elegir te dan una sola cosa (mochila4, enc1, enc2, enc3)
+# Si borras esta seccion se usan los hitos de fabrica.
+# ---------------------------------------------------------------------------------------------
+hitos-dinero-por-nivel: 40     # dinero = nivel x esto x (1 + 0,5 x rareza)
+hitos-pack-cantidad: 2         # el pack da esta cantidad de boosts de XP y esta de plata
+
+hitos:
+  10: {rareza: 0, opciones: [dinero, pack]}
+  20: {rareza: 0, opciones: [dinero, pack]}
+  30: {rareza: 1, opciones: [dinero, pack]}
+  40: {rareza: 1, opciones: [dinero, pack]}
+  45: {rareza: 1, opciones: [dinero, pack]}
+  50: {rareza: 2, opciones: [dinero, pack, chunk]}
+  60: {rareza: 2, opciones: [dinero, pack]}
+  65: {rareza: 2, fija: mochila4}
+  70: {rareza: 2, opciones: [dinero, pack]}
+  75: {rareza: 3, opciones: [dinero, pack]}
+  90: {rareza: 3, opciones: [dinero, pack, chunk]}
+  100: {rareza: 3, fija: enc1}
+  115: {rareza: 3, fija: enc2}
+  130: {rareza: 3, fija: enc3}
+
+# Chunks gratis de los trabajos. Mientras "activo" sea false no aparece ninguna opcion de chunk.
+# Cada chunk ganado suma un permiso de LuckPerms (3y33.chunk.1, 3y33.chunk.2...) que Lands convierte en un chunk gratis (pack en player-limits.yml).
+chunks:
+  activo: false
+  probabilidad: 0.02        # chance de que UNA de las 3 opciones de un nodo comun sea un chunk
+  tope-cuenta: 25           # maximo de chunks gratis ganados por cuenta
+  comando: "lp user {jugador} permission set 3y33.chunk.{n} true"

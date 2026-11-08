@@ -76,6 +76,9 @@ final class Perfil {
     boolean tuvoTrabajo;
     /** Plata ganada que todavia no llego a un centavo. */
     double pendiente;
+    /** Chunks gratis ganados con los trabajos (de toda la cuenta) y cosas desbloqueadas por hitos ("mochila4", "MINERO:enc1"...). */
+    int chunksGanados;
+    final java.util.Set<String> desbloqueos = new java.util.TreeSet<>();
     final Map<Trabajo, Progreso> prog = new EnumMap<>(Trabajo.class);
 
     // temporal, no se guarda
@@ -115,6 +118,8 @@ final class Perfil {
         libreHasta = y.getLong("libre-hasta", 0L);
         tuvoTrabajo = y.getBoolean("tuvo-trabajo", false);
         pendiente = y.getDouble("pendiente", 0.0);
+        chunksGanados = y.getInt("chunks-ganados", 0);
+        desbloqueos.addAll(y.getStringList("desbloqueos"));
         ConfigurationSection s = y.getConfigurationSection("progreso");
         if (s != null) {
             for (Trabajo t : Trabajo.values()) {
@@ -136,7 +141,7 @@ final class Perfil {
                 ConfigurationSection ps = c.getConfigurationSection("pendientes");
                 if (ps != null) for (String k : ps.getKeys(false)) {
                     java.util.List<String> l = ps.getStringList(k);
-                    if (l.size() == 3) { try { g.pend.put(Integer.parseInt(k), l.toArray(new String[0])); } catch (NumberFormatException ignorada) { } }
+                    if (!l.isEmpty()) { try { g.pend.put(Integer.parseInt(k), l.toArray(new String[0])); } catch (NumberFormatException ignorada) { } }
                 }
                 ConfigurationSection hs = c.getConfigurationSection("hechas");
                 if (hs != null) for (String k : hs.getKeys(false)) {
@@ -185,6 +190,8 @@ final class Perfil {
         y.set("libre-hasta", libreHasta);
         y.set("tuvo-trabajo", tuvoTrabajo);
         y.set("pendiente", pendiente);
+        y.set("chunks-ganados", chunksGanados);
+        y.set("desbloqueos", new java.util.ArrayList<>(desbloqueos));
         for (Map.Entry<Trabajo, Progreso> e : prog.entrySet()) {
             String base = "progreso." + e.getKey().name();
             y.set(base + ".nivel", e.getValue().nivel);
