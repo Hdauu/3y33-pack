@@ -435,7 +435,7 @@ final class Menus implements Listener {
         for (Map.Entry<String, Integer> e : g.boosts.entrySet()) {
             if (n >= 18) break;
             final String k = e.getKey();
-            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g, nivel));
+            List<Component> lore = new ArrayList<>(pl.recompensas().detalle(k, t, g));
             lore.add(Component.empty());
             lore.add(linea("Tenés " + e.getValue() + ".", NamedTextColor.YELLOW));
             lore.add(Iconos.txtNegrita("Clic para usarlo", NamedTextColor.GREEN));
