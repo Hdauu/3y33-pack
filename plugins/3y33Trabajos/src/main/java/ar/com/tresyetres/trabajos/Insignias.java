@@ -28,20 +28,26 @@ final class Insignias {
         return "" + (char) (0xE100 + tier) + '' + (char) (0xE110 + t.ordinal() * 4 + tier) + '';
     }
 
-    /** La insignia como texto de Adventure (tiene que ir en BLANCO para que no se tiña). */
+    /** La insignia como texto de Adventure (tiene que ir en BLANCO para que no se tiña) y sin la sombra que el juego le pone a las letras. */
     static Component componente(Trabajo t, int tier) {
-        return Component.text(cadena(t, tier)).font(Key.key("insignias", "chat")).color(NamedTextColor.WHITE).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
+        return Component.text(cadena(t, tier)).font(Key.key("insignias", "chat")).color(NamedTextColor.WHITE)
+                .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false)
+                .shadowColor(net.kyori.adventure.text.format.ShadowColor.none());
     }
 
     /** Insignia + espacio, en un contenedor aparte: si no, lo que se le agregue después hereda la fuente insignias:chat y sale como cuadraditos. */
     static Component conEspacio(Trabajo t, int tier) { return Component.empty().append(componente(t, tier)).append(Component.text(" ")); }
 
-    /** Version en MiniMessage para el chat (placeholder %trabajos_insignia%), con la rareza al pasar el mouse. Vacio si no tiene. */
+    /** Version en MiniMessage de una insignia, con la rareza al pasar el mouse y sin sombra. */
+    static String mini(Trabajo t, int tier) {
+        String hex = String.format("#%06X", RGB[tier]);
+        return "<hover:show_text:'<" + hex + ">" + t.nombre + " · " + NOMBRES[tier] + "'><font:insignias:chat><white><!shadow>" + cadena(t, tier) + "</white></font></hover> ";
+    }
+
+    /** Para el chat (placeholder %trabajos_insignia%): la insignia de quien escribe, o vacio. */
     String mini(Perfil f) {
         Sel s = mostrada(f);
-        if (s == null) return "";
-        String hex = String.format("#%06X", RGB[s.tier()]);
-        return "<hover:show_text:'<" + hex + ">" + s.t().nombre + " · " + NOMBRES[s.tier()] + "'><font:insignias:chat><white>" + cadena(s.t(), s.tier()) + "</white></font></hover> ";
+        return s == null ? "" : mini(s.t(), s.tier());
     }
 
     /** La que se muestra: solo la del trabajo que tenes activo (si no esta oculta con /insignia) y siempre que ya llegaste al nivel 30. */

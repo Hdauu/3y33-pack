@@ -49,7 +49,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|ofrecer|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|ofrecer|insignias|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -62,6 +62,19 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 int n = pl.recompensas().alcanzar(of, ot);
                 pl.perfiles().guardar(of);
                 Msg.ok(s, "Le dejé " + n + " recompensa(s) del camino pendientes a " + op.getName() + " en " + ot.nombre + ".");
+            }
+            case "insignias" -> {
+                // /trabajosadmin insignias: te muestra en el chat las 20 insignias (las dibuja con el mismo texto que usa el chat)
+                if (!(s instanceof Player pp)) { Msg.error(s, "Solo para jugadores."); return true; }
+                var mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+                pp.sendMessage(net.kyori.adventure.text.Component.empty());
+                for (Trabajo t : Trabajo.values()) {
+                    net.kyori.adventure.text.Component l = net.kyori.adventure.text.Component.text(String.format("%-9s", t.nombre), t.color);
+                    for (int r = 0; r < Insignias.NOMBRES.length; r++) l = l.append(net.kyori.adventure.text.Component.text(" ")).append(mm.deserialize(Insignias.mini(t, r)));
+                    pp.sendMessage(l);
+                }
+                pp.sendMessage(net.kyori.adventure.text.Component.text("Común · Épica · Legendaria · Mítica (de izquierda a derecha)", net.kyori.adventure.text.format.NamedTextColor.GRAY));
+                for (Trabajo t : Trabajo.values()) pp.sendMessage(net.kyori.adventure.text.Component.text("hdau » ", net.kyori.adventure.text.format.NamedTextColor.GRAY).append(mm.deserialize(Insignias.mini(t, 3))).append(net.kyori.adventure.text.Component.text(t.nombre + " mítica", net.kyori.adventure.text.format.NamedTextColor.WHITE)));
             }
             case "balance" -> {
                 int horas = 24;
@@ -227,7 +240,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "insignias", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar", "recompensas", "insignia"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
