@@ -80,6 +80,7 @@ final class Mochilas implements Listener {
     private final NamespacedKey kId;
     private final NamespacedKey kNivel;
     private final NamespacedKey kNav;
+    private final NamespacedKey kTrabajo;
     private final File archivo;
     private YamlConfiguration datos;
     private int[] espacios = ESPACIOS_BASE.clone();
@@ -94,6 +95,7 @@ final class Mochilas implements Listener {
         this.kId = new NamespacedKey(pl, "mochila_id");
         this.kNivel = new NamespacedKey(pl, "mochila_nivel");
         this.kNav = new NamespacedKey(pl, "mochila_nav");
+        this.kTrabajo = new NamespacedKey(pl, "mochila_trabajo");
         this.archivo = new File(pl.getDataFolder(), "mochilas.yml");
     }
 
@@ -177,9 +179,10 @@ final class Mochilas implements Listener {
 
     // ------------------------------------------------------------------ el item
 
-    ItemStack crear(int nivel) { return crear(nivel, UUID.randomUUID().toString()); }
+    ItemStack crear(int nivel) { return crear(nivel, UUID.randomUUID().toString(), null); }
 
-    private ItemStack crear(int nivel, String id) {
+    /** La Mochila IV es del trabajo con el que se armó: solo se abre mientras el dueño tenga ese trabajo puesto. */
+    private ItemStack crear(int nivel, String id, Trabajo trabajo) {
         nivel = Math.max(1, Math.min(4, nivel));
         ItemStack it = new ItemStack(Material.PAPER);
         ItemMeta m = it.getItemMeta();
@@ -192,6 +195,11 @@ final class Mochilas implements Listener {
         int total = espaciosDe(nivel);
         lore.add(gris("Espacios: ").append(Component.text(total, c)));
         if (total > PAG) lore.add(gris("Páginas: ").append(Component.text(total / PAG, c)));
+        if (trabajo != null) {
+            lore.add(Component.empty());
+            lore.add(Component.text("De " + trabajo.nombre + ": solo se usa mientras", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("tengas ese trabajo puesto.", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        }
         if (nivel < 4) {
             lore.add(Component.empty());
             lore.add(gris("Se mejora a la Mochila " + ROMANO[nivel] + " en la mesa de"));
@@ -200,12 +208,17 @@ final class Mochilas implements Listener {
                 lore.add(Component.text("  " + e.getValue() + " × ", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false)
                         .append(Component.translatable(e.getKey().translationKey(), NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false)));
             }
+            if (nivel == 3) {
+                lore.add(gris("Hace falta haber llegado al nivel 65 de"));
+                lore.add(gris("tu trabajo (hito de la Mochila IV)."));
+            }
         }
         m.lore(lore);
         m.setItemModel(new NamespacedKey("3y33", "trabajos/mochila_" + nivel));
         m.setMaxStackSize(1);
         m.getPersistentDataContainer().set(kId, PersistentDataType.STRING, id);
         m.getPersistentDataContainer().set(kNivel, PersistentDataType.INTEGER, nivel);
+        if (trabajo != null) m.getPersistentDataContainer().set(kTrabajo, PersistentDataType.STRING, trabajo.name());
         it.setItemMeta(m);
         return it;
     }
@@ -231,6 +244,21 @@ final class Mochilas implements Listener {
         return n == null ? 1 : Math.max(1, Math.min(4, n));
     }
 
+    private Trabajo trabajoDe(ItemStack it) {
+        if (!esMochila(it)) return null;
+        String s = it.getItemMeta().getPersistentDataContainer().get(kTrabajo, PersistentDataType.STRING);
+        if (s == null) return null;
+        try { return Trabajo.valueOf(s); } catch (IllegalArgumentException e) { return null; }
+    }
+
+    /** Los materiales de la mejora a la IV: es lo que entrega el hito del nivel 65 (la mochila se arma en la mesa de crafteo). */
+    void darMateriales(Player p) {
+        for (Map.Entry<Material, Integer> e : mejoras.getOrDefault(4, Map.of()).entrySet()) {
+            Map<Integer, ItemStack> sobra = p.getInventory().addItem(new ItemStack(e.getKey(), e.getValue()));
+            for (ItemStack r : sobra.values()) p.getWorld().dropItemNaturally(p.getLocation(), r);
+        }
+    }
+
     /** Le da una mochila nueva al jugador (si no entra en el inventario, la deja a sus pies). */
     void darA(Player p, int nivel) {
         Map<Integer, ItemStack> sobra = p.getInventory().addItem(crear(nivel));
@@ -244,6 +272,12 @@ final class Mochilas implements Listener {
         if (id == null) return;
         if (abiertas.containsKey(id)) {
             Msg.error(p, "Esa mochila ya está abierta.");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
+            return;
+        }
+        Trabajo dueno = trabajoDe(item);
+        if (dueno != null && pl.perfiles().de(p).activo != dueno) {
+            Msg.error(p, "Esta mochila es de " + dueno.nombre + ": solo la podés usar mientras tengas ese trabajo puesto.");
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
             return;
         }
@@ -448,7 +482,15 @@ final class Mochilas implements Listener {
             origen = it;
         }
         if (origen == null || nivelDe(origen) != destino - 1 || abiertas.containsKey(idDe(origen))) { ci.setResult(null); return; }
-        ci.setResult(crear(destino, idDe(origen)));
+        Trabajo trabajo = trabajoDe(origen);
+        if (destino == 4) {
+            // la IV se arma solo con el hito del nivel 65 del trabajo que tengas puesto, y queda atada a ese trabajo
+            Player p = ci.getViewers().isEmpty() || !(ci.getViewers().get(0) instanceof Player pp) ? null : pp;
+            Trabajo activo = p == null ? null : pl.perfiles().de(p).activo;
+            if (activo == null || !pl.perfiles().de(p).desbloqueos.contains(activo.name() + ":mochila4")) { ci.setResult(null); return; }
+            trabajo = activo;
+        }
+        ci.setResult(crear(destino, idDe(origen), trabajo));
     }
 
     @EventHandler
