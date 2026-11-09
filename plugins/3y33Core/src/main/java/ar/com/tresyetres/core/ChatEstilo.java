@@ -228,19 +228,42 @@ final class ChatEstilo implements Listener {
         io.papermc.paper.chat.ChatRenderer viejo = e.renderer();
         e.renderer((fuente, nombre, mensaje, vista) -> {
             Component c = viejo.render(fuente, nombre, mensaje, vista);
-            String total = PlainTextComponentSerializer.plainText().serialize(c);
-            int n = 0;
-            for (int i = total.indexOf(plano); i >= 0; i = total.indexOf(plano, i + plano.length())) n++;
+            int n = contar(c, plano);
             if (n == 0) return c;
-            final int ultimo = n;
-            java.util.concurrent.atomic.AtomicInteger visto = new java.util.concurrent.atomic.AtomicInteger();
-            return c.replaceText(net.kyori.adventure.text.TextReplacementConfig.builder()
-                    .matchLiteral(plano)
-                    .condition((r, cuenta, hechos) -> visto.incrementAndGet() == ultimo
-                            ? net.kyori.adventure.text.PatternReplacementResult.REPLACE
-                            : net.kyori.adventure.text.PatternReplacementResult.CONTINUE)
-                    .replacement((r, b) -> conCodigos != null ? conCodigos : pintarPara(vista, fuente.getUniqueId(), plano, x)).build());
+            return sustituir(c, plano, n, new int[1],
+                    () -> conCodigos != null ? conCodigos : pintarPara(vista, fuente.getUniqueId(), plano, x));
         });
+    }
+
+    /** Cuenta las apariciones de p en el texto visible (no mira los hover: ahi hay letras sueltas que confundian la cuenta con mensajes de 1 letra). */
+    private static int contar(Component c, String p) {
+        int n = 0;
+        if (c instanceof net.kyori.adventure.text.TextComponent t && !p.isEmpty()) {
+            String s = t.content();
+            for (int i = s.indexOf(p); i >= 0; i = s.indexOf(p, i + p.length())) n++;
+        }
+        for (Component h : c.children()) n += contar(h, p);
+        return n;
+    }
+
+    /** Reemplaza solo la aparicion numero "objetivo" (en orden de lectura) de p por lo que devuelva rep. */
+    private static Component sustituir(Component c, String p, int objetivo, int[] visto, java.util.function.Supplier<Component> rep) {
+        Component r = c.children(java.util.List.of());
+        if (c instanceof net.kyori.adventure.text.TextComponent t && !p.isEmpty()) {
+            String s = t.content();
+            int pos = -1;
+            for (int i = s.indexOf(p); i >= 0; i = s.indexOf(p, i + p.length())) {
+                if (++visto[0] == objetivo) { pos = i; break; }
+            }
+            if (pos >= 0) {
+                r = Component.empty().style(t.style());
+                if (pos > 0) r = r.append(Component.text(s.substring(0, pos)));
+                r = r.append(rep.get());
+                if (pos + p.length() < s.length()) r = r.append(Component.text(s.substring(pos + p.length())));
+            }
+        }
+        for (Component h : c.children()) r = r.append(sustituir(h, p, objetivo, visto, rep));
+        return r;
     }
 
     // ------------------------------------------------------------- menu
