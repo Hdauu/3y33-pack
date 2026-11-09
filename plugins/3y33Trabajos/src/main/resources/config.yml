@@ -56,3 +56,8 @@ niveles:
     granjero: 25000
     cazador: 13500
     pescador: 4000
+
+# Mochilas: se abren con click derecho teniendolas en la mano. Cantidad de espacios de cada nivel (I, II, III, IV): 4 numeros, multiplos de 9, entre 9 y 54.
+# El nivel IV se entrega al reclamar el hito del nivel 65 (la primera vez). Para dar una a mano: /trabajosadmin mochila dar <jugador> <1-4>
+mochilas:
+  espacios: [9, 18, 36, 54]

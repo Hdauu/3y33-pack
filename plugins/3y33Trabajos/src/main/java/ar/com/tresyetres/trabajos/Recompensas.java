@@ -337,9 +337,21 @@ final class Recompensas {
             Msg.aviso(p, Component.text("Elegiste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(". Ya podés reclamar un chunk gratis.", NamedTextColor.GREEN)));
         } else if (tipo(k).equals("FIJA")) {
             String fj = k.substring(k.indexOf(':') + 1);
-            f.desbloqueos.add(fj.startsWith("enc") ? t.name() + ":" + fj : fj);
+            boolean nuevo = f.desbloqueos.add(fj.startsWith("enc") ? t.name() + ":" + fj : fj);
             if (nivel == Perfil.NIVEL_MAX && chunksActivo) darChunks(p, f, 2);
-            Msg.aviso(p, Component.text("Desbloqueaste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(".", NamedTextColor.GRAY)));
+            if (fj.equals("mochila4")) {
+                if (nuevo) {
+                    pl.mochilas().darA(p, 4);
+                    Msg.aviso(p, Component.text("Desbloqueaste la Mochila IV y ya la tenés en el inventario. Abrila con click derecho.", NamedTextColor.GREEN));
+                } else {
+                    double m = monto(nivel, 2);
+                    pl.pago().depositar(p, f, m);
+                    pl.pago().vaciar(p, f);
+                    Msg.aviso(p, Component.text("Ya tenías la Mochila IV: en su lugar te di  ", NamedTextColor.GRAY).append(Component.text("+" + Msg.dinero(m), NamedTextColor.GREEN)));
+                }
+            } else {
+                Msg.aviso(p, Component.text("Desbloqueaste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(".", NamedTextColor.GRAY)));
+            }
         } else {
             g.boosts.merge(k, 1, Integer::sum);
             Msg.aviso(p, Component.text("Elegiste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(". Lo guardé en tus Boosts.", NamedTextColor.GRAY)));

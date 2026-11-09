@@ -49,7 +49,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
 
     private boolean admin(CommandSender s, String[] a) {
         if (!s.hasPermission("tresyetres.staff")) { Msg.error(s, "No tenés permiso."); return true; }
-        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|ofrecer|insignias|recargar>"); return true; }
+        if (a.length == 0) { Msg.info(s, "Uso: /trabajosadmin <reroll|nivel|xp|espera|tomar|quitar|misiones|global|mision|npc|holo|info|balance|ofrecer|insignias|mochila|recargar>"); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "reroll" -> { pl.rarezas().rerollear(true); Msg.ok(s, "Rarezas renovadas."); }
@@ -62,6 +62,18 @@ final class Comandos implements CommandExecutor, TabCompleter {
                 int n = pl.recompensas().alcanzar(of, ot);
                 pl.perfiles().guardar(of);
                 Msg.ok(s, "Le dejé " + n + " recompensa(s) del camino pendientes a " + op.getName() + " en " + ot.nombre + ".");
+            }
+            case "mochila" -> {
+                // /trabajosadmin mochila dar <jugador> <nivel 1-4>: le da una mochila nueva (para probar o reponer)
+                Player mp = a.length > 2 ? Bukkit.getPlayerExact(a[2]) : null;
+                int mn = 0;
+                try { mn = a.length > 3 ? Integer.parseInt(a[3]) : 0; } catch (NumberFormatException ex) { mn = 0; }
+                if (a.length < 4 || !a[1].equalsIgnoreCase("dar") || mp == null || mn < 1 || mn > 4) {
+                    Msg.error(s, "Uso: /trabajosadmin mochila dar <jugador> <1-4>");
+                    return true;
+                }
+                pl.mochilas().darA(mp, mn);
+                Msg.ok(s, "Le di una Mochila " + Mochilas.ROMANO[mn - 1] + " a " + mp.getName() + " (" + pl.mochilas().espaciosDe(mn) + " espacios).");
             }
             case "insignias" -> {
                 // /trabajosadmin insignias: te muestra en el chat las 20 insignias (las dibuja con el mismo texto que usa el chat)
@@ -240,7 +252,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         boolean admin = c.getName().equalsIgnoreCase("trabajosadmin");
         if (a.length == 1) {
-            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "insignias", "recargar")); }
+            if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "insignias", "mochila", "recargar")); }
             else {
                 out.addAll(List.of("unirse", "abandonar", "recompensas", "insignia"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);

@@ -20,6 +20,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     private Menus menus;
     private Misiones misiones;
     private Npcs npcs;
+    private Mochilas mochilas;
 
     Pago pago() { return pago; }
     Catalogo catalogo() { return catalogo; }
@@ -35,6 +36,7 @@ public final class TrabajosPlugin extends JavaPlugin {
     Menus menus() { return menus; }
     Misiones misiones() { return misiones; }
     Npcs npcs() { return npcs; }
+    Mochilas mochilas() { return mochilas; }
 
     @Override
     public void onEnable() {
@@ -70,6 +72,9 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(menus, this);
         npcs = new Npcs(this);
         Bukkit.getPluginManager().registerEvents(npcs, this);
+        mochilas = new Mochilas(this);
+        mochilas.cargar();
+        Bukkit.getPluginManager().registerEvents(mochilas, this);
 
         Comandos cmd = new Comandos(this);
         for (String nombre : new String[]{"trabajos", "trabajosadmin", "insignia"}) {
@@ -85,6 +90,7 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, () -> pago.porTiempo(), 1200L, 1200L);
         Bukkit.getScheduler().runTaskTimer(this, escucha::muestrear, 20L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, () -> balance.guardarSiHaceFalta(), 6000L, 6000L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> mochilas.guardarAbiertas(), 1200L, 1200L);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
                 Perfil f = perfiles.existente(p);
@@ -102,6 +108,7 @@ public final class TrabajosPlugin extends JavaPlugin {
                 if (f != null) pago.vaciar(p, f);
             }
         }
+        if (mochilas != null) mochilas.guardarTodo();
         if (colocados != null) colocados.volcarTodo();
         if (balance != null) balance.guardar();
         if (perfiles != null) { perfiles.guardarTodo(); perfiles.cerrar(); }
