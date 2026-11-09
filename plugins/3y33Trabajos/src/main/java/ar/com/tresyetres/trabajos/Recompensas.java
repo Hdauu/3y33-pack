@@ -241,7 +241,7 @@ final class Recompensas {
                 l.add(Iconos.txt("reclamás 1 chunk más sin pagarlo.", NamedTextColor.GREEN));
             }
             case "FIJA" -> {
-                if (k.endsWith("mochila4")) { l.add(Iconos.txt("Desbloquea la Mochila IV (la más grande) y te da", NamedTextColor.GOLD)); l.add(Iconos.txt("los materiales para armarla en la mesa de crafteo.", NamedTextColor.GOLD)); l.add(Iconos.txt("Solo se usa mientras seas " + t.nombre + ".", NamedTextColor.GRAY)); }
+                if (k.endsWith("mochila4")) { l.add(Iconos.txt("Desbloquea la Mochila IV (la más grande) y te da", NamedTextColor.GOLD)); l.add(Iconos.txt("los materiales para armarla en la mesa de crafteo.", NamedTextColor.GOLD)); l.add(Iconos.txt("Solo se abre si tu trabajo actual está en nivel 65.", NamedTextColor.GRAY)); }
                 else l.add(Iconos.txt("Desbloquea el " + fijaTexto(k).toLowerCase(Locale.ROOT) + " de " + t.nombre + ".", NamedTextColor.GOLD));
                 l.add(Iconos.txt("Queda guardado en tu cuenta.", NamedTextColor.GRAY));
             }
@@ -337,17 +337,17 @@ final class Recompensas {
             Msg.aviso(p, Component.text("Elegiste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(". Ya podés reclamar un chunk gratis.", NamedTextColor.GREEN)));
         } else if (tipo(k).equals("FIJA")) {
             String fj = k.substring(k.indexOf(':') + 1);
-            boolean nuevo = f.desbloqueos.add(fj.startsWith("enc") || fj.equals("mochila4") ? t.name() + ":" + fj : fj);
+            boolean nuevo = f.desbloqueos.add(fj.startsWith("enc") ? t.name() + ":" + fj : fj);
             if (nivel == Perfil.NIVEL_MAX && chunksActivo) darChunks(p, f, 2);
             if (fj.equals("mochila4")) {
                 if (nuevo) {
                     pl.mochilas().darMateriales(p);
-                    Msg.aviso(p, Component.text("Desbloqueaste la Mochila IV de " + t.nombre + ". Te di los materiales: en la mesa de crafteo, combinalos con tu Mochila III.", NamedTextColor.GREEN));
+                    Msg.aviso(p, Component.text("Desbloqueaste la Mochila IV. Te di los materiales: en la mesa de crafteo, combinalos con tu Mochila III (una sola por cuenta).", NamedTextColor.GREEN));
                 } else {
                     double m = monto(nivel, 2);
                     pl.pago().depositar(p, f, m);
                     pl.pago().vaciar(p, f);
-                    Msg.aviso(p, Component.text("Ya tenías la Mochila IV de " + t.nombre + ": en su lugar te di  ", NamedTextColor.GRAY).append(Component.text("+" + Msg.dinero(m), NamedTextColor.GREEN)));
+                    Msg.aviso(p, Component.text("Ya tenías la Mochila IV: en su lugar te di  ", NamedTextColor.GRAY).append(Component.text("+" + Msg.dinero(m), NamedTextColor.GREEN)));
                 }
             } else {
                 Msg.aviso(p, Component.text("Desbloqueaste ", NamedTextColor.GRAY).append(nombre(k)).append(Component.text(".", NamedTextColor.GRAY)));

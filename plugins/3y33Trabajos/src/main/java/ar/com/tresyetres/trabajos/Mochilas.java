@@ -80,7 +80,7 @@ final class Mochilas implements Listener {
     private final NamespacedKey kId;
     private final NamespacedKey kNivel;
     private final NamespacedKey kNav;
-    private final NamespacedKey kTrabajo;
+    private final NamespacedKey kLigada;
     private final File archivo;
     private YamlConfiguration datos;
     private int[] espacios = ESPACIOS_BASE.clone();
@@ -95,7 +95,7 @@ final class Mochilas implements Listener {
         this.kId = new NamespacedKey(pl, "mochila_id");
         this.kNivel = new NamespacedKey(pl, "mochila_nivel");
         this.kNav = new NamespacedKey(pl, "mochila_nav");
-        this.kTrabajo = new NamespacedKey(pl, "mochila_trabajo");
+        this.kLigada = new NamespacedKey(pl, "mochila_ligada");
         this.archivo = new File(pl.getDataFolder(), "mochilas.yml");
     }
 
@@ -179,10 +179,10 @@ final class Mochilas implements Listener {
 
     // ------------------------------------------------------------------ el item
 
-    ItemStack crear(int nivel) { return crear(nivel, UUID.randomUUID().toString(), null); }
+    ItemStack crear(int nivel) { return crear(nivel, UUID.randomUUID().toString(), false); }
 
-    /** La Mochila IV es del trabajo con el que se armó: solo se abre mientras el dueño tenga ese trabajo puesto. */
-    private ItemStack crear(int nivel, String id, Trabajo trabajo) {
+    /** La Mochila IV de recompensa (ligada) solo se abre si el trabajo que tenés puesto está en nivel 65 o más. */
+    private ItemStack crear(int nivel, String id, boolean ligada) {
         nivel = Math.max(1, Math.min(4, nivel));
         ItemStack it = new ItemStack(Material.PAPER);
         ItemMeta m = it.getItemMeta();
@@ -195,10 +195,10 @@ final class Mochilas implements Listener {
         int total = espaciosDe(nivel);
         lore.add(gris("Espacios: ").append(Component.text(total, c)));
         if (total > PAG) lore.add(gris("Páginas: ").append(Component.text(total / PAG, c)));
-        if (trabajo != null) {
+        if (ligada) {
             lore.add(Component.empty());
-            lore.add(Component.text("De " + trabajo.nombre + ": solo se usa mientras", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-            lore.add(Component.text("tengas ese trabajo puesto.", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("Recompensa del nivel 65: solo se abre si", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            lore.add(Component.text("tu trabajo actual está en nivel 65 o más.", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
         }
         if (nivel < 4) {
             lore.add(Component.empty());
@@ -209,8 +209,8 @@ final class Mochilas implements Listener {
                         .append(Component.translatable(e.getKey().translationKey(), NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false)));
             }
             if (nivel == 3) {
-                lore.add(gris("Hace falta haber llegado al nivel 65 de"));
-                lore.add(gris("tu trabajo (hito de la Mochila IV)."));
+                lore.add(gris("Hace falta nivel 65 en tu trabajo actual."));
+                lore.add(gris("Se puede armar una sola por cuenta."));
             }
         }
         m.lore(lore);
@@ -218,7 +218,7 @@ final class Mochilas implements Listener {
         m.setMaxStackSize(1);
         m.getPersistentDataContainer().set(kId, PersistentDataType.STRING, id);
         m.getPersistentDataContainer().set(kNivel, PersistentDataType.INTEGER, nivel);
-        if (trabajo != null) m.getPersistentDataContainer().set(kTrabajo, PersistentDataType.STRING, trabajo.name());
+        if (ligada) m.getPersistentDataContainer().set(kLigada, PersistentDataType.BYTE, (byte) 1);
         it.setItemMeta(m);
         return it;
     }
@@ -244,11 +244,14 @@ final class Mochilas implements Listener {
         return n == null ? 1 : Math.max(1, Math.min(4, n));
     }
 
-    private Trabajo trabajoDe(ItemStack it) {
-        if (!esMochila(it)) return null;
-        String s = it.getItemMeta().getPersistentDataContainer().get(kTrabajo, PersistentDataType.STRING);
-        if (s == null) return null;
-        try { return Trabajo.valueOf(s); } catch (IllegalArgumentException e) { return null; }
+    private boolean ligada(ItemStack it) {
+        return esMochila(it) && it.getItemMeta().getPersistentDataContainer().has(kLigada, PersistentDataType.BYTE);
+    }
+
+    /** ¿El trabajo que tiene puesto el jugador llegó al nivel 65? (el hito de la Mochila IV) */
+    private boolean tieneNivel65(Player p) {
+        Perfil f = pl.perfiles().de(p);
+        return f.activo != null && f.de(f.activo).nivel >= 65;
     }
 
     /** Los materiales de la mejora a la IV: es lo que entrega el hito del nivel 65 (la mochila se arma en la mesa de crafteo). */
@@ -275,9 +278,8 @@ final class Mochilas implements Listener {
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
             return;
         }
-        Trabajo dueno = trabajoDe(item);
-        if (dueno != null && pl.perfiles().de(p).activo != dueno) {
-            Msg.error(p, "Esta mochila es de " + dueno.nombre + ": solo la podés usar mientras tengas ese trabajo puesto.");
+        if (ligada(item) && !tieneNivel65(p)) {
+            Msg.error(p, "Para usar esta mochila tu trabajo actual tiene que estar en nivel 65 o más.");
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1f);
             return;
         }
@@ -482,21 +484,24 @@ final class Mochilas implements Listener {
             origen = it;
         }
         if (origen == null || nivelDe(origen) != destino - 1 || abiertas.containsKey(idDe(origen))) { ci.setResult(null); return; }
-        Trabajo trabajo = trabajoDe(origen);
         if (destino == 4) {
-            // la IV se arma solo con el hito del nivel 65 del trabajo que tengas puesto, y queda atada a ese trabajo
+            // la IV se arma con nivel 65 en el trabajo que tengas puesto y solo una vez por cuenta
             Player p = ci.getViewers().isEmpty() || !(ci.getViewers().get(0) instanceof Player pp) ? null : pp;
-            Trabajo activo = p == null ? null : pl.perfiles().de(p).activo;
-            if (activo == null || !pl.perfiles().de(p).desbloqueos.contains(activo.name() + ":mochila4")) { ci.setResult(null); return; }
-            trabajo = activo;
+            if (p == null || !tieneNivel65(p) || pl.perfiles().de(p).desbloqueos.contains("mochila4_armada")) { ci.setResult(null); return; }
         }
-        ci.setResult(crear(destino, idDe(origen), trabajo));
+        ci.setResult(crear(destino, idDe(origen), destino == 4));
     }
 
     @EventHandler
     public void alCraftear(CraftItemEvent e) {
         if (!esReceta(e.getRecipe())) return;
         // con shift se craftearían varias de una vez con el mismo id
-        if (e.isShiftClick()) e.setCancelled(true);
+        if (e.isShiftClick()) { e.setCancelled(true); return; }
+        String clave = ((org.bukkit.Keyed) e.getRecipe()).getKey().getKey();
+        if (clave.equals("mochila_mejora_4") && e.getWhoClicked() instanceof Player p) {
+            Perfil f = pl.perfiles().de(p);
+            f.desbloqueos.add("mochila4_armada");
+            pl.perfiles().guardar(f);
+        }
     }
 }
