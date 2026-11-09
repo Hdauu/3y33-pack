@@ -1,0 +1,200 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "\uf101": -12,
+        "\uf102": 3
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/marcos.png",
+      "height": 14,
+      "ascent": 11,
+      "chars": [
+        "\ue100\ue101\ue102\ue103"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/coal.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue110"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/iron_ingot.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue111"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/diamond.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue112"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/netherite_ingot.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue113"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/lenador_comun.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue114"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/lenador_epica.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue115"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/lenador_legendaria.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue116"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/lenador_mitica.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue117"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/wheat.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue118"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/carrot.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue119"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/melon_slice.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11a"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/golden_apple.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11b"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/beef.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11c"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/bone.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11d"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/bow.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11e"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "insignias:font/cazador_mitica.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue11f"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/cod.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue120"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/salmon.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue121"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/tropical_fish.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue122"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/pufferfish.png",
+      "height": 8,
+      "ascent": 8,
+      "chars": [
+        "\ue123"
+      ]
+    }
+  ]
+}

@@ -78,6 +78,8 @@ final class Perfil {
     double pendiente;
     /** Chunks gratis ganados con los trabajos (de toda la cuenta) y cosas desbloqueadas por hitos ("mochila4", "MINERO:enc1"...). */
     int chunksGanados;
+    /** Insignia del chat: "auto" (la de mayor rareza), "ninguna" o el id de un trabajo. */
+    String insignia = "auto";
     final java.util.Set<String> desbloqueos = new java.util.TreeSet<>();
     final Map<Trabajo, Progreso> prog = new EnumMap<>(Trabajo.class);
 
@@ -119,6 +121,7 @@ final class Perfil {
         tuvoTrabajo = y.getBoolean("tuvo-trabajo", false);
         pendiente = y.getDouble("pendiente", 0.0);
         chunksGanados = y.getInt("chunks-ganados", 0);
+        insignia = y.getString("insignia", "auto");
         desbloqueos.addAll(y.getStringList("desbloqueos"));
         ConfigurationSection s = y.getConfigurationSection("progreso");
         if (s != null) {
@@ -191,6 +194,7 @@ final class Perfil {
         y.set("tuvo-trabajo", tuvoTrabajo);
         y.set("pendiente", pendiente);
         y.set("chunks-ganados", chunksGanados);
+        y.set("insignia", insignia);
         y.set("desbloqueos", new java.util.ArrayList<>(desbloqueos));
         for (Map.Entry<Trabajo, Progreso> e : prog.entrySet()) {
             String base = "progreso." + e.getKey().name();

@@ -29,6 +29,8 @@ public final class TrabajosPlugin extends JavaPlugin {
     Colocados colocados() { return colocados; }
     Balance balance() { return balance; }
     Recompensas recompensas() { return recompensas; }
+    private final Insignias insignias = new Insignias();
+    Insignias insignias() { return insignias; }
     Servicio servicio() { return servicio; }
     Menus menus() { return menus; }
     Misiones misiones() { return misiones; }
@@ -70,10 +72,12 @@ public final class TrabajosPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(npcs, this);
 
         Comandos cmd = new Comandos(this);
-        for (String nombre : new String[]{"trabajos", "trabajosadmin"}) {
+        for (String nombre : new String[]{"trabajos", "trabajosadmin", "insignia"}) {
             PluginCommand pc = getCommand(nombre);
             if (pc != null) { pc.setExecutor(cmd); pc.setTabCompleter(cmd); }
         }
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) { new TrabajosExpansion(this).register(); getLogger().info("Placeholder %trabajos_insignia% registrado."); }
 
         Bukkit.getScheduler().runTaskTimer(this, () -> perfiles.guardarTodo(), 6000L, 6000L);
         Bukkit.getScheduler().runTaskTimer(this, () -> rarezas.revisar(), 400L, 400L);

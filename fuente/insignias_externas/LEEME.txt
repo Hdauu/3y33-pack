@@ -1,0 +1,39 @@
+INSIGNIAS DE TRABAJOS - cómo usarlas desde el plugin
+
+Fuente: insignias:chat   (el texto tiene que ir en color BLANCO, si no tiñe la insignia)
+
+Cada insignia es una cadena de 4 caracteres: marco + espacio negativo + ítem + espacio.
+El ítem es la textura original del juego (el pack apunta a minecraft:item/...).
+
+Ejemplo (Adventure / Paper):
+  Component.text(INSIGNIA).font(Key.key("insignias", "chat")).color(NamedTextColor.WHITE)
+
+Ejemplo en JSON:
+  {"text":"\ue101\uf101\ue115\uf102","font":"insignias:chat","color":"white"}
+
+minero    comun       \ue100\uf101\ue110\uf102   minecraft:item/coal
+minero    epica       \ue101\uf101\ue111\uf102   minecraft:item/iron_ingot
+minero    legendaria  \ue102\uf101\ue112\uf102   minecraft:item/diamond
+minero    mitica      \ue103\uf101\ue113\uf102   minecraft:item/netherite_ingot
+lenador   comun       \ue100\uf101\ue114\uf102   dibujado (lenador_comun.png)
+lenador   epica       \ue101\uf101\ue115\uf102   dibujado (lenador_epica.png)
+lenador   legendaria  \ue102\uf101\ue116\uf102   dibujado (lenador_legendaria.png)
+lenador   mitica      \ue103\uf101\ue117\uf102   dibujado (lenador_mitica.png)
+granjero  comun       \ue100\uf101\ue118\uf102   minecraft:item/wheat
+granjero  epica       \ue101\uf101\ue119\uf102   minecraft:item/carrot
+granjero  legendaria  \ue102\uf101\ue11a\uf102   minecraft:item/melon_slice
+granjero  mitica      \ue103\uf101\ue11b\uf102   minecraft:item/golden_apple
+cazador   comun       \ue100\uf101\ue11c\uf102   minecraft:item/beef
+cazador   epica       \ue101\uf101\ue11d\uf102   minecraft:item/bone
+cazador   legendaria  \ue102\uf101\ue11e\uf102   minecraft:item/bow
+cazador   mitica      \ue103\uf101\ue11f\uf102   dibujado (cazador_mitica.png)
+pescador  comun       \ue100\uf101\ue120\uf102   minecraft:item/cod
+pescador  epica       \ue101\uf101\ue121\uf102   minecraft:item/salmon
+pescador  legendaria  \ue102\uf101\ue122\uf102   minecraft:item/tropical_fish
+pescador  mitica      \ue103\uf101\ue123\uf102   minecraft:item/pufferfish
+
+Para cambiar un ítem: editá el "file" de su carácter en assets/insignias/font/chat.json
+(por ejemplo minecraft:item/golden_carrot.png). Cualquier ítem del juego sirve.
+
+Tamaño: si la querés más chica o más grande en el chat, cambiá "height" y "ascent"
+del marco y de los ítems en la misma proporción (marco 14/11, ítem 8/8).

@@ -337,6 +337,63 @@ final class Menus implements Listener {
 
     private String esHitoTxt(int nivel) { return pl.recompensas().esHito(nivel) ? "¡Es un HITO! " : ""; }
 
+    // ---------- insignia del chat ----------
+
+    void insignias(Player p) {
+        Perfil f = pl.perfiles().de(p);
+        boolean glifo = pl.iconos().conPack(p);
+        Insignias.Sel act = pl.insignias().mostrada(f);
+        Ventana v = new Ventana(3, Iconos.txtNegrita("Tu insignia del chat", NamedTextColor.GOLD));
+        for (int i = 0; i < 27; i++) v.poner(i, Iconos.item(Material.GRAY_STAINED_GLASS_PANE, Component.text(" "), List.of()));
+        String e = f.insignia;
+        v.poner(4, Iconos.item(Material.BOOK, Iconos.txtNegrita("¿Cómo se consiguen?", NamedTextColor.YELLOW), List.of(
+                linea("La insignia sube de rareza con el nivel del trabajo:", GRIS),
+                Iconos.txt("Nivel 30: Común", Insignias.color(0)), Iconos.txt("Nivel 65: Épica", Insignias.color(1)),
+                Iconos.txt("Nivel 100: Legendaria", Insignias.color(2)), Iconos.txt("Nivel 130: Mítica", Insignias.color(3)),
+                Component.empty(), linea("Elegís cuál se ve junto a tu nombre en el chat.", GRIS))));
+        boolean esAuto = !"ninguna".equals(e) && Trabajo.de(e) == null;
+        ItemStack au = Iconos.item(Material.COMPASS, Iconos.txtNegrita("Automática", NamedTextColor.AQUA), List.of(
+                linea("Muestra la de mayor rareza que tengas.", GRIS), Component.empty(),
+                linea(esAuto ? "✔ La estás usando" : "Clic para usarla", esAuto ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
+        if (esAuto) glint(au);
+        v.poner(10, au, ev -> { sonido(p); f.insignia = "auto"; pl.perfiles().guardar(f); insignias(p); });
+        int slot = 11;
+        for (Trabajo t : Trabajo.values()) {
+            int ti = Insignias.tier(f.de(t).nivel);
+            if (ti < 0) {
+                v.poner(slot++, Iconos.item(t.icono, Iconos.txtNegrita(t.nombre + " · bloqueada", GRIS), List.of(
+                        linea("Llegá al nivel " + Insignias.NIVELES[0] + " de " + t.nombre + ".", GRIS), linea("Vas por el nivel " + f.de(t).nivel + ".", GRIS))), ev -> negar(p));
+                continue;
+            }
+            boolean sel = Trabajo.de(e) == t;
+            Component nombre = (glifo ? Insignias.componente(t, ti).append(Component.text(" ")) : Component.empty())
+                    .append(Iconos.txtNegrita(t.nombre + " · " + Insignias.NOMBRES[ti], Insignias.color(ti)));
+            ItemStack it = Iconos.item(t.icono, nombre, List.of(
+                    linea("Nivel " + f.de(t).nivel + " de " + t.nombre + ".", GRIS), Component.empty(),
+                    linea(sel ? "✔ La estás usando" : "Clic para mostrar esta", sel ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
+            if (sel) glint(it);
+            v.poner(slot++, it, ev -> { sonido(p); f.insignia = t.id; pl.perfiles().guardar(f); insignias(p); });
+        }
+        boolean ning = "ninguna".equals(e);
+        ItemStack ni = Iconos.item(Material.BARRIER, Iconos.txtNegrita("Ninguna", NamedTextColor.RED), List.of(
+                linea("No mostrar insignia en el chat.", GRIS), Component.empty(),
+                linea(ning ? "✔ La estás usando" : "Clic para usarla", ning ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
+        if (ning) glint(ni);
+        v.poner(16, ni, ev -> { sonido(p); f.insignia = "ninguna"; pl.perfiles().guardar(f); insignias(p); });
+        if (act != null) {
+            v.poner(22, Iconos.item(Material.NAME_TAG, Iconos.txtNegrita("Ahora mostrás:", NamedTextColor.GOLD), List.of(
+                    (glifo ? Insignias.componente(act.t(), act.tier()).append(Component.text(" ")) : Component.empty())
+                            .append(Iconos.txtNegrita(act.t().nombre + " · " + Insignias.NOMBRES[act.tier()], Insignias.color(act.tier()))))));
+        }
+        v.abrir(p);
+    }
+
+    private void glint(ItemStack it) {
+        org.bukkit.inventory.meta.ItemMeta im = it.getItemMeta();
+        im.setEnchantmentGlintOverride(true);
+        it.setItemMeta(im);
+    }
+
     /** Un nodo del camino: ya elegido, esperando que elijas, alcanzado sin recompensa o todavia lejos. */
     private void nodo(Ventana v, int slot, Player p, Trabajo t, Perfil.Progreso g, int nivel) {
         String hecha = g.hechas.get(nivel);

@@ -21,9 +21,11 @@ final class Comandos implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender s, Command c, String label, String[] a) {
         if (c.getName().equalsIgnoreCase("trabajosadmin")) return admin(s, a);
         if (!(s instanceof Player p)) { Msg.error(s, "Solo para jugadores."); return true; }
+        if (c.getName().equalsIgnoreCase("insignia")) { pl.menus().insignias(p); return true; }
         if (a.length == 0) { pl.menus().principal(p); return true; }
         String sub = a[0].toLowerCase(Locale.ROOT);
         if (sub.equals("abandonar")) { pl.menus().confirmarAbandono(p, pl.perfiles().de(p).activo == null ? Trabajo.MINERO : pl.perfiles().de(p).activo); return true; }
+        if (sub.equals("insignia")) { pl.menus().insignias(p); return true; }
         if (sub.equals("unirse")) {
             Trabajo t = a.length > 1 ? Trabajo.de(a[1]) : null;
             if (t == null) { Msg.error(p, "Uso: /trabajos unirse <minero|leñador|granjero|cazador|pescador>"); return true; }
@@ -227,7 +229,7 @@ final class Comandos implements CommandExecutor, TabCompleter {
         if (a.length == 1) {
             if (admin) { if (s.hasPermission("tresyetres.staff")) out.addAll(List.of("reroll", "nivel", "xp", "espera", "tomar", "quitar", "misiones", "global", "mision", "npc", "holo", "info", "balance", "ofrecer", "recargar")); }
             else {
-                out.addAll(List.of("unirse", "abandonar", "recompensas"));
+                out.addAll(List.of("unirse", "abandonar", "recompensas", "insignia"));
                 for (Trabajo t : Trabajo.values()) out.add(t.id);
             }
         } else if (a.length == 2 && !admin && (a[0].equalsIgnoreCase("unirse") || a[0].equalsIgnoreCase("recompensas"))) {
