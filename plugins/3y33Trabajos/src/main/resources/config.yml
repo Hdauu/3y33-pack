@@ -57,7 +57,14 @@ niveles:
     cazador: 13500
     pescador: 4000
 
-# Mochilas: se abren con click derecho teniendolas en la mano. Cantidad de espacios de cada nivel (I, II, III, IV): 4 numeros, multiplos de 9, entre 9 y 54.
-# El nivel IV se entrega al reclamar el hito del nivel 65 (la primera vez). Para dar una a mano: /trabajosadmin mochila dar <jugador> <1-4>
+# Mochilas: se abren con click derecho teniendolas en la mano. Se abren en paginas de 45 espacios (con flechas abajo si tienen mas de una).
+# espacios: total de cada nivel (I, II, III, IV): 4 numeros, multiplos de 45, entre 45 y 360.
+# La Mochila I se craftea (8 cueros alrededor de un cofre). Cada nivel se mejora en la mesa de crafteo con la mochila anterior mas los
+# materiales de "mejoras" (formato MATERIAL:cantidad, hasta 8 en total). La mochila conserva todo lo que tenia adentro.
+# El nivel IV tambien se entrega al reclamar el hito del nivel 65 (la primera vez). Para dar una a mano: /trabajosadmin mochila dar <jugador> <1-4>
 mochilas:
-  espacios: [9, 18, 36, 54]
+  espacios: [45, 90, 135, 180]
+  mejoras:
+    2: ["LEATHER:4", "IRON_INGOT:4"]
+    3: ["DIAMOND:4", "GOLD_INGOT:4"]
+    4: ["NETHERITE_INGOT:2", "DIAMOND:3", "ENDER_PEARL:3"]

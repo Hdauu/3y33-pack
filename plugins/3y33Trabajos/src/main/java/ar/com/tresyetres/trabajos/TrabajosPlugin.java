@@ -108,7 +108,8 @@ public final class TrabajosPlugin extends JavaPlugin {
                 if (f != null) pago.vaciar(p, f);
             }
         }
-        if (mochilas != null) mochilas.guardarTodo();
+        if (mochilas != null) { mochilas.guardarTodo(); mochilas.quitarRecetas(); }
+        mochilas.quitarRecetas();
         if (colocados != null) colocados.volcarTodo();
         if (balance != null) balance.guardar();
         if (perfiles != null) { perfiles.guardarTodo(); perfiles.cerrar(); }
