@@ -33,6 +33,9 @@ final class Insignias {
         return Component.text(cadena(t, tier)).font(Key.key("insignias", "chat")).color(NamedTextColor.WHITE).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false);
     }
 
+    /** Insignia + espacio, en un contenedor aparte: si no, lo que se le agregue después hereda la fuente insignias:chat y sale como cuadraditos. */
+    static Component conEspacio(Trabajo t, int tier) { return Component.empty().append(componente(t, tier)).append(Component.text(" ")); }
+
     /** Version en MiniMessage para el chat (placeholder %trabajos_insignia%), con la rareza al pasar el mouse. Vacio si no tiene. */
     String mini(Perfil f) {
         Sel s = mostrada(f);

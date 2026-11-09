@@ -366,7 +366,7 @@ final class Menus implements Listener {
                 continue;
             }
             boolean sel = Trabajo.de(e) == t;
-            Component nombre = (glifo ? Insignias.componente(t, ti).append(Component.text(" ")) : Component.empty())
+            Component nombre = (glifo ? Insignias.conEspacio(t, ti) : Component.empty())
                     .append(Iconos.txtNegrita(t.nombre + " · " + Insignias.NOMBRES[ti], Insignias.color(ti)));
             ItemStack it = Iconos.item(t.icono, nombre, List.of(
                     linea("Nivel " + f.de(t).nivel + " de " + t.nombre + ".", GRIS), Component.empty(),
@@ -382,7 +382,7 @@ final class Menus implements Listener {
         v.poner(16, ni, ev -> { sonido(p); f.insignia = "ninguna"; pl.perfiles().guardar(f); insignias(p); });
         if (act != null) {
             v.poner(22, Iconos.item(Material.NAME_TAG, Iconos.txtNegrita("Ahora mostrás:", NamedTextColor.GOLD), List.of(
-                    (glifo ? Insignias.componente(act.t(), act.tier()).append(Component.text(" ")) : Component.empty())
+                    (glifo ? Insignias.conEspacio(act.t(), act.tier()) : Component.empty())
                             .append(Iconos.txtNegrita(act.t().nombre + " · " + Insignias.NOMBRES[act.tier()], Insignias.color(act.tier()))))));
         }
         v.abrir(p);
