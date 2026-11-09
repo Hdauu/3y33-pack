@@ -109,7 +109,7 @@ final class ChatEstilo implements Listener {
         int n = cps.length;
         for (int i = 0; i < n; i++) {
             String ch = new String(Character.toChars(cps[i]));
-            r = r.append(Component.text(ch, mezcla(cs, n == 1 ? 0 : (double) i / (n - 1))));
+            r = r.append(Component.text(ch, mezcla(cs, n == 1 ? 0.5 : (double) i / (n - 1))));
         }
         return r;
     }

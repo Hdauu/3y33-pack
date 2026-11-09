@@ -44,21 +44,12 @@ final class Insignias {
         return "<hover:show_text:'<" + hex + ">" + s.t().nombre + " · " + NOMBRES[s.tier()] + "'><font:insignias:chat><white>" + cadena(s.t(), s.tier()) + "</white></font></hover> ";
     }
 
-    /** La que se muestra: la elegida si ya la tiene; si no (automatica), la de mayor rareza y, a igual rareza, la de mayor nivel. */
+    /** La que se muestra: solo la del trabajo que tenes activo (si no esta oculta con /insignia) y siempre que ya llegaste al nivel 30. */
     Sel mostrada(Perfil f) {
-        String e = f.insignia;
-        if ("ninguna".equals(e)) return null;
-        Trabajo elegido = Trabajo.de(e);
-        if (elegido != null) {
-            int ti = tier(f.de(elegido).nivel);
-            if (ti >= 0) return new Sel(elegido, ti);
-        }
-        Sel mejor = null;
-        for (Trabajo t : Trabajo.values()) {
-            int nv = f.de(t).nivel, ti = tier(nv);
-            if (ti < 0) continue;
-            if (mejor == null || ti > mejor.tier() || (ti == mejor.tier() && nv > f.de(mejor.t()).nivel)) mejor = new Sel(t, ti);
-        }
-        return mejor;
+        if ("ninguna".equals(f.insignia)) return null;
+        Trabajo t = f.activo;
+        if (t == null) return null;
+        int ti = tier(f.de(t).nivel);
+        return ti < 0 ? null : new Sel(t, ti);
     }
 }

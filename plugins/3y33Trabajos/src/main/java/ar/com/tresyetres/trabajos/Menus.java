@@ -342,49 +342,40 @@ final class Menus implements Listener {
     void insignias(Player p) {
         Perfil f = pl.perfiles().de(p);
         boolean glifo = pl.iconos().conPack(p);
+        boolean oculta = "ninguna".equals(f.insignia);
         Insignias.Sel act = pl.insignias().mostrada(f);
         Ventana v = new Ventana(3, Iconos.txtNegrita("Tu insignia del chat", NamedTextColor.GOLD));
         for (int i = 0; i < 27; i++) v.poner(i, Iconos.item(Material.GRAY_STAINED_GLASS_PANE, Component.text(" "), List.of()));
-        String e = f.insignia;
-        v.poner(4, Iconos.item(Material.BOOK, Iconos.txtNegrita("¿Cómo se consiguen?", NamedTextColor.YELLOW), List.of(
-                linea("La insignia sube de rareza con el nivel del trabajo:", GRIS),
+        v.poner(4, Iconos.item(Material.BOOK, Iconos.txtNegrita("¿Cómo funciona?", NamedTextColor.YELLOW), List.of(
+                linea("Se ve junto a tu nombre en el chat y es la", GRIS), linea("del trabajo que tenés activo.", GRIS), Component.empty(),
+                linea("Sube de rareza con el nivel de ese trabajo:", GRIS),
                 Iconos.txt("Nivel 30: Común", Insignias.color(0)), Iconos.txt("Nivel 65: Épica", Insignias.color(1)),
-                Iconos.txt("Nivel 100: Legendaria", Insignias.color(2)), Iconos.txt("Nivel 130: Mítica", Insignias.color(3)),
-                Component.empty(), linea("Elegís cuál se ve junto a tu nombre en el chat.", GRIS))));
-        boolean esAuto = !"ninguna".equals(e) && Trabajo.de(e) == null;
-        ItemStack au = Iconos.item(Material.COMPASS, Iconos.txtNegrita("Automática", NamedTextColor.AQUA), List.of(
-                linea("Muestra la de mayor rareza que tengas.", GRIS), Component.empty(),
-                linea(esAuto ? "✔ La estás usando" : "Clic para usarla", esAuto ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
-        if (esAuto) glint(au);
-        v.poner(10, au, ev -> { sonido(p); f.insignia = "auto"; pl.perfiles().guardar(f); insignias(p); });
+                Iconos.txt("Nivel 100: Legendaria", Insignias.color(2)), Iconos.txt("Nivel 130: Mítica", Insignias.color(3)))));
         int slot = 11;
         for (Trabajo t : Trabajo.values()) {
-            int ti = Insignias.tier(f.de(t).nivel);
-            if (ti < 0) {
-                v.poner(slot++, Iconos.item(t.icono, Iconos.txtNegrita(t.nombre + " · bloqueada", GRIS), List.of(
-                        linea("Llegá al nivel " + Insignias.NIVELES[0] + " de " + t.nombre + ".", GRIS), linea("Vas por el nivel " + f.de(t).nivel + ".", GRIS))), ev -> negar(p));
-                continue;
+            int nv = f.de(t).nivel, ti = Insignias.tier(nv);
+            boolean activo = f.activo == t;
+            ItemStack it;
+            if (activo && ti >= 0) {
+                Component nombre = (glifo ? Insignias.conEspacio(t, ti) : Component.empty())
+                        .append(Iconos.txtNegrita(t.nombre + " · " + Insignias.NOMBRES[ti], Insignias.color(ti)));
+                it = Iconos.item(t.icono, nombre, List.of(linea("Nivel " + nv + " de " + t.nombre + ".", GRIS), Component.empty(),
+                        linea(oculta ? "Oculta (activala abajo)" : "✔ La estás mostrando", oculta ? NamedTextColor.YELLOW : NamedTextColor.GREEN)));
+                if (!oculta) glint(it);
+            } else if (activo) {
+                it = Iconos.item(t.icono, Iconos.txtNegrita(t.nombre + " · todavía no", GRIS), List.of(
+                        linea("Llegá al nivel " + Insignias.NIVELES[0] + " para tener tu primera insignia.", GRIS), linea("Vas por el nivel " + nv + ".", GRIS)));
+            } else {
+                it = Iconos.item(t.icono, Iconos.txtNegrita(t.nombre + " · solo con este trabajo", GRIS), List.of(
+                        linea("La insignia de " + t.nombre + " solo se muestra", GRIS), linea("mientras lo tengas activo.", GRIS)));
             }
-            boolean sel = Trabajo.de(e) == t;
-            Component nombre = (glifo ? Insignias.conEspacio(t, ti) : Component.empty())
-                    .append(Iconos.txtNegrita(t.nombre + " · " + Insignias.NOMBRES[ti], Insignias.color(ti)));
-            ItemStack it = Iconos.item(t.icono, nombre, List.of(
-                    linea("Nivel " + f.de(t).nivel + " de " + t.nombre + ".", GRIS), Component.empty(),
-                    linea(sel ? "✔ La estás usando" : "Clic para mostrar esta", sel ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
-            if (sel) glint(it);
-            v.poner(slot++, it, ev -> { sonido(p); f.insignia = t.id; pl.perfiles().guardar(f); insignias(p); });
+            v.poner(slot++, it, ev -> negar(p));
         }
-        boolean ning = "ninguna".equals(e);
-        ItemStack ni = Iconos.item(Material.BARRIER, Iconos.txtNegrita("Ninguna", NamedTextColor.RED), List.of(
-                linea("No mostrar insignia en el chat.", GRIS), Component.empty(),
-                linea(ning ? "✔ La estás usando" : "Clic para usarla", ning ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
-        if (ning) glint(ni);
-        v.poner(16, ni, ev -> { sonido(p); f.insignia = "ninguna"; pl.perfiles().guardar(f); insignias(p); });
-        if (act != null) {
-            v.poner(22, Iconos.item(Material.NAME_TAG, Iconos.txtNegrita("Ahora mostrás:", NamedTextColor.GOLD), List.of(
-                    (glifo ? Insignias.conEspacio(act.t(), act.tier()) : Component.empty())
-                            .append(Iconos.txtNegrita(act.t().nombre + " · " + Insignias.NOMBRES[act.tier()], Insignias.color(act.tier()))))));
-        }
+        ItemStack tg = Iconos.item(oculta ? Material.GRAY_DYE : Material.LIME_DYE,
+                Iconos.txtNegrita(oculta ? "Insignia oculta" : "Insignia visible", oculta ? NamedTextColor.RED : NamedTextColor.GREEN), List.of(
+                        linea(oculta ? "No se muestra en el chat." : (act != null ? "Se muestra en el chat." : "Se mostrará cuando tengas nivel " + Insignias.NIVELES[0] + "."), GRIS),
+                        Component.empty(), linea("Clic para " + (oculta ? "mostrarla" : "ocultarla"), NamedTextColor.YELLOW)));
+        v.poner(22, tg, ev -> { sonido(p); f.insignia = oculta ? "auto" : "ninguna"; pl.perfiles().guardar(f); insignias(p); });
         v.abrir(p);
     }
 
