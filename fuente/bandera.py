@@ -38,7 +38,8 @@ def franjas(src, ancho, alto, base):
     if vacia[base]:  # letra sin pixeles en la linea base: busca el bloque mas cercano
         top = base + 1
     n = base - top + 1
-    w = max(1, min(n - 2, int(n * 0.45 + 0.5))) if n >= 3 else 0   # franja blanca: ~45% del cuerpo (minimo 2 filas desde 4)
+    w = max(1, min(n - 2, int(n * 0.45 + 0.5))) if n >= 3 else 0   # franja blanca: ~45% del cuerpo
+    if 3 <= n <= 5: w = 1                                           # letras chicas (minusculas): una sola fila blanca, para que se vea el celeste
     azul = (n - w + 1) // 2 if n >= 3 else 0                 # celeste de arriba (abajo queda el resto)
     out = Image.new('RGBA', (ancho, alto), (0, 0, 0, 0))
     px = out.load()
